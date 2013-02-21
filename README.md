@@ -21,6 +21,12 @@ This plugin allows for fuzzy file searching to open documents. Use __<leader>/__
 This plugin allows you to select which result of a motion to use, rather than having to prepend a number beforehand. Just prepend <leader><leader> to a motion, and the results will be displayed afterward!
 
 ### [vim-fugitive](https://github.com/tpope/vim-fugitive)
+This plugin has a large number of commands to integrate vim with git.
+* __Gedit Gsplit etc.__: Edit a file, write to stage the changes
+* __Gstatus__: Brings up the result of git status
+* __Gblame__: Brings up the blame window
+* __Gbrowse__: Browse the file on GitHub
+This plugin is also integrated with powerline, and will give the branch name in the status bar when it belongs to a repository.
 
 ### [nerdcommenter](https://github.com/scrooloose/nerdcommenter)
 
