@@ -1,0 +1,9 @@
+*.~
+*.swp
+
+/vimfiles
+/vim73/*
+!/vim73/bundle/
+!.gitignore
+!.vimrc
+!README.md
