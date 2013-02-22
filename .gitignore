@@ -4,10 +4,6 @@
 /vimfiles
 /vim73/*
 
-!/vim73/autoload
-/vim73/autoload/*
-!/vim73/autoload/pathogen.vim
-
 !/vim73/bundle/
 !.gitignore
 !.vimrc
