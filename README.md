@@ -41,29 +41,34 @@ A plugin for the programmer. Provides keystrokes for commenting out various sect
 * __\<leader>cA__: Creates a comment area at the end of the line and inserts cursor there
 * __\<leader>cu__: Uncomments the selection
 
-### [nerdtree](https://github.com/scrooloose/nerdtree)
-
 ### [vim-scmdiff](https://github.com/ghewgill/vim-scmdiff)
+A plugin for the programmer. Provides a quick differ to show changes for version-controlled files. Type \<leader>d to toggle diff.
 
 ### [ScrollColors](http://www.vim.org/scripts/script.php?script_id=1488)
 This plugin allows you to scroll through previews of your installed colorschemes. call :SCROLL to launch the previewer.
 
-### [supertab](https://github.com/ervandew/supertab)
-
 ### [vim-surround](https://github.com/tpope/vim-surround)
+Surrounds chunks of text with paired delimiters.
+* __ys\[motion]\[delim]__: Adds the delimiter around the selection given by the motion
+* __cs\[motion]\[delim]__: Replaces the delimiter around the selection given by the motion
+* __ds\[motion]__: Removes the delimiter around the selection given by the motion
+* __S\[delim]__: Adds the delimiter around a visual selection
 
-### [syntastic](https://github.com/scrooloose/syntastic)
 
 ### [tasklist](http://www.vim.org/scripts/script.php?script_id=2607)
 This plugin creates a task list generated from the comments in your code. Just type \<leader>t to create the task list!
 
 ### [undotree](https://github.com/mbbill/undotree)
+Did you know vim stores its undos, not in a list, but a tree? It saves everything you undo or redo period, even if you change something. But it's a pain to navigate alone. Undotree remedies this. Just type \<leader>u to open the tree for easy navigation.
 
 ### Other plugins
-References for the other plugins provided in this bundle:
+Plugins that don't need an introduction to start improving your life.
 * [html-autoclosetag](http://www.vim.org/scripts/script.php?script_id=2591): Automatically close html tags.
 * [matchit.zip](http://www.vim.org/scripts/script.php?script_id=39): Add % matching to html tags.
+* [nerdtree](https://github.com/scrooloose/nerdtree): File explorer in vim.
 * [numbers.vim](https://github.com/myusuf3/numbers.vim.git) Changes line numbers to distance from cursor in normal mode.
 * [vim-powerline](https://github.com/Lokaltog/vim-powerline) Adds a fancier and more informative status line to the window.
 * python-editing: A collection of various pyhon editing plugins from vim.org.
 * [SearchComplete](http://www.vim.org/scripts/script.php?script_id=474): Adds tab completion to '/' search.
+* [supertab](https://github.com/ervandew/supertab): Better tab completion.
+* [syntastic](https://github.com/scrooloose/syntastic): Syntax checking for vim. Checkers sold separately.
