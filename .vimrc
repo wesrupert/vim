@@ -1,21 +1,26 @@
 " Load plugins
 call pathogen#infect()
 
+" Top level setttings
 set nocompatible
 source $VIMRUNTIME/vimrc_example.vim
 source $VIMRUNTIME/mswin.vim
 behave mswin
-cd C:\Users\ora\SkyDrive\
+cd C:\Users\ora\
 
+" Choose a colorscheme
+colorscheme jellybeans
+
+" Custom keybindings
 inoremap jk <ESC>
 inoremap kj <ESC>
 inoremap <C-a> <ESC>ggVG
 noremap <C-a> <ESC>ggVG
-noremap <leader>] :noh<CR>
 noremap <leader>p "+p
 noremap <leader>y "+Y
 noremap <leader>l :setlocal number!<CR>
-noremap <leader>w :setlocal wrap!<CR>:setlocal wrap?<CR>
+noremap <leader>[ :setlocal wrap!<CR>:setlocal wrap?<CR>
+map <leader>] :noh<CR>
 map <leader>t <Plug>TaskList
 map <leader>u :UndotreeToggle<CR>
 map j gj
@@ -47,7 +52,6 @@ set hlsearch
 " Wrap on word
 set formatoptions=l
 set lbr
-"set textwidth=80
 
 " File organization
 set autochdir
@@ -75,8 +79,6 @@ set guifont=Consolas\ for\ Powerline\ FixedD:h9
 if has("gui")
 	" GVim window style
     set guitablabel=%t
-	colorscheme lucius
-	LuciusBlackHighContrast
 	set guioptions="gmLt"
 	set lines=20
 	set columns=80
