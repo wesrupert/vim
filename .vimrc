@@ -15,10 +15,10 @@ cd C:\Users\ora\SkyDrive
 colorscheme jellybeans
 
 " Custom keybindings
-inoremap jk <ESC>
-inoremap kj <ESC>
-inoremap <C-a> <ESC>ggVG
-noremap <C-a> <ESC>ggVG
+inoremap jk <esc>
+inoremap kj <esc>
+inoremap <c-a> <esc>ggVG
+noremap <c-a> <esc>ggVG
 noremap <leader>p "+p
 noremap <leader>y "+Y
 noremap <leader>l :setlocal number!<CR>
@@ -27,16 +27,12 @@ map <leader>] :noh<CR>
 map <leader>e :Errors<CR>
 map <leader>t <Plug>TaskList
 map <leader>u :UndotreeToggle<CR>
-map j gj
-map k gk
+map <silent> j gj
+map <silent> k gk
 map <c-j> <c-w>j
 map <c-k> <c-w>k
 map <c-l> <c-w>l
 map <c-h> <c-w>h
-map <a-j> <c-w>J
-map <a-k> <c-w>K
-map <a-l> <c-w>L
-map <a-h> <c-w>H
 
 " Allow backspacing over everything in insert mode
 set backspace=indent,eol,start
@@ -72,10 +68,6 @@ set number
 set showcmd
 set ruler
 
-" Status line
-set laststatus=2
-set statusline=%t\ %{fugitive#statusline()}%y%=%l\ \|\ %P
-
 " Powerline settings
 set encoding=utf-8
 set guifont=Consolas\ for\ Powerline\ FixedD:h9
@@ -93,7 +85,7 @@ if has("gui")
 	set selectmode=
 
 	" Mapping for toggling fullscreen
-	map <F11> <ESC>:call ToggleFullscreen()<CR>
+	map <F11> <esc>:call ToggleFullscreen()<CR>
 endif
 
 " Autocommands
@@ -131,19 +123,5 @@ function! ToggleFullscreen()
 		let &lines = g:windowlines
 		let &columns = g:windowcols
 		execute "winpos ".g:winposx." ".g:winposy
-	endif
-endfunction
-
-function ToggleFullscreenOld()
-	if !exists('g:full')
-		let g:full = 0 
-		call libcallnr("vimtweak.dll", "SetAlpha", 200)
-		call libcallnr("vimtweak.dll", "EnableMaximize", 1)
-		call libcallnr("vimtweak.dll", "EnableTopMost", 1)
-	else
-		unlet g:full
-		call libcallnr("vimtweak.dll", "SetAlpha", 255)
-		call libcallnr("vimtweak.dll", "EnableMaximize", 0)
-		call libcallnr("vimtweak.dll", "EnableTopMost", 0)
 	endif
 endfunction

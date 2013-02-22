@@ -1,10 +1,39 @@
-# Ora's vim bundle
+# ora-flavored vim
 
 ## A set of customizations for speedy development
 This is the GVim setup I use on Windows Systems. Feel free to use it!
 
+__Note__: This bundle is from a Windows environment. Using it on a non-windows machine may provide less-than-complete functionality. Whenever I port this to Linux, I will eventually publish a branch that works on Linux as well. Until then, you should probably edit the vimrc before use, and possibly some of the plugins.
+
+I will never test this myself on a Mac, in all likelihood. If you want to send a pull request with a working version for Macs, feel free, and I may include it!
+
 
 ## Notable customizations
+If you really want to understand what is going on with this flavour of vim versus the standard distribution, I really reccomend looking through the vimrc. However, here are the most notable customisations.
+
+### Custom keybindings
+I dislike having to reach all the way to the corner to press escape all the time. So I usually rebind capslock systemwide to escape on my computers. However, I find that this little trick also is useful. Having "inoremap jk \<esc>" and "inoremap kj \<esc>" makes it so I can just mash j and k to return to normal mode.
+
+I like Control A for select all. I'm just used to it. So I use "(i)noremap \<c-a> \<esc>ggVG" to emulate it.
+
+Global copy paste is nice when interacting with other applications. So I use "noremap \<leader>p "+p" and "noremap \<leader>y "+Y" to quickly copy to the global register.
+
+I get annoyed by random highlights easily. And I like searching with hlsearch on, so it's nice to have a quick way to disable it after a search. "map \<leader>] :noh\<CR>" does the trick for me.
+
+When I use j and k to go up and down, I expect it to go up and down. When there's word wrap, it goes to the next line. While I understand the reasoning for it, I find it annoying, and so use "map \<silent> j gj" and "map \<silent> k gk" to fix this.
+
+Some nice toggles to have: "noremap \<leader>l :setlocal number!\<CR>" and "noremap \<leader>\[ :setlocal wrap!\<CR>:setlocal wrap?\<CR>".
+
+I like window splitting, but dislike the three-finger chord to navigate between them, So I use "map \<c-j> \<c-w>j" and the like to do it faster.
+
+### Other customizations
+There are a few other customizations of note. Most of them are minor tweaks you can see by looking at the .vimrc (it's all commented and separated nicely for you!), but here are the most significant.
+
+I like having things fullscreen, but GVim doesn't have that functionality. So, I use [gvimfullscreen.dll](http://www.vim.org/scripts/script.php?script_id=2596) to give it that functionality. There's a function I wrote at the bottom of the .vimrc managinf how it's resized. This is bound to the regular \<f11> that other applications use. This functionality only applies to GVim, the terminal version doesn't have this.
+
+I also like knowing the current directory for fast file actions. So I put it in the titlebar of the window. Also, I dislike the sound of the error bell, so I disabled it.
+
+The last notable modification is that NERDTree is set to open when a file is not given to vim on startup. Nice easy way to navigate to the file you want to edit, or if you don't want it just hit 'q'.
 
 
 ## Notable plugins
@@ -72,3 +101,8 @@ Plugins that don't need an introduction to start improving your life.
 * [SearchComplete](http://www.vim.org/scripts/script.php?script_id=474): Adds tab completion to '/' search.
 * [supertab](https://github.com/ervandew/supertab): Better tab completion.
 * [syntastic](https://github.com/scrooloose/syntastic): Syntax checking for vim. Checkers sold separately.
+
+
+---
+
+That's all. Thanks for downloading [ora-flavored vim](https://github.com/orablu/vim)!

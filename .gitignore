@@ -5,6 +5,7 @@
 /vim73/*
 
 !/vim73/bundle/
+!/vim73/gvimfullscreen.dll
 !.gitignore
 !.vimrc
 !README.md
