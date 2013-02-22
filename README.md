@@ -16,7 +16,7 @@ I dislike having to reach all the way to the corner to press escape all the time
 
 I like `<c-a>` for select all. I'm just used to it. So I use `(i)noremap <c-a> <esc>ggVG` to emulate it.
 
-Global copy paste is nice when interacting with other applications. So I use `noremap <leader>p "+p` and `noremap <leader>y "+Y` to quickly copy to the global register.
+Global copy paste is nice when interacting with other applications. So I use `noremap <leader>v "+p` and `noremap <leader>y "+y` to quickly copy to the global register.
 
 I get annoyed by random highlights easily. And I like searching with hlsearch on, so it's nice to have a quick way to disable it after a search. `map <leader>] :noh<CR>` does the trick for me.
 

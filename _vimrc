@@ -19,8 +19,8 @@ inoremap jk <esc>
 inoremap kj <esc>
 inoremap <c-a> <esc>ggVG
 noremap <c-a> <esc>ggVG
-noremap <leader>p "+p
-noremap <leader>y "+Y
+noremap <leader>v "+p
+noremap <leader>y "+y
 noremap <leader>l :setlocal number!<CR>
 noremap <leader>[ :setlocal wrap!<CR>:setlocal wrap?<CR>
 map <leader>] :noh<CR>
@@ -71,6 +71,7 @@ set ruler
 " Powerline settings
 set encoding=utf-8
 set guifont=Consolas\ for\ Powerline\ FixedD:h9
+set laststatus=2
 
 if has("gui")
 	" GVim window style
