@@ -1,3 +1,6 @@
+[submodule "pathogen"]
+    path = vim73/bundle/pathogen
+    url = https://github.com/tpope/vim-pathogen
 [submodule "ctrlp.vim"]
 	path = vim73/bundle/ctrlp.vim
 	url = https://github.com/kien/ctrlp.vim
