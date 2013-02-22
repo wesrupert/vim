@@ -12,24 +12,24 @@ I will never test this myself on a Mac, in all likelihood. If you want to send a
 If you really want to understand what is going on with this flavour of vim versus the standard distribution, I really reccomend looking through the vimrc. However, here are the most notable customisations.
 
 ### Custom keybindings
-I dislike having to reach all the way to the corner to press escape all the time. So I usually rebind capslock systemwide to escape on my computers. However, I find that this little trick also is useful. Having `inoremap jk \<esc>` and `inoremap kj \<esc>` makes it so I can just mash j and k to return to normal mode.
+I dislike having to reach all the way to the corner to press escape all the time. So I usually rebind capslock systemwide to escape on my computers. However, I find that this little trick also is useful. Having `inoremap jk <esc>` and `inoremap kj <esc>` makes it so I can just mash j and k to return to normal mode.
 
-I like Control A for select all. I'm just used to it. So I use `(i)noremap \<c-a> \<esc>ggVG` to emulate it.
+I like Control A for select all. I'm just used to it. So I use `(i)noremap <c-a> <esc>ggVG` to emulate it.
 
-Global copy paste is nice when interacting with other applications. So I use `noremap \<leader>p `+p` and `noremap \<leader>y `+Y` to quickly copy to the global register.
+Global copy paste is nice when interacting with other applications. So I use `noremap <leader>p `+p` and `noremap <leader>y `+Y` to quickly copy to the global register.
 
-I get annoyed by random highlights easily. And I like searching with hlsearch on, so it's nice to have a quick way to disable it after a search. `map \<leader>] :noh\<CR>` does the trick for me.
+I get annoyed by random highlights easily. And I like searching with hlsearch on, so it's nice to have a quick way to disable it after a search. `map <leader>] :noh<CR>` does the trick for me.
 
-When I use j and k to go up and down, I expect it to go up and down. When there's word wrap, it goes to the next line. While I understand the reasoning for it, I find it annoying, and so use `map \<silent> j gj` and `map \<silent> k gk` to fix this.
+When I use j and k to go up and down, I expect it to go up and down. When there's word wrap, it goes to the next line. While I understand the reasoning for it, I find it annoying, and so use `map <silent> j gj` and `map <silent> k gk` to fix this.
 
-Some nice toggles to have: `noremap \<leader>l :setlocal number!\<CR>` and `noremap \<leader>\[ :setlocal wrap!\<CR>:setlocal wrap?\<CR>`.
+Some nice toggles to have: `noremap <leader>l :setlocal number!<CR>` and `noremap <leader>\[ :setlocal wrap!<CR>:setlocal wrap?<CR>`.
 
-I like window splitting, but dislike the three-finger chord to navigate between them, So I use `map \<c-j> \<c-w>j` and the like to do it faster.
+I like window splitting, but dislike the three-finger chord to navigate between them, So I use `map <c-j> <c-w>j` and the like to do it faster.
 
 ### Other customizations
 There are a few other customizations of note. Most of them are minor tweaks you can see by looking at the .vimrc (it's all commented and separated nicely for you!), but here are the most significant.
 
-I like having things fullscreen, but GVim doesn't have that functionality. So, I use [gvimfullscreen.dll](http://www.vim.org/scripts/script.php?script_id=2596) to give it that functionality. There's a function I wrote at the bottom of the .vimrc managinf how it's resized. This is bound to the regular \<f11> that other applications use. This functionality only applies to GVim, the terminal version doesn't have this.
+I like having things fullscreen, but GVim doesn't have that functionality. So, I use [gvimfullscreen.dll](http://www.vim.org/scripts/script.php?script_id=2596) to give it that functionality. There's a function I wrote at the bottom of the .vimrc managinf how it's resized. This is bound to the regular `<f11>` that other applications use. This functionality only applies to GVim, the terminal version doesn't have this.
 
 I also like knowing the current directory for fast file actions. So I put it in the titlebar of the window. Also, I dislike the sound of the error bell, so I disabled it.
 
@@ -46,7 +46,7 @@ This plugin allows for fuzzy file searching to open documents. Use `<leader>/` t
 * `<c-d>`: Filename only search (don't use path)
 * `<c-r>`: Regexp mode
 * `<c-y>`: Create new file
-* `<c-z> then \<c-o>`: Select multiple files, then open them all
+* `<c-z> then <c-o>`: Select multiple files, then open them all
 
 ### [vim-easymotion](https://github.com/Lokaltog/vim-easymotion)
 This plugin allows you to select which result of a motion to use, rather than having to prepend a number beforehand. Just prepend `<leader><leader>` to a motion, and the results will be displayed afterward!
