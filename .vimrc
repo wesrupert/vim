@@ -4,7 +4,7 @@ let $VIMRUNTIME = "C:/Vim/vim73"
 call pathogen#infect()
 Helptags
 
-" Top level setttings
+" Top level settings
 set nocompatible
 source $VIMRUNTIME/vimrc_example.vim
 source $VIMRUNTIME/mswin.vim
