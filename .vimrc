@@ -51,6 +51,7 @@ set lbr
 
 " File organization
 set autochdir
+set foldmethod=indent
 
 " Keep your files free of .*~ backups
 set nobackup
@@ -70,7 +71,6 @@ set statusline=%t\ %{fugitive#statusline()}%y%=%l\ \|\ %P
 " Powerline settings
 set encoding=utf-8
 set guifont=Consolas\ for\ Powerline\ FixedD:h9
-let g:Powerline_symbols="fancy"
 
 if has("gui")
 	" GVim window style
@@ -80,6 +80,7 @@ if has("gui")
 	set guioptions="gmLt"
 	set lines=20
 	set columns=80
+    let g:Powerline_symbols="fancy"
 
 	set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
 	set mouse=a
