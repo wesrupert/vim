@@ -11,6 +11,8 @@ I will never test this myself on a Mac, in all likelihood. If you want to send a
 It is really reccomended that you download this with git. It will automate dependency resolution for you, and be a lot less painful.
 
 ### Installing with git
+This is the easiest way to install this bundle, as all dependencies will be resolved for you (semi)automatically.
+
 1. Get [vim](http://www.vim.org/download.php) (for windows, [7.3](ftp://ftp.vim.org/pub/vim/pc/gvim73_46.exe)). Install in the location of your choice.
 2. Clone this repository with `git clone https://github.com/orablu/vim.git` to a temporary location of your choice.
 3. Download dependencies with `git submodule init` then `git submodule update` (You may need to call `git submodule update` immediately again if there is a newer version of a plugin available).
@@ -20,6 +22,7 @@ It is really reccomended that you download this with git. It will automate depen
 
 ### Installing without git
 Why would you do this? It's a pain!
+
 1. Get [vim](http://www.vim.org/download.php) (for windows, [7.3](ftp://ftp.vim.org/pub/vim/pc/gvim73_46.exe)). Install in the location of your choice.
 2. Go through your /Vim/vim73/bundle directory, and find all empty plugin directories.
 3. Find the link in this readme that points to the github repository for each missing plugin.
