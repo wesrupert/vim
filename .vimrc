@@ -1,4 +1,5 @@
 " Load plugins
+runtime bundle/pathogen/autoload/pathogen.vim
 let $VIMRUNTIME = "C:/Vim/vim73"
 call pathogen#infect()
 Helptags
@@ -8,7 +9,7 @@ set nocompatible
 source $VIMRUNTIME/vimrc_example.vim
 source $VIMRUNTIME/mswin.vim
 behave mswin
-cd C:\Users\ora\
+cd C:\Users\ora\SkyDrive
 
 " Choose a colorscheme
 colorscheme jellybeans
@@ -23,6 +24,7 @@ noremap <leader>y "+Y
 noremap <leader>l :setlocal number!<CR>
 noremap <leader>[ :setlocal wrap!<CR>:setlocal wrap?<CR>
 map <leader>] :noh<CR>
+map <leader>e :Errors<CR>
 map <leader>t <Plug>TaskList
 map <leader>u :UndotreeToggle<CR>
 map j gj
@@ -108,6 +110,8 @@ if has("autocmd")
 		\ if line("'\"") > 0 && line("'\"") <= line("$") |
 		\  exe "normal g`\"" |
 		\ endif
+
+    autocmd BufEnter * SyntasticCheck
 
 	autocmd BufNewFile,BufEnter *.c,*.h,*.java,*.jsp set formatoptions-=t tw=79
 endif
