@@ -29,7 +29,7 @@ I like window splitting, but dislike the three-finger chord to navigate between 
 ### Other customizations
 There are a few other customizations of note. Most of them are minor tweaks you can see by looking at the .vimrc (it's all commented and separated nicely for you!), but here are the most significant.
 
-I like having things fullscreen, but GVim doesn't have that functionality. So, I use [gvimfullscreen.dll](http://www.vim.org/scripts/script.php?script_id=2596) to give it that functionality. There's a function I wrote at the bottom of the .vimrc managinf how it's resized. This is bound to the regular `<f11>` that other applications use. This functionality only applies to GVim, the terminal version doesn't have this.
+I like having things fullscreen, but GVim doesn't have that functionality. So, I use [gvimfullscreen.dll](http://www.vim.org/scripts/script.php?script_id=2596) to give it that functionality. There's a function I wrote at the bottom of the .vimrc managing how it's resized. This is bound to the regular `<f11>` that other applications use. This functionality only applies to GVim, the terminal version doesn't have this.
 
 I also like knowing the current directory for fast file actions. So I put it in the titlebar of the window. Also, I dislike the sound of the error bell, so I disabled it.
 
