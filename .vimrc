@@ -1,5 +1,7 @@
 " Load plugins
+let $VIMRUNTIME = "C:/Vim/vim73"
 call pathogen#infect()
+Helptags
 
 " Top level setttings
 set nocompatible
