@@ -40,7 +40,7 @@ The last notable modification is that NERDTree is set to open when a file is not
 This bundle contains multiple plugins. The most noteworthy (or the ones that have extra commands) are listed here. __Note__: These may not be up to date! I update them periodically, but go to the given link to check if there is a newer version!
 
 ### [CtrlP.vim](https://github.com/kien/ctrlp.vim)
-This plugin allows for fuzzy file searching to open documents. Use `<leader>/` to call `:CtrlP` (invokes find file mode), then use these commands:
+This plugin allows for fuzzy file searching to open documents. Use `<c-p>` to call `:CtrlP` (invokes find file mode), then use these commands:
 * `<f5>`: Refresh
 * `<c-f> <c-b>`: Cycle modes
 * `<c-d>`: Filename only search (don't use path)
