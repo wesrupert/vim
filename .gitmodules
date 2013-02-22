@@ -1,36 +1,39 @@
 [submodule "ctrlp.vim"]
 	path = vim73/bundle/ctrlp.vim
 	url = https://github.com/kien/ctrlp.vim
-[submodule ""]
+[submodule "easymotion"]
     path = vim73/bundle/easymotion
     url = https://github.com/Lokaltog/vim-easymotion
-[submodule ""]
+[submodule "consolas-fixed"]
+    path = vim73/bundle/consolas-fixed
+    url = https://github.com/eugeneching/consolas-powerline-vim
+[submodule "fugitive"]
     path = vim73/bundle/fugitive
     url = https://github.com/tpope/vim-fugitive
-[submodule ""]
+[submodule "nerdcommenter"]
     path = vim73/bundle/nerdcommenter
     url = https://github.com/scrooloose/nerdcommenter
-[submodule ""]
+[submodule "scmdiff"]
     path = vim73/bundle/scmdiff
     url = https://github.com/ghewgill/vim-scmdiff
-[submodule ""]
+[submodule "surround"]
     path = vim73/bundle/surround
     url = https://github.com/tpope/vim-surround
-[submodule ""]
+[submodule "undotree"]
     path = vim73/bundle/undotree
     url = https://github.com/mbbill/undotree
-[submodule ""]
+[submodule "nerdtree"]
     path = vim73/bundle/nerdtree
     url = https://github.com/scrooloose/nerdtree
-[submodule ""]
+[submodule "numbers"]
     path = vim73/bundle/numbers
     url = https://github.com/myusuf3/numbers.vim.git
-[submodule ""]
+[submodule "powerline"]
     path = vim73/bundle/powerline
     url = https://github.com/Lokaltog/vim-powerline
-[submodule ""]
+[submodule "supertab"]
     path = vim73/bundle/supertab
     url = https://github.com/ervandew/supertab
-[submodule ""]
+[submodule "syntastic"]
     path = vim73/bundle/syntastic
     url = https://github.com/scrooloose/syntastic
