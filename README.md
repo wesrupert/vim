@@ -7,6 +7,28 @@ __Note__: This bundle is from a Windows environment. Using it on a non-windows m
 
 I will never test this myself on a Mac, in all likelihood. If you want to send a pull request with a working version for Macs, feel free, and I may include it!
 
+## Installation instructions
+It is really reccomended that you download this with git. It will automate dependency resolution for you, and be a lot less painful.
+
+### Installing with git
+1. Get [vim](http://www.vim.org/download.php) (for windows, [7.3](ftp://ftp.vim.org/pub/vim/pc/gvim73_46.exe)). Install in the location of your choice.
+2. Clone this repository with `git clone https://github.com/orablu/vim.git` to a temporary location of your choice.
+3. Download dependencies with `git submodule init` then `git submodule update` (You may need to call `git submodule update` immediately again if there is a newer version of a plugin available).
+4. Copy the cloned files to your /Vim directory.
+5. Modify line 12 of the \_vimrc to point to your starting directory of choice.
+6. Start vimming!
+
+### Installing without git
+Why would you do this? It's a pain!
+1. Get [vim](http://www.vim.org/download.php) (for windows, [7.3](ftp://ftp.vim.org/pub/vim/pc/gvim73_46.exe)). Install in the location of your choice.
+2. Go through your /Vim/vim73/bundle directory, and find all empty plugin directories.
+3. Find the link in this readme that points to the github repository for each missing plugin.
+4. Download that plugin and place it in that folder.
+5. Repeat until all plugin folders have a plugin.
+6. Question yourself for ever choosing this method.
+
+Ignoring these steps will break this vim bundle, as one of the dependencies is pathogen, the plugin that manages all the other plugins! You __must__ install pathogen at the very least!
+
 
 ## Notable customizations
 If you really want to understand what is going on with this flavour of vim versus the standard distribution, I really reccomend looking through the vimrc. However, here are the most notable customisations.
