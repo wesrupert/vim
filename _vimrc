@@ -13,6 +13,8 @@
 
 " Choose a colorscheme
     colorscheme jellybeans
+    " colorsceme lucius
+    " colorsceme molokai
 
 " Custom keybindings
     inoremap jk <esc>
@@ -75,19 +77,25 @@
 
 " GUI configuration
 if has("gui")
-	" GVim window style
+	" GVim window style.
     set guitablabel=%t
 	set guioptions="gmLt"
+	set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
 	set lines=20
 	set columns=80
     let g:Powerline_symbols="fancy"
 
-	set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
+    " Spellcheck settings.
+    let g:spchkdialect = "usa"
+    let g:spchkacronym = 1
+
+    " GUI mouse management.
 	set mouse=a
 	set selectmode=
 
-	" Mapping for toggling fullscreen
-	map <F11> <esc>:call ToggleFullscreen()<CR>
+	" Mappings for toggling fullscreen.
+	map <f11> <esc>:call ToggleFullscreen()<cr>
+    imap <f11> <esc>:call ToggleFullscreen()<cr>a
 endif
 
 " Autocommands
@@ -98,19 +106,20 @@ if has("autocmd")
 	set noerrorbells visualbell t_vb=
 	autocmd GUIEnter * set visualbell t_vb=
 
-	autocmd vimenter * if !argc() | NERDTree | endif
+    " Start NERDTree when vim is started empty.
+	" autocmd vimenter * if !argc() | NERDTree | endif
 
+    " Jump to line cursor was on on last close if available.
 	autocmd BufReadPost *
 		\ if line("'\"") > 0 && line("'\"") <= line("$") |
 		\  exe "normal g`\"" |
 		\ endif
 
+    " Check syntax on open.
     autocmd BufEnter * SyntasticCheck
-
-	autocmd BufNewFile,BufEnter *.c,*.h,*.java,*.jsp set formatoptions-=t tw=79
 endif
 
-" Functions
+" Function to save size and location on fullscreen, and restore after.
 function! ToggleFullscreen()
 	if !exists('g:full')
 		let g:full = 0 

@@ -76,6 +76,14 @@ This plugin allows for fuzzy file searching to open documents. Use `<c-p>` to ca
 ### [vim-easymotion](https://github.com/Lokaltog/vim-easymotion)
 This plugin allows you to select which result of a motion to use, rather than having to prepend a number beforehand. Just prepend `<leader><leader>` to a motion, and the results will be displayed afterward!
 
+### [engspchk](http://www.vim.org/scripts/script.php?script_id=195)
+This plugin adds spellcheck directly into vim. Take control of your spelling! Type `<leader>ec` to commence spellchecking, then use these commands:
+* `<leader>ea`: Lookup alternate spellings of the word under the cursor
+* `<leader>en` and `<leader>ep`: Navigate through spelling errors
+* `<leader>es` and `<leader>eS`: Save and remove word under the cursor for future spellchecking
+* `<leader>et` and `<leader>eT`: temprarily save and remove word under cursor
+* `<leader>ee`: End spellchecking
+
 ### [vim-fugitive](https://github.com/tpope/vim-fugitive)
 A plugin for the programmer. This plugin has a large number of commands to integrate vim with git.
 * `:Gedit`, `:Gsplit`, etc.: Edit a file, write to stage the changes
