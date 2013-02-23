@@ -40,3 +40,6 @@
 [submodule "syntastic"]
     path = vim73/bundle/syntastic
     url = https://github.com/scrooloose/syntastic
+[submodule "repeat"]
+    path = vim73/bundle/repeat
+    url = https://github.com/tpope/vim-repeat
