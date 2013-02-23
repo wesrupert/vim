@@ -70,10 +70,11 @@
     set showcmd
     set ruler
 
-" Powerline settings
+" Plugin settings
     set encoding=utf-8
     set guifont=Consolas\ for\ Powerline\ FixedD:h9
     set laststatus=2
+    let g:syntastic_check_on_open=1
 
 " GUI configuration
 if has("gui")
@@ -114,9 +115,6 @@ if has("autocmd")
 		\ if line("'\"") > 0 && line("'\"") <= line("$") |
 		\  exe "normal g`\"" |
 		\ endif
-
-    " Check syntax on open.
-    autocmd BufEnter * SyntasticCheck
 endif
 
 " Function to save size and location on fullscreen, and restore after.

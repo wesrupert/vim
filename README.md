@@ -133,7 +133,7 @@ Plugins that don't need an introduction to start improving your life.
 * python-editing: A collection of various pyhon editing plugins from vim.org.
 * [SearchComplete](http://www.vim.org/scripts/script.php?script_id=474): Adds tab completion to `/` search.
 * [supertab](https://github.com/ervandew/supertab): Better tab completion.
-* [syntastic](https://github.com/scrooloose/syntastic): Syntax checking for vim. Checkers sold separately.
+* [syntastic](https://github.com/scrooloose/syntastic): Syntax checking for vim. Checkers sold separately, check `syntax_checkers/<filetype>/` for what checkers are supported.
 
 
 ---
