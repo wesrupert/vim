@@ -4,6 +4,8 @@
 /vimfiles
 /vim73/*
 
+/vim73/bundle/engspchk/CVIMSYN/engspchk.usr
+
 !/vim73/bundle/
 !/vim73/gvimfullscreen.dll
 !.gitignore
