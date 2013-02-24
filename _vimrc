@@ -12,9 +12,9 @@
     cd C:\Users\ora\Documents
 
 " Choose a colorscheme
-    colorscheme jellybeans
-    " colorsceme lucius
-    " colorsceme molokai
+    " colorscheme jellybeans
+    colorscheme lucius
+    " colorscheme molokai
 
 " Custom keybindings
     inoremap jk <esc>
@@ -115,6 +115,8 @@ if has("autocmd")
 		\ if line("'\"") > 0 && line("'\"") <= line("$") |
 		\  exe "normal g`\"" |
 		\ endif
+
+    autocmd BufEnter * call ChangeColor()
 endif
 
 " Function to save size and location on fullscreen, and restore after.
@@ -133,4 +135,18 @@ function! ToggleFullscreen()
 		let &columns = g:windowcols
 		execute "winpos ".g:winposx." ".g:winposy
 	endif
+endfunction
+
+" Function to change the colorscheme based on the time of day.
+function! ChangeColor()
+    let l:time = strftime("%H")
+    if (l:time > 21)
+        LuciusBlackHighContrast
+    elseif (l:time > 18)
+        LuciusDarkHighContrast
+    elseif (l:time > 12)
+        LuciusLight
+    else
+        LuciusWhite
+    endif
 endfunction
