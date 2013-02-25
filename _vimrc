@@ -116,7 +116,7 @@ if has("autocmd")
 		\  exe "normal g`\"" |
 		\ endif
 
-    autocmd BufEnter * call ChangeColor()
+    autocmd VimEnter * call ChangeColor()
 endif
 
 " Function to save size and location on fullscreen, and restore after.
@@ -138,13 +138,13 @@ function! ToggleFullscreen()
 endfunction
 
 " Function to change the colorscheme based on the time of day.
-function! ChangeColor()
+function ChangeColor()
     let l:time = strftime("%H")
-    if (l:time > 21)
+    if (l:time > 21 || l:time <= 4)
         LuciusBlackHighContrast
-    elseif (l:time > 18)
+    elseif (l:time > 18 || l:time <= 8)
         LuciusDarkHighContrast
-    elseif (l:time > 12)
+    elseif (l:time > 12 || l:time <= 10)
         LuciusLight
     else
         LuciusWhite
