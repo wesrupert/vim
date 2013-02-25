@@ -75,6 +75,7 @@
     set encoding=utf-8
     set guifont=Consolas\ for\ Powerline\ FixedD:h9
     set laststatus=2
+    set noshowmode
     let g:syntastic_check_on_open=1
 
 " GUI configuration
