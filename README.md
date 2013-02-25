@@ -120,6 +120,9 @@ Surrounds chunks of text with paired delimiters.
 ### [tasklist](http://www.vim.org/scripts/script.php?script_id=2607)
 This plugin creates a task list generated from the comments in your code. Just type `<leader>t` to create the task list!
 
+### [tagbar](http://majutsushi.github.com/tagbar/)
+A plugin for the programmer. This plugin creates a list of objects in your code (methods, variables, etc.) Open the tag bar with `<leader>l`.
+
 ### [undotree](https://github.com/mbbill/undotree)
 Did you know vim stores its undos, not in a list, but a tree? It saves everything you undo or redo period, even if you change something. But it's a pain to navigate alone. Undotree remedies this. Just type `<leader>u` to open the tree for easy navigation.
 

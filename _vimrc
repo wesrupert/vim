@@ -17,18 +17,19 @@
     " colorscheme molokai
 
 " Custom keybindings
-    inoremap jk <esc>
-    inoremap kj <esc>
-    inoremap <c-a> <esc>ggVG
-    noremap <c-a> <esc>ggVG
-    noremap <leader>v "+p
-    noremap <leader>y "+y
-    noremap <leader>l :setlocal number!<CR>
-    noremap <leader>[ :setlocal wrap!<CR>:setlocal wrap?<CR>
-    map <leader>] :noh<CR>
-    map <leader>e :Errors<CR>
+    imap jk <esc>
+    imap kj <esc>
+    imap <c-a> <esc>ggVG
+    map <c-a> <esc>ggVG
+    map <leader>[ :setlocal wrap!<cr>:setlocal wrap?<cr>
+    map <leader>] :noh<cr>
+    map <leader>e :Errors<cr>
+    map <leader>l :TagbarToggle<cr>
+    map <leader>n :setlocal number!<cr>
     map <leader>t <Plug>TaskList
-    map <leader>u :UndotreeToggle<CR>
+    map <leader>u :UndotreeToggle<cr>
+    map <leader>v "+p
+    map <leader>y "+y
     map <silent> j gj
     map <silent> k gk
     map <c-j> <c-w>j
