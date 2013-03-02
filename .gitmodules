@@ -43,6 +43,3 @@
 [submodule "repeat"]
     path = vim73/bundle/repeat
     url = https://github.com/tpope/vim-repeat
-[submodule "tagbar"]
-    path = vim73/bundle/tagbar
-    url = https://github.com/majutsushi/tagbar

@@ -24,7 +24,6 @@
     map <leader>[ :setlocal wrap!<cr>:setlocal wrap?<cr>
     map <leader>] :noh<cr>
     map <leader>e :Errors<cr>
-    map <leader>l :TagbarToggle<cr>
     map <leader>n :setlocal number!<cr>
     map <leader>t <Plug>TaskList
     map <leader>u :UndotreeToggle<cr>
