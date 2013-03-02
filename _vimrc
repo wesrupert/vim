@@ -13,31 +13,30 @@
 
 " Choose a colorscheme
     " colorscheme jellybeans
-    colorscheme lucius
-    " colorscheme molokai
+    " colorscheme lucius
+    colorscheme molokai
 
 " Custom keybindings
-    imap jk <esc>
-    imap kj <esc>
-    imap <c-a> <esc>ggVG
-    map <c-a> <esc>ggVG
-    map <leader>[ :setlocal wrap!<cr>:setlocal wrap?<cr>
-    map <leader>] :noh<cr>
-    map <leader>e :Errors<cr>
-    map <leader>n :setlocal number!<cr>
-    map <leader>t <Plug>TaskList
-    map <leader>u :UndotreeToggle<cr>
-    map <leader>v "+p
-    map <leader>y "+y
-    map <silent> j gj
-    map <silent> k gk
-    map <c-j> <c-w>j
-    map <c-k> <c-w>k
-    map <c-l> <c-w>l
-    map <c-h> <c-w>h
-
-" Allow backspacing over everything in insert mode
-    set backspace=indent,eol,start
+    imap            jk          <esc>
+    imap            kj          <esc>
+    imap            <c-a>       <esc>ggVG
+    map             <c-a>       <esc>ggVG
+    map             <leader>[   :setlocal wrap!<cr>:setlocal wrap?<cr>
+    map  <silent>   <leader>]   :noh<cr>
+    map  <silent>   <leader>e   :Errors<cr>
+    map  <silent>   <leader>i   :set foldmethod=indent<cr>
+    map  <silent>   <leader>n   :setlocal number!<cr>
+    map             <leader>t   <Plug>TaskList
+    map  <silent>   <leader>u   :UndotreeToggle<cr>
+    map             <leader>v   "+p
+    map             <leader>y   "+y
+    map  <silent>   j           gj
+    map  <silent>   k           gk
+    map             <c-j>       <c-w>j
+    map             <c-k>       <c-w>k
+    map             <c-l>       <c-w>l
+    map             <c-h>       <c-w>h
+    map             zq          ZQ
 
 " Tabs should be 4 spaces
     set tabstop=4
@@ -51,7 +50,8 @@
     set smartcase
     set hlsearch
 
-" Wrap on word
+" Wrap settings
+    set backspace=indent,eol,start
     set formatoptions=l
     set lbr
 
@@ -142,12 +142,14 @@ endfunction
 function ChangeColor()
     let l:time = strftime("%H")
     if (l:time > 21 || l:time <= 4)
-        LuciusBlackHighContrast
+        colorscheme molokai
     elseif (l:time > 18 || l:time <= 8)
-        LuciusDarkHighContrast
+        colorscheme jellybeans
     elseif (l:time > 12 || l:time <= 10)
+        colorscheme lucius
         LuciusLight
     else
-        LuciusWhite
+        colorscheme lucius
+        LuciusBlackHighContrast
     endif
 endfunction
