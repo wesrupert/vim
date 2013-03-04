@@ -17,8 +17,7 @@ This is the easiest way to install this bundle, as all dependencies will be reso
 2. Clone this repository with `git clone https://github.com/orablu/vim.git` to a temporary location of your choice.
 3. Download dependencies with `git submodule init` then `git submodule update` (You may need to call `git submodule update` immediately again if there is a newer version of a plugin available).
 4. Copy the cloned files to your /Vim directory.
-5. Modify line 12 of the \_vimrc to point to your starting directory of choice.
-6. Start vimming!
+5. Start vimming!
 
 ### Installing without git
 Why would you do this? It's a pain!

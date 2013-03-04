@@ -9,7 +9,7 @@
     source $VIMRUNTIME/vimrc_example.vim
     source $VIMRUNTIME/mswin.vim
     behave mswin
-    cd C:\Users\ora\Documents
+    cd \%HOMEDRIVE\%\\%HOMEPATH\%\Documents
 
 " Choose a colorscheme
     " colorscheme jellybeans
