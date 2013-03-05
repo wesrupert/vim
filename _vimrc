@@ -118,6 +118,11 @@ if has("autocmd")
 		\ endif
 
     autocmd VimEnter * call ChangeColor()
+
+    autocmd VimEnter * RainbowParenthesesToggle
+    autocmd BufEnter * RainbowParenthesesLoadRound
+    autocmd BufEnter * RainbowParenthesesLoadSquare
+    autocmd BufEnter * RainbowParenthesesLoadBraces
 endif
 
 " Function to save size and location on fullscreen, and restore after.
