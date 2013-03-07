@@ -106,7 +106,9 @@ A plugin for the programmer. Provides keystrokes for commenting out various sect
 A plugin for the programmer. Provides a quick differ to show changes for version-controlled files. Type `<leader>d` to toggle diff.
 
 ### [ScrollColors](http://www.vim.org/scripts/script.php?script_id=1488)
-This plugin allows you to scroll through previews of your installed colorschemes. call `:SCROLL` to launch the previewer.
+This plugin allows you to scroll through your installed colorschemes. call `:SCROLL` to launch the previewer, or use:
+* `<leader>n`: Next colorscheme
+* `<leader>p`: Previous colorscheme
 
 ### [vim-surround](https://github.com/tpope/vim-surround)
 Surrounds chunks of text with paired delimiters.
