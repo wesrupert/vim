@@ -25,7 +25,8 @@
     map  <silent>   <leader>]   :noh<cr>
     map  <silent>   <leader>e   :Errors<cr>
     map  <silent>   <leader>i   :set foldmethod=indent<cr>
-    map  <silent>   <leader>n   :setlocal number!<cr>
+    map  <silent>   <leader>m   :NumbersToggle<cr>
+    map  <silent>   <leader>M   :setlocal number!<cr>
     map             <leader>t   <Plug>TaskList
     map  <silent>   <leader>u   :UndotreeToggle<cr>
     map             <leader>v   "+p
@@ -72,7 +73,7 @@
 
 " Plugin settings
     set encoding=utf-8
-    set guifont=Consolas\ for\ Powerline\ FixedD:h9
+    set guifont=Consolas\ for\ Powerline\ FixedD:h12
     set laststatus=2
     set noshowmode
     let g:syntastic_check_on_open=1
@@ -81,7 +82,7 @@
 if has("gui")
 	" GVim window style.
     set guitablabel=%t
-	set guioptions="gmLt"
+	set guioptions=cgrLt
 	set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
 	set lines=20
 	set columns=80
