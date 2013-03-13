@@ -36,17 +36,17 @@ Ignoring these steps will break this vim bundle, as one of the dependencies is p
 If you really want to understand what is going on with this flavour of vim versus the standard distribution, I really reccomend looking through the vimrc. However, here are the most notable customisations.
 
 ### Custom keybindings
-I dislike having to reach all the way to the corner to press escape all the time. So I usually rebind capslock systemwide to escape on my computers. However, I find that this little trick also is useful. Having `inoremap jk <esc>` and `inoremap kj <esc>` makes it so I can just mash `j` and `k` to return to normal mode.
+I dislike having to reach all the way to the corner to press escape all the time. So I usually rebind capslock systemwide to escape on my computers. However, I find that this little trick also is useful. Having `imap jk <esc>` and `imap kj <esc>` makes it so I can just mash `j` and `k` to return to normal mode.
 
-I like `<c-a>` for select all. I'm just used to it. So I use `(i)noremap <c-a> <esc>ggVG` to emulate it.
+I like `<c-a>` for select all. I'm just used to it. So I use `(i)map <c-a> <esc>ggVG` to emulate it.
 
-Global copy paste is nice when interacting with other applications. So I use `noremap <leader>v "+p` and `noremap <leader>y "+y` to quickly copy to the global register.
+Global copy paste is nice when interacting with other applications. So I use `map <leader>v "+p` and `map <leader>y "+y` to quickly copy to the global register.
 
 I get annoyed by random highlights easily. And I like searching with hlsearch on, so it's nice to have a quick way to disable it after a search. `map <leader>] :noh<CR>` does the trick for me.
 
 When I use j and k to go up and down, I expect it to go up and down. When there's word wrap, it goes to the next line. While I understand the reasoning for it, I find it annoying, and so use `map <silent> j gj` and `map <silent> k gk` to fix this.
 
-Some nice toggles to have: `noremap <leader>l :setlocal number!<CR>` and `noremap <leader>[ :setlocal wrap!<CR>:setlocal wrap?<CR>`.
+Some nice toggles to have: `map <leader>l :setlocal number!<CR>` and `map <leader>[ :setlocal wrap!<CR>:setlocal wrap?<CR>`.
 
 I like window splitting, but dislike the three-finger chord to navigate between them, So I use `map <c-j> <c-w>j` and the like to do it faster.
 
@@ -143,7 +143,8 @@ Plugins that don't need an introduction to start improving your life.
 
 ---
 
-__g__: Plugin is a GitHub submodule. Following Git installation will get the latest version.
-__m__: Plugin is not a GitHub submodule. The version located at the indicated url may be newer.
+Notes:
+* __g__: Plugin is a GitHub submodule. Following Git installation will get the latest version.
+* __m__: Plugin is not a GitHub submodule. The version located at the indicated url may be newer.
 
 That's all. Thanks for downloading [ora-flavored vim](https://github.com/orablu/vim)!
