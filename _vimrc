@@ -21,6 +21,9 @@
     imap            kj          <esc>
     imap            <c-a>       <esc>ggVG
     map             <c-a>       <esc>ggVG
+    map  <silent>   <c-t>       :tabnew<cr>
+    map  <silent>   <c-x>       :tabclose<cr>
+    map  <silent>   <c-z>       :tabnew C:\Vim\_vimrc<cr>
     map             <leader>[   :setlocal wrap!<cr>:setlocal wrap?<cr>
     map  <silent>   <leader>]   :noh<cr>
     map  <silent>   <leader>e   :Errors<cr>
@@ -58,7 +61,7 @@
 
 " File organization
     set autochdir
-    set foldmethod=indent
+    set foldmethod=syntax
 
 " Keep your files free of .*~ backups
     set nobackup
@@ -82,7 +85,7 @@
 if has("gui")
 	" GVim window style.
     set guitablabel=%t
-	set guioptions=cgrLt
+	set guioptions=grLt
 	set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
 	set lines=20
 	set columns=80
@@ -122,9 +125,24 @@ if has("autocmd")
 
     autocmd VimEnter * RainbowParenthesesToggle
     autocmd BufEnter * RainbowParenthesesLoadRound
-    autocmd BufEnter * RainbowParenthesesLoadSquare
-    autocmd BufEnter * RainbowParenthesesLoadBraces
+    "autocmd BufEnter * RainbowParenthesesLoadSquare
+    "autocmd BufEnter * RainbowParenthesesLoadBraces
 endif
+
+" Variables
+    " Colors for rainbow parens
+    let g:rbpt_colorpairs = [
+        \ ['brown',       '#ff00ff'],
+        \ ['gray',        '#8800ff'],
+        \ ['black',       '#0000ff'],
+        \ ['darkmagenta', '#0088ff'],
+        \ ['darkblue',    '#00ffff'],
+        \ ['darkgreen',   '#00ff00'],
+        \ ['darkcyan',    '#ffff00'],
+        \ ['darkred',     '#ff8800'],
+        \ ['red',         '#ff0000'],
+        \ ]
+    let g:rbpt_max = 50
 
 " Function to save size and location on fullscreen, and restore after.
 function! ToggleFullscreen()
