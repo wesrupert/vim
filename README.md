@@ -1,4 +1,4 @@
-# ora's windows-flavored vim, 
+# ora's windows-flavored vim
 
 ## A set of customizations for speedy development
 This is the GVim setup I use on Windows Systems. Feel free to use it!
