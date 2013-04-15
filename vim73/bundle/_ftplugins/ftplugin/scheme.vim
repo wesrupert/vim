@@ -1,3 +1,6 @@
+" Load RainbowParens whenever the filetype is changed to scheme.
+RainbowParenthesesLoadRound
+
 " Lazy remapping of shift parens.
 inoremap <buffer> 9 (
 inoremap <buffer> 0 )

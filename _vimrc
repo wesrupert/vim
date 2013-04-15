@@ -21,6 +21,7 @@
     imap            kj          <esc>
     imap            <c-a>       <esc>ggVG
     map             <c-a>       <esc>ggVG
+    map  <silent>   <c-e>       :silent !explorer .<cr>
     map  <silent>   <c-t>       :tabnew<cr>
     map  <silent>   <c-x>       :tabclose<cr>
     map  <silent>   <c-z>       :tabnew C:\Vim\_vimrc<cr>
@@ -30,6 +31,7 @@
     map  <silent>   <leader>i   :set foldmethod=indent<cr>
     map  <silent>   <leader>m   :NumbersToggle<cr>
     map  <silent>   <leader>M   :setlocal number!<cr>
+    map  <silent>   <leader>r   :RainbowParenthesesLoadRound<cr>
     map             <leader>t   <Plug>TaskList
     map  <silent>   <leader>u   :UndotreeToggle<cr>
     map             <leader>v   "+p
@@ -132,15 +134,15 @@ endif
 " Variables
     " Colors for rainbow parens
     let g:rbpt_colorpairs = [
-        \ ['brown',       '#ff00ff'],
-        \ ['gray',        '#8800ff'],
-        \ ['black',       '#0000ff'],
-        \ ['darkmagenta', '#0088ff'],
         \ ['darkblue',    '#00ffff'],
         \ ['darkgreen',   '#00ff00'],
         \ ['darkcyan',    '#ffff00'],
         \ ['darkred',     '#ff8800'],
         \ ['red',         '#ff0000'],
+        \ ['brown',       '#ff00ff'],
+        \ ['gray',        '#8800ff'],
+        \ ['black',       '#0000ff'],
+        \ ['darkmagenta', '#0088ff'],
         \ ]
     let g:rbpt_max = 50
 
@@ -165,15 +167,9 @@ endfunction
 " Function to change the colorscheme based on the time of day.
 function ChangeColor()
     let l:time = strftime("%H")
-    if (l:time > 21 || l:time <= 4)
+    if (l:time > 13)
         colorscheme molokai
-    elseif (l:time > 18 || l:time <= 8)
-        colorscheme jellybeans
-    elseif (l:time > 12 || l:time <= 10)
-        colorscheme lucius
-        LuciusLight
     else
-        colorscheme lucius
-        LuciusBlackHighContrast
+        colorscheme jellybeans
     endif
 endfunction

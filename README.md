@@ -38,7 +38,9 @@ If you really want to understand what is going on with this flavour of vim versu
 ### Custom keybindings
 I dislike having to reach all the way to the corner to press escape all the time. So I usually rebind capslock systemwide to escape on my computers. However, I find that this little trick also is useful. Having `imap jk <esc>` and `imap kj <esc>` makes it so I can just mash `j` and `k` to return to normal mode.
 
-I like `<c-a>` for select all. I'm just used to it. So I use `(i)map <c-a> <esc>ggVG` to emulate it.
+I manipulate partner files to files I'm editing often, and like to have a file explorer window open in the current directory often. I bound `<c-e>` to `:silent !explorer .<cr>` to accomplish this.
+
+I like `<c-a>` for select all. I'm just used to it. So I use `(i)map <c-a> <esc>ggVG`.
 
 Global copy paste is nice when interacting with other applications. So I use `map <leader>v "+p` and `map <leader>y "+y` to quickly copy to the global register.
 
