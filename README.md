@@ -3,9 +3,7 @@
 ## A set of customizations for speedy development
 This is the GVim setup I use on Windows Systems. Feel free to use it!
 
-__Note__: This bundle is from a Windows environment. Using it on a non-windows machine may provide less-than-complete functionality. Whenever I port this to Linux, I will eventually publish a branch that works on Linux as well. Until then, you should probably edit the vimrc before use, and possibly some of the plugins.
-
-I will never test this myself on a Mac, in all likelihood. If you want to send a pull request with a working version for Macs, feel free, and I may include it!
+__Note__: This bundle is from a Windows environment. Using it on a non-windows machine may provide less-than-complete functionality.
 
 ## Installation instructions
 It is really reccomended that you download this with git. It will automate dependency resolution for you, and be a lot less painful.
@@ -13,8 +11,8 @@ It is really reccomended that you download this with git. It will automate depen
 ### Installing with git
 This is the easiest way to install this bundle, as all dependencies will be resolved for you (semi)automatically.
 
-1. Get [vim](http://www.vim.org/download.php)<sup>m</sup> (for windows, [7.3](ftp://ftp.vim.org/pub/vim/pc/gvim73_46.exe)<sup>m</sup>). Install in the location of your choice.
-2. Clone this repository with `git clone https://github.com/orablu/vim.git` to a temporary location of your choice.
+1. Get [vim](http://www.vim.org/download.php). Install in the location of your choice.
+2. Clone this repository with `git clone https://github.com/orablu/vim-windows.git` to a temporary location of your choice.
 3. Download dependencies with `git submodule init` then `git submodule update` (You may need to call `git submodule update` immediately again if there is a newer version of a plugin available).
 4. Copy the cloned files to your /Vim directory.
 5. Start vimming!
@@ -138,6 +136,7 @@ Plugins that don't need an introduction to start improving your life.
 * [vim-powerline](https://github.com/Lokaltog/vim-powerline)<sup>g</sup> Adds a fancier and more informative status line to the window.
 * python-editing: A collection of various pyhon editing plugins from vim.org.
 * [rainbow-parentheses](https://github.com/kien/rainbow_parentheses.vim)<sup>g</sup> Colors nested parentheses different colors.
+* [repeat](https://github.com/tpope/vim-repeat)<sup>g</sup> Adds `.` repeat functionality to plugins.
 * [SearchComplete](http://www.vim.org/scripts/script.php?script_id=474)<sup>m</sup>: Adds tab completion to `/` search.
 * [supertab](https://github.com/ervandew/supertab)<sup>g</sup>: Better tab completion.
 * [syntastic](https://github.com/scrooloose/syntastic)<sup>g</sup>: Syntax checking for vim. Checkers sold separately, check `syntax_checkers/<filetype>/` for what checkers are supported.
