@@ -1,45 +1,42 @@
 [submodule "pathogen"]
-    path = vim73/bundle/pathogen
+    path = vim74/bundle/pathogen
     url = https://github.com/tpope/vim-pathogen
 [submodule "ctrlp.vim"]
-	path = vim73/bundle/ctrlp.vim
+	path = vim74/bundle/ctrlp.vim
 	url = https://github.com/kien/ctrlp.vim
-[submodule "easymotion"]
-    path = vim73/bundle/easymotion
-    url = https://github.com/Lokaltog/vim-easymotion
 [submodule "consolas-fixed"]
-    path = vim73/bundle/consolas-fixed
+    path = vim74/bundle/consolas-fixed
     url = https://github.com/eugeneching/consolas-powerline-vim
 [submodule "fugitive"]
-    path = vim73/bundle/fugitive
+    path = vim74/bundle/fugitive
     url = https://github.com/tpope/vim-fugitive
 [submodule "nerdcommenter"]
-    path = vim73/bundle/nerdcommenter
+    path = vim74/bundle/nerdcommenter
     url = https://github.com/scrooloose/nerdcommenter
 [submodule "scmdiff"]
-    path = vim73/bundle/scmdiff
+    path = vim74/bundle/scmdiff
     url = https://github.com/ghewgill/vim-scmdiff
 [submodule "surround"]
-    path = vim73/bundle/surround
+    path = vim74/bundle/surround
     url = https://github.com/tpope/vim-surround
 [submodule "undotree"]
-    path = vim73/bundle/undotree
+    path = vim74/bundle/undotree
     url = https://github.com/mbbill/undotree
-[submodule "nerdtree"]
-    path = vim73/bundle/nerdtree
-    url = https://github.com/scrooloose/nerdtree
 [submodule "powerline"]
-    path = vim73/bundle/powerline
+    path = vim74/bundle/powerline
     url = https://github.com/Lokaltog/vim-powerline
 [submodule "supertab"]
-    path = vim73/bundle/supertab
+    path = vim74/bundle/supertab
     url = https://github.com/ervandew/supertab
 [submodule "syntastic"]
-    path = vim73/bundle/syntastic
+    path = vim74/bundle/syntastic
     url = https://github.com/scrooloose/syntastic
 [submodule "repeat"]
-    path = vim73/bundle/repeat
+    path = vim74/bundle/repeat
     url = https://github.com/tpope/vim-repeat
-[submodule "rainbow"]
-    path = vim73/bundle/rainbow-parentheses
-    url = https://github.com/kien/rainbow_parentheses.vim
+[submodule "vinegar"]
+    path = vim74/bundle/vinegar
+    url = https://github.com/tpope/vim-vinegar
+[submodule "goyo"]
+    path = vim74/bundle/goyo
+    url = https://github.com/junegunn/goyo.vim
