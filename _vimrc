@@ -89,6 +89,7 @@ if has("gui")
         if has("autocmd")
             autocmd GUIEnter * simalt ~x
             autocmd VimEnter * vertical resize -50
+            autocmd VimEnter * execute 2 . "wincmd w"
         else
             set lines=50
             set columns=200
