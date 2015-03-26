@@ -2,12 +2,12 @@
 *.swp
 
 /vimfiles
-/vim73/*
+/vim74/*
 
-/vim73/bundle/engspchk/CVIMSYN/engspchk.usr
+/vim74/bundle/engspchk/CVIMSYN/engspchk.usr
 
-!/vim73/bundle/
-!/vim73/gvimfullscreen.dll
+!/vim74/bundle/
+!/vim74/gvimfullscreen.dll
 !.gitignore
 !.vimrc
 !_vimrc
