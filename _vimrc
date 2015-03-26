@@ -8,12 +8,7 @@
     behave mswin
     cd \%SRCROOT\%\src\
 
-" Choose a colorscheme
-    colorscheme solarized
-    set background=light
-
 " Custom keybindings
-    "let mapleader = ','
     imap jk          <esc>
     imap kj          <esc>
     imap <silent> <Tab> <c-r>=Tab_Or_Complete()<cr>
@@ -23,8 +18,7 @@
     map  <c-t>       :tabnew<cr>
     map  <c-x>       :tabclose<cr>
     map  <c-z>       :tabnew E:\Public Share\Programs\Vim\_vimrc<cr>
-    map  <leader>=   :set background=light<cr>
-    map  <leader>-   :set background=dark<cr>
+    map  <leader>=   :call ColorScheme()<cr>
     map  <leader>[   :setlocal wrap!<cr>:setlocal wrap?<cr>
     map  <leader>]   :noh<cr>
     map  <leader>i   :set foldmethod=indent<cr>
@@ -83,13 +77,22 @@
 
 " GUI configuration
 if has("gui")
+    " Choose a colorscheme
+    colorscheme github
+
 	" GVim window style.
     set guitablabel=%t
 	set guioptions=gtcLR
 	set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
     if &diff
-        set lines=50
-        set columns=200
+        set diffopt=filler,context:3
+        if has("autocmd")
+            autocmd GUIEnter * simalt ~x
+            autocmd VimEnter * vertical resize -50
+        else
+            set lines=50
+            set columns=200
+        endif
     else
         set lines=20
         set columns=80
@@ -100,15 +103,6 @@ if has("gui")
 	set selectmode=
 endif
 
-" Diff configuration
-if &diff
-    colorscheme github
-    set diffopt=filler,context:3
-    if has("autocmd")
-        autocmd VimEnter * simalt ~x | 
-    endif
-endif
-
 " Autocommands
 if has("autocmd")
 	filetype plugin indent on
@@ -116,7 +110,6 @@ if has("autocmd")
 	" Stop dinging, dangit!
 	set noerrorbells visualbell t_vb=
 	autocmd GUIEnter * set visualbell t_vb=
-    autocmd GUIEnter * call ColorScheme()
 
     " Jump to line cursor was on on last close if available.
 	autocmd BufReadPost *
@@ -133,13 +126,4 @@ function! Tab_Or_Complete()
   else
     return "\<Tab>"
   endif
-endfunction
-
-function! ColorScheme()
-    let l:time = str2nr(strftime('%H'))
-    if (l:time > 13)
-        set background=dark
-    else
-        set background=light
-    endif
 endfunction
