@@ -1,37 +1,37 @@
-" Plugins
+" Load plugins
     execute pathogen#infect()
+    Helptags
 
-" Top level settings
+" Top-level settings
     set nocompatible
-    source $VIMRUNTIME/vimrc_example.vim
     source $VIMRUNTIME/mswin.vim
     behave mswin
     cd \%SRCROOT\%\src\
 
 " Custom keybindings
-    imap jk          <esc>
-    imap kj          <esc>
+    imap jk <esc>
+    imap kj <esc>
     imap <silent> <Tab> <c-r>=Tab_Or_Complete()<cr>
-    imap <c-a>       <esc>ggVG
-    map  <c-a>       <esc>ggVG
-    map  <c-e>       :silent !explorer .<cr>
-    map  <c-t>       :tabnew<cr>
-    map  <c-x>       :tabclose<cr>
-    map  <c-z>       :tabnew E:\Public Share\Programs\Vim\_vimrc<cr>
-    map  <leader>=   :call ColorScheme()<cr>
-    map  <leader>[   :setlocal wrap!<cr>:setlocal wrap?<cr>
-    map  <leader>]   :noh<cr>
-    map  <leader>i   :set foldmethod=indent<cr>
-    map  <leader>m   :setlocal relativenumber!<cr>
-    map  <leader>M   :setlocal number!<cr>
-    map  <leader>v   "+p
-    map  <leader>y   "+y
-    map  j           gj
-    map  k           gk
-    map  <c-j>       <c-w>j
-    map  <c-k>       <c-w>k
-    map  <c-l>       <c-w>l
-    map  <c-h>       <c-w>h
+    imap <silent> <c-a> <esc>ggVG
+    map  <silent> <c-a> <esc>ggVG
+    map  <silent> <c-e> :silent !explorer .<cr>
+    map  <silent> <c-t> :tabnew<cr>
+    map  <silent> <c-x> :tabclose<cr>
+    map  <silent> <c-z> :tabnew E:\Public Share\Programs\Vim\_vimrc<cr>
+    map  <silent> <leader>= :call ColorScheme()<cr>
+    map  <silent> <leader>[ :setlocal wrap!<cr>:setlocal wrap?<cr>
+    map  <silent> <leader>] :noh<cr>
+    map  <silent> <leader>i :set foldmethod=indent<cr>
+    map  <silent> <leader>m :setlocal relativenumber!<cr>
+    map  <silent> <leader>M :setlocal number!<cr>
+    map  <silent> <leader>v "+p
+    map  <silent> <leader>y "+y
+    map  <silent> j gj
+    map  <silent> k gk
+    map  <silent> <c-j> <c-w>j
+    map  <silent> <c-k> <c-w>k
+    map  <silent> <c-l> <c-w>l
+    map  <silent> <c-h> <c-w>h
     map  zq          ZQ
     map  <leader>gor :e $SRCROOT\src\debugger\Razor<cr>
     map  <leader>gop :e E:\Public Share<cr>
@@ -57,7 +57,7 @@
     set autochdir
     set foldmethod=syntax
 
-" Keep your files free of .*~ backups
+" Keep your directories free of clutter
     set nobackup
     set nowritebackup
 
@@ -115,17 +115,17 @@ endif
 
 " Autocommands
 if has("autocmd")
-	filetype plugin indent on
+    filetype plugin indent on
 
-	" Stop dinging, dangit!
-	set noerrorbells visualbell t_vb=
-	autocmd GUIEnter * set visualbell t_vb=
+    " Stop dinging, dangit!
+    set noerrorbells visualbell t_vb=
+    autocmd GUIEnter * set visualbell t_vb=
 
-    " Jump to line cursor was on on last close if available.
-	autocmd BufReadPost *
-		\ if line("'\"") > 0 && line("'\"") <= line("$") |
-		\  exe "normal g`\"" |
-		\ endif
+    " Jump to line cursor was on when last closed, if available
+    autocmd BufReadPost *
+        \ if line("'\"") > 0 && line("'\"") <= line("$") |
+        \  exe "normal g`\"" |
+        \ endif
 endif
 
 " Functions
