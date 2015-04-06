@@ -75,6 +75,12 @@
     set laststatus=2
     set noshowmode
 
+" Airline plugin configuration
+    let g:airline_left_sep=''
+    let g:airline_right_sep=''
+    let g:airline_inactive_collapse=1
+    let g:airline#extensions#whitespace#enabled=0
+
 " GUI configuration
 if has("gui")
     " Choose a colorscheme
@@ -84,24 +90,27 @@ if has("gui")
     set guitablabel=%t
 	set guioptions=gtcLR
 	set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
-    if &diff
-        set diffopt=filler,context:3
-        if has("autocmd")
-            autocmd GUIEnter * simalt ~x
-            autocmd VimEnter * vertical resize -50
-            autocmd VimEnter * execute 2 . "wincmd w"
-        else
-            set lines=50
-            set columns=200
-        endif
-    else
-        set lines=20
-        set columns=80
-    endif
 
     " GUI mouse management.
 	set mouse=a
 	set selectmode=
+endif
+
+" Diff configuration
+if &diff
+    set guifont=Fantasque\ Sans\ Mono:h10
+    set diffopt=filler,context:3
+    if has("autocmd")
+        autocmd GUIEnter * simalt ~x
+        autocmd VimEnter * vertical resize -50
+        autocmd VimEnter * execute 2 . "wincmd w"
+    else
+        set lines=50
+        set columns=200
+    endif
+else
+    set lines=20
+    set columns=80
 endif
 
 " Autocommands
