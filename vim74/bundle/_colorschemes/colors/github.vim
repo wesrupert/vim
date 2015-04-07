@@ -41,7 +41,7 @@ hi vimFold		guibg=#ECECEC guifg=#808080 gui=bold
 hi FoldColumn	guibg=#ECECEC guifg=#808080 gui=bold
 
 hi LineNr		guifg=#959595 guibg=#ECECEC gui=bold
-hi NonText		guifg=#808080 guibg=#ECECEC
+hi NonText		guifg=#808080 guibg=#F8F8FF
 hi Folded		guifg=#808080 guibg=#ECECEC gui=bold
 hi FoldeColumn  guifg=#808080 guibg=#ECECEC gui=bold
 
