@@ -7,6 +7,7 @@
     source $VIMRUNTIME/mswin.vim
     behave mswin
     cd \%SRCROOT\%\src\
+    syntax on
 
 " Custom keybindings
     imap jk <esc>
@@ -76,8 +77,6 @@
     set noshowmode
 
 " Airline plugin configuration
-    let g:airline_left_sep=''
-    let g:airline_right_sep=''
     let g:airline_inactive_collapse=1
     let g:airline#extensions#whitespace#enabled=0
 
@@ -85,6 +84,10 @@
 if has("gui")
     " Choose a colorscheme
     colorscheme github
+
+    " Airline plugin configuration
+        let g:airline_left_sep=''
+        let g:airline_right_sep=''
 
 	" GVim window style.
     set guitablabel=%t
