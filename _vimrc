@@ -6,7 +6,6 @@
     set nocompatible
     source $VIMRUNTIME/mswin.vim
     behave mswin
-    cd \%SRCROOT\%\src\
     syntax on
 
 " Custom keybindings
@@ -18,7 +17,7 @@
     map  <silent> <c-e> :silent !explorer .<cr>
     map  <silent> <c-t> :tabnew<cr>
     map  <silent> <c-x> :tabclose<cr>
-    map  <silent> <c-z> :tabnew E:\Public Share\Programs\Vim\_vimrc<cr>
+    map  <silent> <c-z> :tabnew $VIM\_vimrc<cr>
     map  <silent> <leader>= :call ColorScheme()<cr>
     map  <silent> <leader>[ :setlocal wrap!<cr>:setlocal wrap?<cr>
     map  <silent> <leader>] :noh<cr>
@@ -34,8 +33,6 @@
     map  <silent> <c-l> <c-w>l
     map  <silent> <c-h> <c-w>h
     map  zq          ZQ
-    map  <leader>gor :e $SRCROOT\src\debugger\Razor<cr>
-    map  <leader>gop :e E:\Public Share<cr>
 
 " Tabs should be 4 spaces
     set tabstop=4
