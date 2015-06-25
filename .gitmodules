@@ -16,15 +16,15 @@
 [submodule "scmdiff"]
     path = vim74/bundle/scmdiff
     url = https://github.com/ghewgill/vim-scmdiff
+[submodule "powershell"]
+    path = vim74/bundle/powershell
+    url = https://github.com/PProvost/vim-ps1
 [submodule "surround"]
     path = vim74/bundle/surround
     url = https://github.com/tpope/vim-surround
 [submodule "undotree"]
     path = vim74/bundle/undotree
     url = https://github.com/mbbill/undotree
-[submodule "powerline"]
-    path = vim74/bundle/powerline
-    url = https://github.com/Lokaltog/vim-powerline
 [submodule "supertab"]
     path = vim74/bundle/supertab
     url = https://github.com/ervandew/supertab
