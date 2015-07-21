@@ -128,7 +128,7 @@ A plugin for the programmer. This plugin creates a list of objects in your code 
 Did you know vim stores its undos, not in a list, but a tree? It saves everything you undo or redo period, even if you change something. But it's a pain to navigate alone. Undotree remedies this. Just type `<leader>u` to open the tree for easy navigation.
 
 ### Undocumented plugins
-I'm using these, too - just haven't had tim eto make synopses!
+I'm using these, too - just haven't had time to make synopses!
 * gitgutter
 * xolox: vim-misc
 * xolox: vim-shell
