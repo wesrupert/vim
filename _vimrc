@@ -18,7 +18,6 @@
     map  <silent> <c-t> :tabnew<cr>
     map  <silent> <c-x> :tabclose<cr>
     map  <silent> <c-z> :tabnew $VIM\_vimrc<cr>
-    map  <silent> <leader>= :call ColorScheme()<cr>
     map  <silent> <leader>[ :setlocal wrap!<cr>:setlocal wrap?<cr>
     map  <silent> <leader>] :noh<cr>
     map  <silent> <leader>i :set foldmethod=indent<cr>
@@ -80,7 +79,7 @@
 " GUI configuration
 if has("gui")
     " Choose a colorscheme
-    colorscheme github
+    colorscheme jellybeans
 
     " Airline plugin configuration
         let g:airline_left_sep=''
@@ -94,8 +93,6 @@ if has("gui")
     " GUI mouse management.
 	set mouse=a
 	set selectmode=
-else
-    let g:airline_theme="tomorrow"
 endif
 
 " Diff configuration
