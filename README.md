@@ -127,6 +127,15 @@ A plugin for the programmer. This plugin creates a list of objects in your code 
 ### [undotree](https://github.com/mbbill/undotree)<sup>g</sup>
 Did you know vim stores its undos, not in a list, but a tree? It saves everything you undo or redo period, even if you change something. But it's a pain to navigate alone. Undotree remedies this. Just type `<leader>u` to open the tree for easy navigation.
 
+### Undocumented plugins
+I'm using these, too - just haven't had tim eto make synopses!
+* gitgutter
+* xolox: vim-misc
+* xolox: vim-shell
+* jsdoc
+* powershell
+* airline
+
 ### Other plugins
 Plugins that don't need an introduction to start improving your life.
 * [html-autoclosetag](http://www.vim.org/scripts/script.php?script_id=2591)<sup>m</sup>: Automatically close html tags.
@@ -148,4 +157,4 @@ Notes:
 * __g__: Plugin is a GitHub submodule. Following Git installation will get the latest version.
 * __m__: Plugin is not a GitHub submodule. The version located at the indicated url may be newer.
 
-That's all. Thanks for downloading [ora-flavored vim](https://github.com/orablu/vim)!
+That's all. Thanks for downloading [ora-flavored vim](https://github.com/orablu/vim-windows)!
