@@ -49,3 +49,12 @@
 [submodule "nerdcommenter"]
     path = vim74/bundle/nerdcommenter
     url = https://github.com/scrooloose/nerdcommenter
+[submodule "gitgutter"]
+    path = vim74/bundle/gitgutter
+    url = https://github.com/airblade/vim-gitgutter
+[submodule "xolox-misc"]
+    path = vim74/bundle/xolox-misc
+    url = https://github.com/xolox/vim-misc
+[submodule "xolox-shell"]
+    path = vim74/bundle/xolox-shell
+    url = https://github.com/xolox/vim-shell
