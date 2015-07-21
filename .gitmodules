@@ -40,3 +40,6 @@
 [submodule "goyo"]
     path = vim74/bundle/goyo
     url = https://github.com/junegunn/goyo.vim
+[submodule "nerdtree"]
+    path = vim74/bundle/nerdtree
+    url = https://github.com/scrooloose/nerdtree.git
