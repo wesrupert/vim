@@ -103,7 +103,6 @@ if has("gui")
 	set mouse=a
 	set selectmode=
 else
-    let g:airline_theme = 'base16'
     let g:airline_left_sep=''
     let g:airline_right_sep=''
 endif
