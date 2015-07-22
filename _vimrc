@@ -8,10 +8,6 @@
     behave mswin
     syntax on
 
-" Open to the default vim path defined in the environment
-    " Will show an error dialog if there's no variable - I'm okay with that
-    cd $VIMLAUNCHDIR
-
 " Custom keybindings
     imap jk <esc>
     imap kj <esc>

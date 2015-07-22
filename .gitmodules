@@ -46,9 +46,6 @@
 [submodule "easymotion"]
     path = vim74/bundle/easymotion
     url = https://github.com/easymotion/vim-easymotion
-[submodule "nerdcommenter"]
-    path = vim74/bundle/nerdcommenter
-    url = https://github.com/scrooloose/nerdcommenter
 [submodule "gitgutter"]
     path = vim74/bundle/gitgutter
     url = https://github.com/airblade/vim-gitgutter
