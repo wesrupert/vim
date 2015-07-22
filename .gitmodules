@@ -58,3 +58,6 @@
 [submodule "xolox-shell"]
     path = vim74/bundle/xolox-shell
     url = https://github.com/xolox/vim-shell
+[submodule "startify"]
+    path = vim74/bundle/startify
+    url = https://github.com/mhinz/vim-startify

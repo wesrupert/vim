@@ -135,6 +135,7 @@ I'm using these, too - just haven't had time to make synopses!
 * jsdoc
 * powershell
 * airline
+* startify
 
 ### Other plugins
 Plugins that don't need an introduction to start improving your life.
