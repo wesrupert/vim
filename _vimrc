@@ -23,7 +23,6 @@
     map  <silent> <leader>i :set foldmethod=indent<cr>
     map  <silent> <leader>m :setlocal relativenumber!<cr>
     map  <silent> <leader>M :setlocal number!<cr>
-    map  <silent> <leader>n :NERDTreeToggle<cr>
     map  <silent> <leader>r :set columns=80 lines=20<cr>
     map  <silent> <leader>v "+p
     map  <silent> <leader>y "+y

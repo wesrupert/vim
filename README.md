@@ -57,8 +57,6 @@ I like having things fullscreen, but GVim doesn't have that functionality. So, I
 
 I also like knowing the current directory for fast file actions. So I put it in the titlebar of the window. Also, I dislike the sound of the error bell, so I disabled it.
 
-The last notable modification is that NERDTree is set to open when a file is not given to vim on startup. Nice easy way to navigate to the file you want to edit, or if you don't want it just hit `q`.
-
 
 ## Notable plugins
 This bundle contains multiple plugins. The most noteworthy (or the ones that have extra commands) are listed here. __Note__: These may not be up to date! I update them periodically, but go to the given link to check if there is a newer version!
@@ -142,7 +140,6 @@ I'm using these, too - just haven't had time to make synopses!
 Plugins that don't need an introduction to start improving your life.
 * [html-autoclosetag](http://www.vim.org/scripts/script.php?script_id=2591)<sup>m</sup>: Automatically close html tags.
 * [matchit.zip](http://www.vim.org/scripts/script.php?script_id=39)<sup>m</sup>: Add `%` matching to html tags.
-* [nerdtree](https://github.com/scrooloose/nerdtree)<sup>g</sup>: File explorer in vim.
 * [numbers.vim](https://github.com/myusuf3/numbers.vim.git)<sup>g</sup> Changes line numbers to distance from cursor in normal mode.
 * [vim-powerline](https://github.com/Lokaltog/vim-powerline)<sup>g</sup> Adds a fancier and more informative status line to the window.
 * python-editing: A collection of various pyhon editing plugins from vim.org.
