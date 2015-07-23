@@ -59,3 +59,6 @@
 [submodule "autosavesetting"]
     path = vim74/bundle/autosavesetting
     url = https://github.com/vim-scripts/AutoSaveSetting
+[submodule "cpp-enhanced"]
+    path = vim74/bundle/cpp-enhanced
+    url = https://github.com/octol/vim-cpp-enhanced-highlight
