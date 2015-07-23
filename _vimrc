@@ -24,6 +24,7 @@
     map  <silent> <leader>m :setlocal relativenumber!<cr>
     map  <silent> <leader>M :setlocal number!<cr>
     map  <silent> <leader>r :set columns=80 lines=20<cr>
+    map  <silent> <leader>s :Startify<cr>
     map  <silent> <leader>v "+p
     map  <silent> <leader>y "+y
     map  <silent> j gj
