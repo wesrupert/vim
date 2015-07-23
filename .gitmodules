@@ -62,3 +62,6 @@
 [submodule "cpp-enhanced"]
     path = vim74/bundle/cpp-enhanced
     url = https://github.com/octol/vim-cpp-enhanced-highlight
+[submodule "_colorscheme-scheakur"]
+    path = vim74/bundle/_colorscheme-scheakurd
+    url = https://github.com/scheakur/vim-scheakur
