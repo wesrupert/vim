@@ -56,8 +56,8 @@
     path = vim74/bundle/startify
     url = https://github.com/mhinz/vim-startify
     ignore = dirty
-[submodule "autosavesetting"]
-    path = vim74/bundle/autosavesetting
+[submodule "autosavesettings"]
+    path = vim74/bundle/autosavesettings
     url = https://github.com/vim-scripts/AutoSaveSetting
 [submodule "cpp-enhanced"]
     path = vim74/bundle/cpp-enhanced
