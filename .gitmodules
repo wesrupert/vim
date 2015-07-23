@@ -58,3 +58,4 @@
 [submodule "startify"]
     path = vim74/bundle/startify
     url = https://github.com/mhinz/vim-startify
+    ignore = dirty
