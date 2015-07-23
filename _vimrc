@@ -82,7 +82,7 @@
     let g:startify_session_persistence = 1
     let g:startify_files_number = 4
     let g:startify_change_to_dir = 1
-    let g:startify_custom_indices = [ 'a', 's', 'd', 'f' ]
+    let g:startify_custom_indices = [ 'a', 's', 'd', 'f', 'z', 'x', 'c', 'v' ]
 
     " Airline plugin configuration
     let g:airline_inactive_collapse=1
