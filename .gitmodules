@@ -63,5 +63,8 @@
     path = vim74/bundle/cpp-enhanced
     url = https://github.com/octol/vim-cpp-enhanced-highlight
 [submodule "_colorscheme-scheakur"]
-    path = vim74/bundle/_colorscheme-scheakurd
+    path = vim74/bundle/_colorscheme-scheakur
     url = https://github.com/scheakur/vim-scheakur
+[submodule "colorscheme-switcher"]
+    path = vim74/bundle/colorscheme-switcher
+    url = https://github.com/xolox/vim-colorscheme-switcher
