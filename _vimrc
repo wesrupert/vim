@@ -21,8 +21,10 @@
     map  <silent> <leader>[ :setlocal wrap!<cr>:setlocal wrap?<cr>
     map  <silent> <leader>] :noh<cr>
     map  <silent> <leader>i :set foldmethod=indent<cr>
-    map  <silent> <leader>m :setlocal relativenumber!<cr>
-    map  <silent> <leader>M :setlocal number!<cr>
+    map  <silent> <leader>m :NextColorScheme<cr>
+    map  <silent> <leader>M :RandomColorScheme<cr>
+    map  <silent> <leader>n :setlocal relativenumber!<cr>
+    map  <silent> <leader>N :setlocal number!<cr>
     map  <silent> <leader>r :set columns=80 lines=20<cr>
     map  <silent> <leader>s :Startify<cr>
     map  <silent> <leader>v "+p
@@ -88,6 +90,11 @@
     " Airline plugin configuration
     let g:airline_inactive_collapse=1
     let g:airline#extensions#whitespace#enabled=0
+
+    " Colorscheme switcher configuration
+    let g:colorscheme_switcher_define_mappings = 0
+    let g:colorscheme_switcher_keep_background = 1
+    let g:colorscheme_switcher_exclude = [ 'default' ]
 
 " GUI configuration
 if has("gui")
