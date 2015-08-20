@@ -17,7 +17,8 @@
     map  <silent> <c-e> :silent !explorer .<cr>
     map  <silent> <c-t> :tabnew<cr>
     map  <silent> <c-x> :tabclose<cr>
-    map  <silent> <c-z> :tabnew $VIM\_vimrc<cr>
+    map  <silent> <c-z> :tabnew $MYVIMRC<cr>
+    map  <silent> <leader>' :call ToggleScrollbar()<cr>
     map  <silent> <leader>[ :setlocal wrap!<cr>:setlocal wrap?<cr>
     map  <silent> <leader>] :noh<cr>
     map  <silent> <leader>i :set foldmethod=indent<cr>
@@ -81,7 +82,7 @@
     let g:ctrlp_clear_cache_on_exit = 0
 
     " Startify customization for windows
-    let g:startify_bookmarks = [ $MYVIMRC ]
+    let g:startify_bookmarks = [ $MYVIMRC, $HOMEDRIVE.$HOMEPATH."\\.gitconfig" ]
     let g:startify_session_persistence = 1
     let g:startify_files_number = 4
     let g:startify_change_to_dir = 1
@@ -161,9 +162,20 @@ endif
 " Functions
 
 function! Tab_Or_Complete()
-  if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
-    return "\<C-N>"
-  else
-    return "\<Tab>"
-  endif
+    if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
+        return "\<C-N>"
+    else
+        return "\<Tab>"
+    endif
+endfunction
+
+let s:scrollbar = 0
+function! ToggleScrollbar()
+    if s:scrollbar
+        set guioptions-=r
+        let s:scrollbar = 0
+    else
+        set guioptions+=r
+        let s:scrollbar = 1
+    endif
 endfunction
