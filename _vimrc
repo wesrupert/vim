@@ -73,7 +73,7 @@
 
 " Plugin settings
     set encoding=utf-8
-    set guifont=Fantasque\ Sans\ Mono:h12
+    set guifont=Fantasque\ Sans\ Mono:h10:w5:b
     set laststatus=2
     set noshowmode
 
@@ -121,7 +121,6 @@ endif
 
 " Diff configuration
 if &diff
-    set guifont=Fantasque\ Sans\ Mono:h10
     set diffopt=filler,context:3
     if has("autocmd")
         autocmd GUIEnter * simalt ~x
@@ -132,8 +131,8 @@ if &diff
         set columns=200
     endif
 else
-    set lines=20
-    set columns=80
+    set lines=40
+    set columns=120
 endif
 
 " Autocommands
