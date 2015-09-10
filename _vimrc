@@ -21,6 +21,7 @@
     map  <silent> <leader>' :call ToggleScrollbar()<cr>
     map  <silent> <leader>[ :setlocal wrap!<cr>:setlocal wrap?<cr>
     map  <silent> <leader>] :noh<cr>
+    map  <silent> <leader>b :NERDTreeToggle<cr>
     map  <silent> <leader>i :set foldmethod=indent<cr>
     map  <silent> <leader>m :NextColorScheme<cr>
     map  <silent> <leader>M :RandomColorScheme<cr>
@@ -56,7 +57,6 @@
     set lbr
 
 " File organization
-    set autochdir
     set foldmethod=syntax
 
 " Keep your directories free of clutter
@@ -64,7 +64,6 @@
     set nowritebackup
 
 " Visual aesthetics
-    set autoindent
     set nowrap
     set number relativenumber
     set showcmd
@@ -72,8 +71,10 @@
     set equalalways
 
 " Plugin settings
+    "set guifont=Fantasque\ Sans\ Mono:h10:w5:b
+    set guifont=Source_Code_Pro:h10
+
     set encoding=utf-8
-    set guifont=Fantasque\ Sans\ Mono:h10:w5:b
     set laststatus=2
     set noshowmode
 
@@ -108,7 +109,7 @@ if has("gui")
 
 	" GVim window style.
     set guitablabel=%t
-	set guioptions=gtcLR
+	set guioptions=agtLR
 	set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
 
     " GUI mouse management.
@@ -121,10 +122,11 @@ endif
 
 " Diff configuration
 if &diff
+    colorscheme github
     set diffopt=filler,context:3
     if has("autocmd")
         autocmd GUIEnter * simalt ~x
-        autocmd VimEnter * vertical resize -50
+        autocmd VimEnter * vertical resize -80
         autocmd VimEnter * execute 2 . "wincmd w"
     else
         set lines=50
@@ -143,15 +145,13 @@ if has("autocmd")
     set noerrorbells visualbell t_vb=
     autocmd GUIEnter * set visualbell t_vb=
 
+    autocmd VimEnter * set autochdir
+
     " Jump to line cursor was on when last closed, if available
     autocmd BufReadPost *
         \ if line("'\"") > 0 && line("'\"") <= line("$") |
         \  exe "normal g`\"" |
         \ endif
-
-    " Launch NERDTree whenever an empty vim window is opened
-    " autocmd StdinReadPre * let s:std_in=1
-    " autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
 
     " Toggle relative numbers when typing
     autocmd InsertEnter * setlocal norelativenumber

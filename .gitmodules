@@ -13,6 +13,9 @@
 [submodule "nerdcommenter"]
     path = vim74/bundle/nerdcommenter
     url = https://github.com/scrooloose/nerdcommenter
+[submodule "nerdtree"]
+    path = vim74/bundle/nerdtree
+    url = https://github.com/scrooloose/nerdtree
 [submodule "scmdiff"]
     path = vim74/bundle/scmdiff
     url = https://github.com/ghewgill/vim-scmdiff
