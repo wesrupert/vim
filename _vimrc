@@ -4,8 +4,6 @@
 
 " Top-level settings
     set nocompatible
-    source $VIMRUNTIME/mswin.vim
-    behave mswin
     syntax on
 
 " Custom keybindings
@@ -14,7 +12,6 @@
     imap <silent> <Tab> <c-r>=Tab_Or_Complete()<cr>
     imap <silent> <c-a> <esc>ggVG
     map  <silent> <c-a> <esc>ggVG
-    map  <silent> <c-e> :silent !explorer .<cr>
     map  <silent> <c-t> :tabnew<cr>
     map  <silent> <c-x> :tabclose<cr>
     map  <silent> <c-z> :tabnew $MYVIMRC<cr>
@@ -29,8 +26,9 @@
     map  <silent> <leader>N :setlocal number!<cr>
     map  <silent> <leader>r :set columns=80 lines=20<cr>
     map  <silent> <leader>s :Startify<cr>
-    map  <silent> <leader>v "+p
-    map  <silent> <leader>y "+y
+    map  <silent> <leader>t <plug>TaskList
+    map  <silent> <leader>v "*p
+    map  <silent> <leader>y "*y
     map  <silent> j gj
     map  <silent> k gk
     map  <silent> <c-j> <c-w>j
@@ -53,7 +51,6 @@
 
 " Wrap settings
     set backspace=indent,eol,start
-    set formatoptions=lrocj
     set lbr
 
 " File organization
@@ -70,15 +67,27 @@
     set ruler
     set equalalways
 
-" Plugin settings
-    "set guifont=Fantasque\ Sans\ Mono:h10:w5:b
-    set guifont=Source_Code_Pro:h10
+" Platform-specific settings
+if has("mswin")
+    source $VIMRUNTIME/mswin.vim
+    behave mswin
+    set formatoptions=lrocj
 
+    map  <silent> <c-e> :silent !explorer .<cr>
+
+    set guifont=Source_Code_Pro:h10
+else
+    set formatoptions=lroc
+    map  <silent> <c-e> :silent !open .<cr>
+endif
+
+" Plugin settings
     set encoding=utf-8
     set laststatus=2
     set noshowmode
 
-    " Disable ctrlp checking for source control - makes it unusable at work
+    " Disable ctrlp checking for source control - makes it unusable on large
+    " repositories
     let g:ctrlp_working_path_mode = 'a'
     let g:ctrlp_clear_cache_on_exit = 0
 
@@ -99,7 +108,7 @@
     let g:colorscheme_switcher_exclude = [ 'default' ]
 
 " GUI configuration
-if has("gui")
+if has("gui_running")
     " Choose a colorscheme
     colorscheme tomorrow
 
@@ -128,11 +137,11 @@ if &diff
         autocmd GUIEnter * simalt ~x
         autocmd VimEnter * vertical resize -80
         autocmd VimEnter * execute 2 . "wincmd w"
-    else
+    elseif has("gui_running")
         set lines=50
         set columns=200
     endif
-else
+elseif has("gui_running")
     set lines=40
     set columns=120
 endif
@@ -149,7 +158,7 @@ if has("autocmd")
 
     " Jump to line cursor was on when last closed, if available
     autocmd BufReadPost *
-        \ if line("'\"") > 0 && line("'\"") <= line("$") |
+        \ if line("'\'") > 0 && line("'\'") <= line("$") |
         \  exe "normal g`\"" |
         \ endif
 
