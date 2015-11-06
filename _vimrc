@@ -68,7 +68,7 @@
     set equalalways
 
 " Platform-specific settings
-if has("mswin")
+if has("win32")
     source $VIMRUNTIME/mswin.vim
     behave mswin
     set formatoptions=lrocj
@@ -96,9 +96,10 @@ endif
     let g:startify_session_persistence = 1
     let g:startify_files_number = 4
     let g:startify_change_to_dir = 1
-    let g:startify_custom_indices = [ 'a', 's', 'd', 'f', 'z', 'x', 'c', 'v' ]
 
     " Airline plugin configuration
+    let g:airline_left_sep=''
+    let g:airline_right_sep=''
     let g:airline_inactive_collapse=1
     let g:airline#extensions#whitespace#enabled=0
 
@@ -110,11 +111,7 @@ endif
 " GUI configuration
 if has("gui_running")
     " Choose a colorscheme
-    colorscheme tomorrow
-
-    " Airline plugin configuration
-        let g:airline_left_sep=''
-        let g:airline_right_sep=''
+    colorscheme molokai
 
 	" GVim window style.
     set guitablabel=%t
@@ -125,8 +122,7 @@ if has("gui_running")
 	set mouse=a
 	set selectmode=
 else
-    let g:airline_left_sep=''
-    let g:airline_right_sep=''
+    let g:airline_theme = "molokai"
 endif
 
 " Diff configuration

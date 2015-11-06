@@ -59,9 +59,21 @@
 [submodule "cpp-enhanced"]
     path = vim74/bundle/cpp-enhanced
     url = https://github.com/octol/vim-cpp-enhanced-highlight
-[submodule "_colorscheme-scheakur"]
-    path = vim74/bundle/_colorscheme-scheakur
+[submodule "colorscheme-scheakur"]
+    path = vim74/bundle/colorscheme-scheakur
     url = https://github.com/scheakur/vim-scheakur
 [submodule "colorscheme-switcher"]
     path = vim74/bundle/colorscheme-switcher
     url = https://github.com/xolox/vim-colorscheme-switcher
+[submodule "typescript"]
+	path = vim74/bundle/typescript
+	url = https://github.com/leafgarland/typescript-vim
+[submodule "colorscheme-colorsbox"]
+	path = vim74/bundle/colorscheme-colorsbox
+	url = https://github.com/mkarmona/colorsbox
+[submodule "colorscheme-materialbox"]
+	path = vim74/bundle/colorscheme-materialbox
+	url = https://github.com/mkarmona/materialbox
+[submodule "colorscheme-moria"]
+	path = vim74/bundle/colorscheme-moria
+	url = https://github.com/vim-scripts/moria
