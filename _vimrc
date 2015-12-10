@@ -76,10 +76,14 @@ if has("win32")
     behave mswin
     set formatoptions=lrocj
 
-    map  <silent> <c-e> :silent !explorer .<cr>
-
+    " Choose a font
     set guifont=Source_Code_Pro:h10
+
+    map  <silent> <c-e> :silent !explorer .<cr>
 else
+    " Choose a font
+    set guifont=Source_Code_Pro:h12
+
     set formatoptions=lroc
     map  <silent> <c-e> :silent !open .<cr>
 endif
@@ -157,9 +161,11 @@ if has("autocmd")
         \  exe "normal g`\"" |
         \ endif
 
-    " Toggle relative numbers when typing
-    autocmd InsertEnter * setlocal norelativenumber
-    autocmd InsertLeave * setlocal relativenumber
+    if v:version >= 704
+        " Toggle relative numbers when typing
+        autocmd InsertEnter * setlocal norelativenumber
+        autocmd InsertLeave * setlocal relativenumber
+    endif
 endif
 
 " Functions
