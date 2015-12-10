@@ -77,3 +77,6 @@
 [submodule "colorscheme-moria"]
 	path = vim74/bundle/colorscheme-moria
 	url = https://github.com/vim-scripts/moria
+[submodule "json"]
+    path = vim74/bundle/json
+    url = https://github.com/elzr/vim-json

@@ -2,6 +2,9 @@
     execute pathogen#infect()
     Helptags
 
+" Choose color scheme here
+if has("gui_running") | colorscheme moria | else | colorscheme default | endif
+
 " Top-level settings
     set nocompatible
     syntax on
@@ -110,9 +113,6 @@ endif
 
 " GUI configuration
 if has("gui_running")
-    " Choose a colorscheme
-    colorscheme molokai
-
 	" GVim window style.
     set guitablabel=%t
 	set guioptions=agtLR
@@ -127,7 +127,6 @@ endif
 
 " Diff configuration
 if &diff
-    colorscheme github
     set diffopt=filler,context:3
     if has("autocmd")
         autocmd GUIEnter * simalt ~x
