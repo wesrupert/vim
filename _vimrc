@@ -2,29 +2,50 @@
     execute pathogen#infect()
     Helptags
 
-" Choose color scheme here
-if has("gui_running") | colorscheme moria | else | colorscheme default | endif
+" Colorscheme
+if has("gui_running")
+    if exists("$VIMCOLORSCHEME")
+        colorscheme $VIMCOLORSCHEME
+    else
+        colorscheme solarized
+    endif
+    if exists("$VIMBACKGROUND")
+        let &background = $VIMBACKGROUND
+    endif
+else
+    colorscheme default
+endif
+
+" Font
+if has("gui_running")
+    if exists("$VIMFONT")
+        let &guifont = $VIMFONT
+    else
+        set guifont = Source_Code_Pro_Medium:h10
+    endif
+endif
 
 " Top-level settings
     set nocompatible
     syntax on
 
 " Custom keybindings
-    imap jk <esc>
-    imap kj <esc>
-    imap <silent> <Tab> <c-r>=Tab_Or_Complete()<cr>
-    imap <silent> <c-a> <esc>ggVG
-    map  <silent> <c-a> <esc>ggVG
-    map  <silent> <c-t> :tabnew<cr>
-    map  <silent> <c-x> :tabclose<cr>
-    map  <silent> <c-z> :tabnew $MYVIMRC<cr>
+    imap           jk       <esc>
+    imap           kj       <esc>
+    imap <silent> <Tab>     <c-r>=Tab_Or_Complete()<cr>
+    imap <silent> <c-a>     <esc>ggVG
+    map  <silent> <c-a>     <esc>ggVG
+   "map  <silent> <c-e>     {TAKEN}
+    map  <silent> <c-t>     :tabnew<cr>
+    map  <silent> <c-x>     :tabclose<cr>
     map  <silent> <leader>' :call ToggleScrollbar()<cr>
     map  <silent> <leader>[ :setlocal wrap!<cr>:setlocal wrap?<cr>
     map  <silent> <leader>] :noh<cr>
     map  <silent> <leader>b :NERDTreeToggle<cr>
+   "map  <silent> <leader>f {TAKEN}
     map  <silent> <leader>i :set foldmethod=indent<cr>
-    map  <silent> <leader>m :NextColorScheme<cr>
-    map  <silent> <leader>M :RandomColorScheme<cr>
+   "map  <silent> <leader>m {TAKEN}
+    map  <silent> <leader>M :NextColorScheme<cr>
     map  <silent> <leader>n :setlocal relativenumber!<cr>
     map  <silent> <leader>N :setlocal number!<cr>
     map  <silent> <leader>r :set columns=80 lines=20<cr>
@@ -32,13 +53,14 @@ if has("gui_running") | colorscheme moria | else | colorscheme default | endif
     map  <silent> <leader>t <plug>TaskList
     map  <silent> <leader>v "*p
     map  <silent> <leader>y "*y
-    map  <silent> j gj
-    map  <silent> k gk
-    map  <silent> <c-j> <c-w>j
-    map  <silent> <c-k> <c-w>k
-    map  <silent> <c-l> <c-w>l
-    map  <silent> <c-h> <c-w>h
-    map  zq          ZQ
+    map  <silent> <leader>z :tabnew $MYVIMRC<cr>
+    map  <silent> j         gj
+    map  <silent> k         gk
+    map  <silent> <c-j>     <c-w>j
+    map  <silent> <c-k>     <c-w>k
+    map  <silent> <c-l>     <c-w>l
+    map  <silent> <c-h>     <c-w>h
+    map           zq        ZQ
 
 " Tabs should be 4 spaces
     set tabstop=4
@@ -76,14 +98,14 @@ if has("win32")
     behave mswin
     set formatoptions=lrocj
 
-    " Choose a font
-    set guifont=Source_Code_Pro:h10
-
     map  <silent> <c-e> :silent !explorer .<cr>
-else
-    " Choose a font
-    set guifont=Source_Code_Pro:h12
+    map  <silent> <leader>f :Findstring 
+    nnoremap <silent> <leader>f :Findstring<cr>
 
+    "Plugin settings
+    let Findstr_Default_Options = "/sinp"
+    let Findstr_Default_FileList = $SEARCHROOT
+else
     set formatoptions=lroc
     map  <silent> <c-e> :silent !open .<cr>
 endif
@@ -121,6 +143,9 @@ if has("gui_running")
     set guitablabel=%t
 	set guioptions=agtLR
 	set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
+
+    " Custom keybindings
+    map  <silent> <leader>m :if &go=~#'m'<bar>set go-=m<bar>else<bar>set go+=m<bar>endif<cr>
 
     " GUI mouse management.
 	set mouse=a

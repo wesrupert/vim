@@ -80,3 +80,6 @@
 [submodule "json"]
     path = vim74/bundle/json
     url = https://github.com/elzr/vim-json
+[submodule "vim74/bundle/findstr"]
+	path = vim74/bundle/findstr
+	url = https://github.com/vim-scripts/findstr.vim.git
