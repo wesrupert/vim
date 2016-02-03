@@ -83,3 +83,6 @@
 [submodule "vim74/bundle/findstr"]
 	path = vim74/bundle/findstr
 	url = https://github.com/vim-scripts/findstr.vim.git
+[submodule ".\\vim74\\bundle\\colorscheme-solarized"]
+	path = .\\vim74\\bundle\\colorscheme-solarized
+	url = https://github.com/altercation/vim-colors-solarized.git
