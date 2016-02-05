@@ -80,6 +80,7 @@ endif
 
 " File organization
     set foldmethod=syntax
+    set nofoldenable
 
 " Keep your directories free of clutter
     set nobackup
