@@ -192,6 +192,12 @@ if has("autocmd")
         autocmd InsertEnter * setlocal norelativenumber
         autocmd InsertLeave * setlocal relativenumber
     endif
+
+    " Highlight trailing whitespace
+    highlight ExtraWhitespace guifg=red guibg=red
+    autocmd ColorScheme * highlight ExtraWhitespace guifg=red guibg=red
+    match ExtraWhitespace /\s\+$\| \+\ze\t\|\t\zs \+\ze/
+
 endif
 
 " Functions
