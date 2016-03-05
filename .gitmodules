@@ -80,9 +80,12 @@
 [submodule "json"]
     path = vim74/bundle/json
     url = https://github.com/elzr/vim-json
-[submodule "vim74/bundle/findstr"]
+[submodule "findstr"]
 	path = vim74/bundle/findstr
 	url = https://github.com/vim-scripts/findstr.vim.git
-[submodule "/vim74/bundle/colorscheme-solarized"]
+[submodule "colorscheme-solarized"]
 	path = vim74/bundle/colorscheme-solarized
 	url = https://github.com/altercation/vim-colors-solarized.git
+[submodule "easy-align"]
+	path = /vim74/bundle/easy-align
+	url = https://github.com/junegunn/vim-easy-align.git
