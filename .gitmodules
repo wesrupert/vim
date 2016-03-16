@@ -6,95 +6,89 @@
     url = https://github.com/Townk/vim-autoclose.git
 [submodule "colorscheme-colorsbox"]
     path = vim74/bundle/colorscheme-colorsbox
-    url = https://github.com/mkarmona/colorsbox
+    url = https://github.com/mkarmona/colorsbox.git
 [submodule "colorscheme-materialbox"]
     path = vim74/bundle/colorscheme-materialbox
-    url = https://github.com/mkarmona/materialbox
+    url = https://github.com/mkarmona/materialbox.git
 [submodule "colorscheme-moria"]
     path = vim74/bundle/colorscheme-moria
-    url = https://github.com/vim-scripts/moria
+    url = https://github.com/vim-scripts/moria.git
 [submodule "colorscheme-scheakur"]
     path = vim74/bundle/colorscheme-scheakur
-    url = https://github.com/scheakur/vim-scheakur
+    url = https://github.com/scheakur/vim-scheakur.git
 [submodule "colorscheme-solarized"]
     path = vim74/bundle/colorscheme-solarized
     url = https://github.com/altercation/vim-colors-solarized.git
 [submodule "colorscheme-switcher"]
     path = vim74/bundle/colorscheme-switcher
-    url = https://github.com/xolox/vim-colorscheme-switcher
+    url = https://github.com/xolox/vim-colorscheme-switcher.git
 [submodule "consolas-fixed"]
     path = vim74/bundle/consolas-fixed
-    url = https://github.com/eugeneching/consolas-powerline-vim
+    url = https://github.com/eugeneching/consolas-powerline-vim.git
 [submodule "cpp-enhanced"]
     path = vim74/bundle/cpp-enhanced
-    url = https://github.com/octol/vim-cpp-enhanced-highlight
-[submodule "ctrlp.vim"]
-    path = vim74/bundle/ctrlp.vim
-    url = https://github.com/kien/ctrlp.vim
+    url = https://github.com/octol/vim-cpp-enhanced-highlight.git
+[submodule "ctrlp"]
+    path = vim74/bundle/ctrlp
+    url = https://github.com/ctrlpvim/ctrlp.vim.git
 [submodule "easy-align"]
     path = /vim74/bundle/easy-align
     url = https://github.com/junegunn/vim-easy-align.git
 [submodule "easymotion"]
     path = vim74/bundle/easymotion
-    url = https://github.com/easymotion/vim-easymotion
+    url = https://github.com/easymotion/vim-easymotion.git
 [submodule "fugitive"]
     path = vim74/bundle/fugitive
-    url = https://github.com/tpope/vim-fugitive
+    url = https://github.com/tpope/vim-fugitive.git
 [submodule "gitgutter"]
     path = vim74/bundle/gitgutter
-    url = https://github.com/airblade/vim-gitgutter
+    url = https://github.com/airblade/vim-gitgutter.git
 [submodule "goyo"]
     path = vim74/bundle/goyo
-    url = https://github.com/junegunn/goyo.vim
+    url = https://github.com/junegunn/goyo.vim.git
 [submodule "json"]
     path = vim74/bundle/json
-    url = https://github.com/elzr/vim-json
+    url = https://github.com/elzr/vim-json.git
 [submodule "nerdcommenter"]
     path = vim74/bundle/nerdcommenter
-    url = https://github.com/scrooloose/nerdcommenter
+    url = https://github.com/scrooloose/nerdcommenter.git
 [submodule "pathogen"]
     path = vim74/bundle/pathogen
-    url = https://github.com/tpope/vim-pathogen
+    url = https://github.com/tpope/vim-pathogen.git
 [submodule "powershell"]
     path = vim74/bundle/powershell
-    url = https://github.com/PProvost/vim-ps1
-[submodule "repeat"]
-    path = /vim74/bundle/repeat
-    url = https://github.com/tpope/vim-repeat.git
+    url = https://github.com/PProvost/vim-ps1.git
 [submodule "repeat"]
     path = vim74/bundle/repeat
-    url = https://github.com/tpope/vim-repeat
+    url = https://github.com/tpope/vim-repeat.git
 [submodule "scmdiff"]
     path = vim74/bundle/scmdiff
-    url = https://github.com/ghewgill/vim-scmdiff
+    url = https://github.com/ghewgill/vim-scmdiff.git
 [submodule "startify"]
     path = vim74/bundle/startify
-    url = https://github.com/mhinz/vim-startify
+    url = https://github.com/mhinz/vim-startify.git
     ignore = dirty
 [submodule "supertab"]
     path = vim74/bundle/supertab
-    url = https://github.com/ervandew/supertab
-[submodule "surround"]
-    path = /vim74/bundle/surround
-    url = https://github.com/tpope/vim-surround.git
+    url = https://github.com/ervandew/supertab.git
 [submodule "surround"]
     path = vim74/bundle/surround
-    url = https://github.com/tpope/vim-surround
+    url = https://github.com/tpope/vim-surround.git
 [submodule "syntastic"]
     path = vim74/bundle/syntastic
-    url = https://github.com/scrooloose/syntastic
+    url = https://github.com/scrooloose/syntastic.git
 [submodule "typescript"]
     path = vim74/bundle/typescript
-    url = https://github.com/leafgarland/typescript-vim
+    url = https://github.com/leafgarland/typescript-vim.git
 [submodule "undotree"]
     path = vim74/bundle/undotree
-    url = https://github.com/mbbill/undotree
+    url = https://github.com/mbbill/undotree.git
 [submodule "vinegar"]
     path = vim74/bundle/vinegar
-    url = https://github.com/tpope/vim-vinegar
+    url = https://github.com/tpope/vim-vinegar.git
 [submodule "xolox-misc"]
     path = vim74/bundle/xolox-misc
-    url = https://github.com/xolox/vim-misc
+    url = https://github.com/xolox/vim-misc.git
 [submodule "xolox-shell"]
     path = vim74/bundle/xolox-shell
-    url = https://github.com/xolox/vim-shell
+    url = https://github.com/xolox/vim-shell.git
