@@ -5,8 +5,8 @@
     path = vim74/bundle/autoclose
     url = https://github.com/Townk/vim-autoclose.git
 [submodule "autoclosetag"]
-	path = ./vim74/bundle/autoclosetag
-	url = https://github.com/vim-scripts/HTML-AutoCloseTag.git
+    path = vim74/bundle/autoclosetag
+    url = https://github.com/vim-scripts/HTML-AutoCloseTag.git
 [submodule "colorscheme-colorsbox"]
     path = vim74/bundle/colorscheme-colorsbox
     url = https://github.com/mkarmona/colorsbox.git
@@ -35,7 +35,7 @@
     path = vim74/bundle/ctrlp
     url = https://github.com/ctrlpvim/ctrlp.vim.git
 [submodule "easy-align"]
-    path = /vim74/bundle/easy-align
+    path = vim74/bundle/easy-align
     url = https://github.com/junegunn/vim-easy-align.git
 [submodule "easymotion"]
     path = vim74/bundle/easymotion
@@ -50,8 +50,8 @@
     path = vim74/bundle/goyo
     url = https://github.com/junegunn/goyo.vim.git
 [submodule "jsdoc"]
-	path = ./vim74/bundle/jsdoc
-	url = https://github.com/heavenshell/vim-jsdoc
+    path = vim74/bundle/jsdoc
+    url = https://github.com/heavenshell/vim-jsdoc
 [submodule "json"]
     path = vim74/bundle/json
     url = https://github.com/elzr/vim-json.git
@@ -84,8 +84,8 @@
     path = vim74/bundle/syntastic
     url = https://github.com/scrooloose/syntastic.git
 [submodule "tasklist"]
-	path = ./vim74/bundle/tasklist
-	url = https://github.com/vim-scripts/TaskList.vim.git
+    path = vim74/bundle/tasklist
+    url = https://github.com/vim-scripts/TaskList.vim.git
 [submodule "typescript"]
     path = vim74/bundle/typescript
     url = https://github.com/leafgarland/typescript-vim.git
