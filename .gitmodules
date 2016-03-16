@@ -10,6 +10,15 @@
 [submodule "colorscheme-colorsbox"]
     path = vim74/bundle/colorscheme-colorsbox
     url = https://github.com/mkarmona/colorsbox.git
+[submodule "colorscheme-github"]
+    path = vim74/bundle/colorscheme-github
+    url = https://github.com/endel/vim-github-colorscheme.git
+[submodule "colorscheme-jellybeans"]
+    path = vim74/bundle/colorscheme-jellybeans
+    url = https://github.com/nanotech/jellybeans.vim.git
+[submodule "colorscheme-lucian"]
+    path = vim74/bundle/colorscheme-lucian
+    url = https://github.com/jonathanfilip/vim-lucius.git
 [submodule "colorscheme-materialbox"]
     path = vim74/bundle/colorscheme-materialbox
     url = https://github.com/mkarmona/materialbox.git
@@ -19,6 +28,9 @@
 [submodule "colorscheme-scheakur"]
     path = vim74/bundle/colorscheme-scheakur
     url = https://github.com/scheakur/vim-scheakur.git
+[submodule "colorscheme-soda"]
+    path = vim74/bundle/colorscheme-soda
+    url = https://github.com/daddye/soda.vim.git
 [submodule "colorscheme-solarized"]
     path = vim74/bundle/colorscheme-solarized
     url = https://github.com/altercation/vim-colors-solarized.git
@@ -31,6 +43,9 @@
 [submodule "cpp-enhanced"]
     path = vim74/bundle/cpp-enhanced
     url = https://github.com/octol/vim-cpp-enhanced-highlight.git
+[submodule "csharp"]
+    path = vim74/bundle/csharp
+    url = https://github.com/OrangeT/vim-csharp.git
 [submodule "ctrlp"]
     path = vim74/bundle/ctrlp
     url = https://github.com/ctrlpvim/ctrlp.vim.git
@@ -101,6 +116,3 @@
 [submodule "xolox-shell"]
     path = vim74/bundle/xolox-shell
     url = https://github.com/xolox/vim-shell.git
-[submodule "csharp"]
-	path = vim74/bundle/csharp
-	url = https://github.com/OrangeT/vim-csharp
