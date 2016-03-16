@@ -180,6 +180,10 @@ if has("autocmd")
     autocmd GUIEnter * set visualbell t_vb=
 
     autocmd VimEnter * set autochdir
+    autocmd BufEnter *
+        \ if @% == '__startify__' |
+        \   execute 'Startify' |
+        \ endif
 
     " Jump to line cursor was on when last closed, if available
     autocmd BufReadPost *
