@@ -1,4 +1,4 @@
-# ora's windows-flavored vim
+# Vim, My Way
 
 ## A set of customizations for speedy development
 This is the GVim setup I use on Windows Systems. Feel free to use it!
@@ -8,26 +8,19 @@ __Note__: This bundle is from a Windows environment. Using it on a non-windows m
 ## Installation instructions
 It is really reccomended that you download this with git. It will automate dependency resolution for you, and be a lot less painful.
 
-### Installing with git
-This is the easiest way to install this bundle, as all dependencies will be resolved for you (semi)automatically.
-
-1. Get [vim](http://www.vim.org/download.php). Install in the location of your choice.
-2. Clone this repository with `git clone https://github.com/orablu/vim-windows.git` to a temporary location of your choice.
-3. Download dependencies with `git submodule init` then `git submodule update` (You may need to call `git submodule update` immediately again if there is a newer version of a plugin available).
-4. Copy the cloned files to your /Vim directory.
-5. Start vimming!
-
-### Installing without git
-Why would you do this? It's a pain!
-
-1. Get [vim](http://www.vim.org/download.php)<sup>m</sup> (for windows, [7.3](ftp://ftp.vim.org/pub/vim/pc/gvim73_46.exe)<sup>m</sup>). Install in the location of your choice.
-2. Go through your /Vim/vim73/bundle directory, and find all empty plugin directories.
-3. Find the link in this readme that points to the github repository for each missing plugin.
-4. Download that plugin and place it in that folder.
-5. Repeat until all plugin folders have a plugin.
-6. Question yourself for ever choosing this method.
-
-Ignoring these steps will break this vim bundle, as one of the dependencies is pathogen, the plugin that manages all the other plugins! You __must__ manually install pathogen at the very least!
+### Installation
+1. Get [git](https://git-scm.com/download).
+2. Get [vim](http://www.vim.org/download.php).
+3. `cd` to your vim runtime directory (e.g. `~/.vim` or `C:\Vim\vim74`).
+4. Clone this repository into your with `git clone https://github.com/wesrupert/vim bundle`.
+5. Download dependencies with `git submodule update --init`.
+6. Create links to your vimrc and pathogen.
+   1. Windows:
+      * `mklink /H _vimrc vim74\bundle\vimrc`
+      * `mklink /H vim74\autoload\pathogen.vim vim74\bundle\pathogen\autoload\pathogen.vim`
+   2. OSX/Linux:
+      * `ln ~/.vimrc ~/.vim/bundle/vimrc`
+      * `ln ~/.vim/autoload/pathogen.vim ~/.vim/bundle/pathogen/autoload/pathogen.vim`
 
 
 ## Notable customizations
