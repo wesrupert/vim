@@ -1,3 +1,6 @@
+[submodule "autoclose"]
+    path= vim74/bundle/autoclose
+    url = https://github.com/Townk/vim-autoclose.git
 [submodule "colorscheme-colorsbox"]
     path = vim74/bundle/colorscheme-colorsbox
     url = https://github.com/mkarmona/colorsbox
