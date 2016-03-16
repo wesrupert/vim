@@ -15,12 +15,16 @@ It is really reccomended that you download this with git. It will automate depen
 4. Clone this repository into your with `git clone https://github.com/wesrupert/vim bundle`.
 5. Download dependencies with `git submodule update --init`.
 6. Create links to your vimrc and pathogen.
-   1. Windows:
-      * `mklink /H _vimrc vim74\bundle\vimrc`
-      * `mklink /H vim74\autoload\pathogen.vim vim74\bundle\pathogen\autoload\pathogen.vim`
-   2. OSX/Linux:
-      * `ln ~/.vimrc ~/.vim/bundle/vimrc`
-      * `ln ~/.vim/autoload/pathogen.vim ~/.vim/bundle/pathogen/autoload/pathogen.vim`
+   * Windows (must be in root of vim runtime directory):
+   ```dos
+   mklink /H ..\_vimrc bundle\vimrc
+   mklink /H autoload\pathogen.vim bundle\pathogen\autoload\pathogen.vim
+   ```
+   * OSX/Linux:
+   ```bash
+   ln ~/.vimrc ~/.vim/bundle/vimrc
+   ln ~/.vim/autoload/pathogen.vim ~/.vim/bundle/pathogen/autoload/pathogen.vim
+   ```
 
 
 ## Notable customizations
