@@ -1,5 +1,8 @@
+[submodule "airline"]
+    path = vim74/bundle/airline
+    url = https://github.com/vim-airline/vim-airline.git
 [submodule "autoclose"]
-    path= vim74/bundle/autoclose
+    path = vim74/bundle/autoclose
     url = https://github.com/Townk/vim-autoclose.git
 [submodule "colorscheme-colorsbox"]
     path = vim74/bundle/colorscheme-colorsbox
