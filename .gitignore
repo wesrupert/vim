@@ -2,3 +2,9 @@
 *.~
 *.swp
 *.swo
+
+/*
+!.gitignore
+!vimrc
+!README.md
+!bundle
