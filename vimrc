@@ -1,16 +1,25 @@
 " Load plugins
+    filetype off
     execute pathogen#infect()
-    Helptags
+    execute pathogen#helptags()
+    "Helptags
 
 " Colorscheme
 if has("gui_running")
-    if exists("$VIMCOLORSCHEME")
-        colorscheme $VIMCOLORSCHEME
-    else
-        colorscheme solarized
-    endif
     if exists("$VIMBACKGROUND")
         let &background = $VIMBACKGROUND
+    endif
+    if exists("$VIMCOLORSCHEME")
+        " The 'lucius' color scheme has a ton of variants definted by
+        " commands. Intercept these variants and assign them properly.
+        if ($VIMCOLORSCHEME =~? 'lucius')
+            colorscheme lucius
+            execute $VIMCOLORSCHEME
+        else
+            colorscheme $VIMCOLORSCHEME
+        endif
+    else
+        colorscheme solarized
     endif
 else
     colorscheme default

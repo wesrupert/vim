@@ -1,6 +1,9 @@
 [submodule "airline"]
     path = airline
     url = https://github.com/vim-airline/vim-airline.git
+[submodule "airline-themes"]
+	path = airline-themes
+	url = https://github.com/vim-airline/vim-airline-themes.git
 [submodule "autoclose"]
     path = autoclose
     url = https://github.com/Townk/vim-autoclose.git
