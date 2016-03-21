@@ -1,121 +1,121 @@
 [submodule "airline"]
-    path = airline
+    path = bundle/airline
     url = https://github.com/vim-airline/vim-airline.git
 [submodule "airline-themes"]
-	path = airline-themes
-	url = https://github.com/vim-airline/vim-airline-themes.git
+    path = bundle/airline-themes
+    url = https://github.com/vim-airline/vim-airline-themes.git
 [submodule "autoclose"]
-    path = autoclose
+    path = bundle/autoclose
     url = https://github.com/Townk/vim-autoclose.git
 [submodule "autoclosetag"]
-    path = autoclosetag
+    path = bundle/autoclosetag
     url = https://github.com/vim-scripts/HTML-AutoCloseTag.git
 [submodule "colorscheme-colorsbox"]
-    path = colorscheme-colorsbox
+    path = bundle/colorscheme-colorsbox
     url = https://github.com/mkarmona/colorsbox.git
 [submodule "colorscheme-github"]
-    path = colorscheme-github
+    path = bundle/colorscheme-github
     url = https://github.com/endel/vim-github-colorscheme.git
 [submodule "colorscheme-jellybeans"]
-    path = colorscheme-jellybeans
+    path = bundle/colorscheme-jellybeans
     url = https://github.com/nanotech/jellybeans.vim.git
 [submodule "colorscheme-lucian"]
-    path = colorscheme-lucian
+    path = bundle/colorscheme-lucian
     url = https://github.com/jonathanfilip/vim-lucius.git
 [submodule "colorscheme-materialbox"]
-    path = colorscheme-materialbox
+    path = bundle/colorscheme-materialbox
     url = https://github.com/mkarmona/materialbox.git
 [submodule "colorscheme-moria"]
-    path = colorscheme-moria
+    path = bundle/colorscheme-moria
     url = https://github.com/vim-scripts/moria.git
 [submodule "colorscheme-scheakur"]
-    path = colorscheme-scheakur
+    path = bundle/colorscheme-scheakur
     url = https://github.com/scheakur/vim-scheakur.git
 [submodule "colorscheme-soda"]
-    path = colorscheme-soda
+    path = bundle/colorscheme-soda
     url = https://github.com/daddye/soda.vim.git
 [submodule "colorscheme-solarized"]
-    path = colorscheme-solarized
+    path = bundle/colorscheme-solarized
     url = https://github.com/altercation/vim-colors-solarized.git
 [submodule "colorscheme-switcher"]
-    path = colorscheme-switcher
+    path = bundle/colorscheme-switcher
     url = https://github.com/xolox/vim-colorscheme-switcher.git
 [submodule "consolas-fixed"]
-    path = consolas-fixed
+    path = bundle/consolas-fixed
     url = https://github.com/eugeneching/consolas-powerline-vim.git
 [submodule "cpp-enhanced"]
-    path = cpp-enhanced
+    path = bundle/cpp-enhanced
     url = https://github.com/octol/vim-cpp-enhanced-highlight.git
 [submodule "csharp"]
-    path = csharp
+    path = bundle/csharp
     url = https://github.com/OrangeT/vim-csharp.git
 [submodule "ctrlp"]
-    path = ctrlp
+    path = bundle/ctrlp
     url = https://github.com/ctrlpvim/ctrlp.vim.git
 [submodule "easy-align"]
-    path = easy-align
+    path = bundle/easy-align
     url = https://github.com/junegunn/vim-easy-align.git
 [submodule "easymotion"]
-    path = easymotion
+    path = bundle/easymotion
     url = https://github.com/easymotion/vim-easymotion.git
 [submodule "fugitive"]
-    path = fugitive
+    path = bundle/fugitive
     url = https://github.com/tpope/vim-fugitive.git
 [submodule "gitgutter"]
-    path = gitgutter
+    path = bundle/gitgutter
     url = https://github.com/airblade/vim-gitgutter.git
 [submodule "goyo"]
-    path = goyo
+    path = bundle/goyo
     url = https://github.com/junegunn/goyo.vim.git
 [submodule "jsdoc"]
-    path = jsdoc
+    path = bundle/jsdoc
     url = https://github.com/heavenshell/vim-jsdoc
 [submodule "json"]
-    path = json
+    path = bundle/json
     url = https://github.com/elzr/vim-json.git
 [submodule "nerdcommenter"]
-    path = nerdcommenter
+    path = bundle/nerdcommenter
     url = https://github.com/scrooloose/nerdcommenter.git
 [submodule "pathogen"]
-    path = pathogen
+    path = bundle/pathogen
     url = https://github.com/tpope/vim-pathogen.git
 [submodule "powershell"]
-    path = powershell
+    path = bundle/powershell
     url = https://github.com/PProvost/vim-ps1.git
 [submodule "repeat"]
-    path = repeat
+    path = bundle/repeat
     url = https://github.com/tpope/vim-repeat.git
 [submodule "scmdiff"]
-    path = scmdiff
+    path = bundle/scmdiff
     url = https://github.com/ghewgill/vim-scmdiff.git
 [submodule "startify"]
-    path = startify
+    path = bundle/startify
     url = https://github.com/mhinz/vim-startify.git
     ignore = dirty
 [submodule "supertab"]
-    path = supertab
+    path = bundle/supertab
     url = https://github.com/ervandew/supertab.git
 [submodule "surround"]
-    path = surround
+    path = bundle/surround
     url = https://github.com/tpope/vim-surround.git
 [submodule "syntastic"]
-    path = syntastic
+    path = bundle/syntastic
     url = https://github.com/scrooloose/syntastic.git
 [submodule "tasklist"]
-    path = tasklist
+    path = bundle/tasklist
     url = https://github.com/vim-scripts/TaskList.vim.git
 [submodule "typescript"]
-    path = typescript
+    path = bundle/typescript
     url = https://github.com/leafgarland/typescript-vim.git
 [submodule "undotree"]
-    path = undotree
+    path = bundle/undotree
     url = https://github.com/mbbill/undotree.git
 [submodule "vinegar"]
-    path = vinegar
+    path = bundle/vinegar
     url = https://github.com/tpope/vim-vinegar.git
 [submodule "xolox-misc"]
-    path = xolox-misc
+    path = bundle/xolox-misc
     url = https://github.com/xolox/vim-misc.git
 [submodule "xolox-shell"]
-    path = xolox-shell
+    path = bundle/xolox-shell
     url = https://github.com/xolox/vim-shell.git
