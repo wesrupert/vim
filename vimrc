@@ -2,7 +2,6 @@
     filetype off
     execute pathogen#infect()
     execute pathogen#helptags()
-    "Helptags
 
 " Colorscheme
 if has("gui_running")

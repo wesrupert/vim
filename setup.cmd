@@ -1,5 +1,5 @@
 @echo off
 
 git submodule update --init
-mklink /H ..\_vimrc vimrc
+mkdir autoload
 mklink /H autoload\pathogen.vim bundle\pathogen\autoload\pathogen.vim
