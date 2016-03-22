@@ -29,8 +29,6 @@ endif
 if has("gui_running")
     if exists("$VIMFONT")
         let &guifont = $VIMFONT
-    else
-        set guifont = Source_Code_Pro_Medium:h10
     endif
 endif
 

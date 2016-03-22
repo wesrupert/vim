@@ -5,6 +5,10 @@
 
 /*
 !.gitignore
-!vimrc
 !README.md
+
+!vimrc
+!setup.sh
+!setup.cmd
+
 !bundle
