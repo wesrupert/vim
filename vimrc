@@ -204,10 +204,10 @@ if has("autocmd")
     endif
 
     " Highlight trailing whitespace
-    highlight ExtraWhitespace guifg=red guibg=red
-    autocmd ColorScheme * highlight ExtraWhitespace guifg=red guibg=red
+    highlight ExtraWhitespace guifg=red
+    autocmd InsertEnter * highlight ExtraWhitespace guifg=red guibg=red
+    autocmd InsertLeave * highlight clear ExtraWhitespace
     match ExtraWhitespace /\s\+$\| \+\ze\t\|\t\zs \+\ze/
-
 endif
 
 " Functions
