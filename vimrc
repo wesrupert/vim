@@ -166,17 +166,17 @@ if has("gui_running")
     " GUI mouse management.
 	set mouse=a
 	set selectmode=
-else
-    let g:airline_theme = "molokai"
 endif
 
 " Diff configuration
 if &diff
     set diffopt=filler,context:3
     if has("autocmd")
-        autocmd GUIEnter * simalt ~x
-        autocmd VimEnter * vertical resize -80
-        autocmd VimEnter * execute 2 . "wincmd w"
+        augroup DiffResize
+            autocmd GUIEnter * simalt ~x
+            autocmd VimEnter * vertical resize -80
+            autocmd VimEnter * execute 2 . "wincmd w"
+        augroup end
     elseif has("gui_running")
         set lines=50
         set columns=200
@@ -192,7 +192,8 @@ if has("autocmd")
 
     " Stop dinging, dangit!
     set noerrorbells visualbell t_vb=
-    autocmd GUIEnter * set visualbell t_vb=
+    augroup Startup
+        autocmd GUIEnter * set visualbell t_vb=
 
     autocmd VimEnter * set autochdir
     autocmd BufEnter *
@@ -205,18 +206,28 @@ if has("autocmd")
         \ if line("'\'") > 0 && line("'\'") <= line("$") |
         \  exe "normal g`\"" |
         \ endif
+    augroup end
 
     if v:version >= 704
         " Toggle relative numbers when typing
-        autocmd InsertEnter * setlocal norelativenumber
-        autocmd InsertLeave * setlocal relativenumber
+        augroup RelativeNumber
+            autocmd InsertEnter * setlocal norelativenumber
+            autocmd InsertLeave * setlocal relativenumber
+        augroup end
     endif
 
     " Highlight trailing whitespace
     highlight ExtraWhitespace guifg=red
-    autocmd InsertEnter * highlight ExtraWhitespace guifg=red guibg=red
-    autocmd InsertLeave * highlight clear ExtraWhitespace
+    augroup ExtraWhitespace
+        autocmd InsertEnter * highlight ExtraWhitespace guifg=red guibg=red
+        autocmd InsertLeave * highlight clear ExtraWhitespace
+    augroup end
     match ExtraWhitespace /\s\+$\| \+\ze\t\|\t\zs \+\ze/
+endif
+
+" Load local customizations
+if (filereadable("vimrc.custom"))
+    source vimrc.custom
 endif
 
 " Functions
