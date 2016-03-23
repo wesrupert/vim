@@ -18,6 +18,10 @@
     path = bundle/colorscheme-colorsbox
     url = https://github.com/mkarmona/colorsbox.git
     ignore = dirty
+[submodule "colorscheme-fx"]
+    path = bundle/colorscheme-fx
+    url = https://github.com/cesardeazevedo/Fx-ColorScheme.git
+    ignore = dirty
 [submodule "colorscheme-github"]
     path = bundle/colorscheme-github
     url = https://github.com/endel/vim-github-colorscheme.git
