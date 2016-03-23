@@ -20,7 +20,7 @@
     map  <silent> <c-k>     <c-w>k
     map  <silent> <c-l>     <c-w>l
    "map  <silent> <c-p>     {TAKEN: Fuzzy file search}
-    map  <silent> <c-t>     :tabnew<cr>
+    map  <silent> <c-t>     :tabnew<cr>:Startify<cr>
     map  <silent> <c-x>     :tabclose<cr>
    "map  <silent> <c-tab>   {TAKEN: Switch tab}
    "map  <silent> <c-f11>   {TAKEN: Fullscreen}
@@ -45,6 +45,12 @@
     map  <silent> <leader>z :tabnew $MYVIMRC<cr>
     map  <silent> j         gj
     map  <silent> k         gk
+
+" Custom commands
+    cabbrev h    <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab h' : 'h')<CR>
+    cabbrev he   <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab h' : 'he')<CR>
+    cabbrev hel  <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab h' : 'hel')<CR>
+    cabbrev help <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab h' : 'help')<CR>
 
 " Tabs should be 4 spaces
     set tabstop=4
@@ -79,6 +85,7 @@
 
 " Platform-specific settings
 if has("win32")
+    let s:slash = '\'
     source $VIMRUNTIME/mswin.vim
     behave mswin
     set formatoptions=lrocj
@@ -87,6 +94,7 @@ if has("win32")
     map <silent> <leader>f :Findstring
     nnoremap <silent> <leader>f :Findstring<cr>
 else
+    let s:slash = '/'
     set formatoptions=lroc
     map  <silent> <c-e> :silent !open .<cr>
 endif
@@ -116,15 +124,17 @@ endif
     let Findstr_Default_Options = "/sinp"
     let Findstr_Default_FileList = $SEARCHROOT
 
+    " Pencil colorscheme configuration
+    let g:pencil_gutter_color = 1
+
     " Startify plugin configuration
+    let g:startify_custom_header = [
+        \ '   Vim - Vi IMproved',
+    \ ]
     let g:startify_session_persistence = 1
-    let g:startify_files_number = 4
+    let g:startify_files_number = 8
     let g:startify_change_to_dir = 1
-    if has("win32")
-        let g:startify_bookmarks = [ $MYVIMRC, $HOME."\\.gitconfig" ]
-    else
-        let g:startify_bookmarks = [ $MYVIMRC, $HOME."/.gitconfig" ]
-    endif
+    let g:startify_bookmarks = [ {'vr': $MYVIMRC}, {'gc': $HOME.s:slash.'.gitconfig'} ]
 
 " Visual configuration
     " Automatically load background type
@@ -208,10 +218,7 @@ if has("autocmd")
         autocmd GUIEnter * set visualbell t_vb=
 
     autocmd VimEnter * set autochdir
-    autocmd BufEnter *
-        \ if @% == '__startify__' |
-        \   execute 'Startify' |
-        \ endif
+    autocmd BufEnter * if @% == '__startify__' | execute 'Startify' | endif
 
     " Jump to line cursor was on when last closed, if available
     autocmd BufReadPost *
@@ -233,8 +240,8 @@ if has("autocmd")
     augroup ExtraWhitespace
         autocmd InsertEnter * highlight! link ExtraWhitespace Error
         autocmd InsertLeave * highlight! link ExtraWhitespace NONE
+        autocmd BufEnter * match ExtraWhitespace /\s\+$\| \+\ze\t\|\t\zs \+\ze/
     augroup end
-    match ExtraWhitespace /\s\+$\| \+\ze\t\|\t\zs \+\ze/
 endif
 
 " Load local customizations and overrides
@@ -243,21 +250,21 @@ if filereadable($MYVIMRC.'.custom')
 endif
 
 " Functions
-function! Tab_Or_Complete()
-    if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
-        return "\<C-N>"
-    else
-        return "\<Tab>"
-    endif
-endfunction
+    function! Tab_Or_Complete()
+        if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
+            return "\<C-N>"
+        else
+            return "\<Tab>"
+        endif
+    endfunction
 
-let s:scrollbar = 0
-function! ToggleScrollbar()
-    if s:scrollbar
-        set guioptions-=r
-        let s:scrollbar = 0
-    else
-        set guioptions+=r
-        let s:scrollbar = 1
-    endif
-endfunction
+    let s:scrollbar = 0
+    function! ToggleScrollbar()
+        if s:scrollbar
+            set guioptions-=r
+            let s:scrollbar = 0
+        else
+            set guioptions+=r
+            let s:scrollbar = 1
+        endif
+    endfunction
