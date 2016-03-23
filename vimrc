@@ -3,63 +3,37 @@
     execute pathogen#infect('bundle/{}', 'colorschemes/{}')
     execute pathogen#helptags()
 
-" Colorscheme
-colorscheme default
-if exists("$VIMBACKGROUND")
-    let &background = $VIMBACKGROUND
-endif
-
-if has("gui_running")
-    if exists("$VIMCOLORSCHEME")
-        " The 'lucius' color scheme has a ton of variants defined by
-        " commands. Intercept these variants and assign them properly.
-        if ($VIMCOLORSCHEME =~? 'lucius')
-            colorscheme lucius
-            execute $VIMCOLORSCHEME
-        else
-            colorscheme $VIMCOLORSCHEME
-        endif
-    endif
-else
-    if exists("$VIMTERMCOLORS")
-        " The 'lucius' color scheme has a ton of variants defined by
-        " commands. Intercept these variants and assign them properly.
-        if ($VIMTERMCOLORS =~? 'lucius')
-            colorscheme lucius
-            execute $VIMTERMCOLORS
-        else
-            colorscheme $VIMTERMCOLORS
-        endif
-    endif
-endif
-
-" Font
-if has("gui_running")
-    if exists("$VIMFONT")
-        let &guifont = $VIMFONT
-    endif
-endif
-
 " Top-level settings
     set nocompatible
     syntax on
+    set mouse=a
 
 " Custom keybindings
-    imap           jk       <esc>
-    imap           kj       <esc>
-    imap <silent> <Tab>     <c-r>=Tab_Or_Complete()<cr>
+    imap          jk        <esc>
+    imap          kj        <esc>
+    imap <silent> <tab>     <c-r>=Tab_Or_Complete()<cr>
     imap <silent> <c-a>     <esc>ggVG
     map  <silent> <c-a>     <esc>ggVG
-   "map  <silent> <c-e>     {TAKEN}
+   "map  <silent> <c-e>     {TAKEN: Open file explorer}
+    map  <silent> <c-h>     <c-w>h
+    map  <silent> <c-j>     <c-w>j
+    map  <silent> <c-k>     <c-w>k
+    map  <silent> <c-l>     <c-w>l
+   "map  <silent> <c-p>     {TAKEN: Fuzzy file search}
     map  <silent> <c-t>     :tabnew<cr>
     map  <silent> <c-x>     :tabclose<cr>
+   "map  <silent> <c-tab>   {TAKEN: Switch tab}
+   "map  <silent> <c-f11>   {TAKEN: Fullscreen}
+   "map  <silent> <leader>\ {TAKEN: Easymotion}
     map  <silent> <leader>' :call ToggleScrollbar()<cr>
     map  <silent> <leader>[ :setlocal wrap!<cr>:setlocal wrap?<cr>
     map  <silent> <leader>] :noh<cr>
     map  <silent> <leader>b :NERDTreeToggle<cr>
-   "map  <silent> <leader>f {TAKEN}
+   "map  <silent> <leader>c {TAKEN: NERDCommenter}
+   "map  <silent> <leader>f {TAKEN: Findstr}
+   "map  <silent> <leader>h {TAKEN: GitGutter previews}
     map  <silent> <leader>i :set foldmethod=indent<cr>
-   "map  <silent> <leader>m {TAKEN}
+   "map  <silent> <leader>m {TAKEN: Toggle GUI menu}
     map  <silent> <leader>M :NextColorScheme<cr>
     map  <silent> <leader>n :setlocal relativenumber!<cr>
     map  <silent> <leader>N :setlocal number!<cr>
@@ -71,11 +45,6 @@ endif
     map  <silent> <leader>z :tabnew $MYVIMRC<cr>
     map  <silent> j         gj
     map  <silent> k         gk
-    map  <silent> <c-j>     <c-w>j
-    map  <silent> <c-k>     <c-w>k
-    map  <silent> <c-l>     <c-w>l
-    map  <silent> <c-h>     <c-w>h
-    map           zq        ZQ
 
 " Tabs should be 4 spaces
     set tabstop=4
@@ -103,7 +72,7 @@ endif
 
 " Visual aesthetics
     set nowrap
-    set number relativenumber
+    set number
     set showcmd
     set ruler
     set equalalways
@@ -114,59 +83,102 @@ if has("win32")
     behave mswin
     set formatoptions=lrocj
 
-    map  <silent> <c-e> :silent !explorer .<cr>
-    map  <silent> <leader>f :Findstring 
+    map <silent> <c-e> :silent !explorer .<cr>
+    map <silent> <leader>f :Findstring 
     nnoremap <silent> <leader>f :Findstring<cr>
-
-    "Plugin settings
-    let Findstr_Default_Options = "/sinp"
-    let Findstr_Default_FileList = $SEARCHROOT
 else
     set formatoptions=lroc
     map  <silent> <c-e> :silent !open .<cr>
 endif
 
 " Plugin settings
+    " Airline plugin configuration
     set encoding=utf-8
     set laststatus=2
     set noshowmode
-
-    " Disable ctrlp checking for source control - makes it unusable on large
-    " repositories
-    let g:ctrlp_working_path_mode = 'a'
-    let g:ctrlp_clear_cache_on_exit = 0
-
-    " Startify customization for windows
-    let g:startify_bookmarks = [ $MYVIMRC, $HOMEDRIVE.$HOMEPATH."\\.gitconfig" ]
-    let g:startify_session_persistence = 1
-    let g:startify_files_number = 4
-    let g:startify_change_to_dir = 1
-
-    " Airline plugin configuration
     let g:airline_left_sep=''
     let g:airline_right_sep=''
     let g:airline_inactive_collapse=1
-    let g:airline#extensions#whitespace#enabled=0
+    let g:airline#extensions#whitespace#enabled=1
 
-    " Colorscheme switcher configuration
+    " Colorscheme switcher plugin configuration
     let g:colorscheme_switcher_define_mappings = 0
     let g:colorscheme_switcher_keep_background = 1
     let g:colorscheme_switcher_exclude = [ 'default' ]
 
-" GUI configuration
-if has("gui_running")
-	" GVim window style.
-    set guitablabel=%t
-	set guioptions=agtLR
-	set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
+    " Ctrlp plugin configuration
+    let g:ctrlp_clear_cache_on_exit = 0
+    " Disable ctrlp checking for source control, it
+    " makes it unusable on large repositories
+    let g:ctrlp_working_path_mode = 'a'
 
-    " Custom keybindings
-    map  <silent> <leader>m :if &go=~#'m'<bar>set go-=m<bar>else<bar>set go+=m<bar>endif<cr>
+    " Findstr plugin configuration
+    let Findstr_Default_Options = "/sinp"
+    let Findstr_Default_FileList = $SEARCHROOT
 
-    " GUI mouse management.
-	set mouse=a
-	set selectmode=
-endif
+    " Startify plugin configuration
+    let g:startify_session_persistence = 1
+    let g:startify_files_number = 4
+    let g:startify_change_to_dir = 1
+    if has("win32")
+        let g:startify_bookmarks = [ $MYVIMRC, $HOME."\\.gitconfig" ]
+    else
+        let g:startify_bookmarks = [ $MYVIMRC, $HOME."/.gitconfig" ]
+    endif
+
+" Visual configuration
+    " Automatically load background type
+    if exists("$VIMBACKGROUND")
+        let &background = $VIMBACKGROUND
+    endif
+
+    " GUI configuration
+    if has("gui_running")
+        " GVim window style.
+        set guitablabel=%t
+        set guioptions=agtLR
+        set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
+
+        " Custom keybindings
+        map  <silent> <leader>m :if &go=~#'m'<bar>set go-=m<bar>else<bar>set go+=m<bar>endif<cr>
+
+        set selectmode=
+
+        " Automatically load font
+        if exists("$VIMFONT")
+            let &guifont = $VIMFONT
+        endif
+
+        " Automatically load colorscheme
+        if exists("$VIMCOLORSCHEME")
+            " The 'lucius' color scheme has a ton of variants defined by
+            " commands. Intercept these variants and assign them properly.
+            if ($VIMCOLORSCHEME =~? 'lucius')
+                colorscheme lucius
+                execute $VIMCOLORSCHEME
+            else
+                colorscheme $VIMCOLORSCHEME
+            endif
+        else
+            " Default GUI colorscheme
+            colorscheme github
+        endif
+    else
+        " Automatically load colorscheme
+        if exists("$VIMTERMCOLORS")
+            " The 'lucius' color scheme has a ton of variants defined by
+            " commands. Intercept these variants and assign them properly.
+            if ($VIMTERMCOLORS =~? 'lucius')
+                colorscheme lucius
+                execute $VIMTERMCOLORS
+            else
+                colorscheme $VIMTERMCOLORS
+            endif
+        else
+            " Default term colorscheme
+            colorscheme default
+        endif
+    endif
 
 " Diff configuration
 if &diff
@@ -190,7 +202,7 @@ endif
 if has("autocmd")
     filetype plugin indent on
 
-    " Stop dinging, dangit!
+    " Silence the editor
     set noerrorbells visualbell t_vb=
     augroup Startup
         autocmd GUIEnter * set visualbell t_vb=
@@ -209,15 +221,15 @@ if has("autocmd")
     augroup end
 
     if v:version >= 704
-        " Toggle relative numbers when typing
+        " Toggle relative numbers when typing, if enabled
         augroup RelativeNumber
-            autocmd InsertEnter * setlocal norelativenumber
-            autocmd InsertLeave * setlocal relativenumber
+            autocmd InsertEnter * let g:relativenumber = &relativenumber | setlocal norelativenumber
+            autocmd InsertLeave * if (g:relativenumber) | setlocal relativenumber | endif
         augroup end
     endif
 
     " Highlight trailing whitespace
-    highlight ExtraWhitespace guifg=red
+    highlight ExtraWhitespace guifg=white
     augroup ExtraWhitespace
         autocmd InsertEnter * highlight ExtraWhitespace guifg=red guibg=red
         autocmd InsertLeave * highlight clear ExtraWhitespace
@@ -225,7 +237,7 @@ if has("autocmd")
     match ExtraWhitespace /\s\+$\| \+\ze\t\|\t\zs \+\ze/
 endif
 
-" Load local customizations
+" Load local customizations and overrides
 if filereadable($MYVIMRC.'.custom')
     source $MYVIMRC.custom
 endif
