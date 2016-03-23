@@ -28,7 +28,7 @@
     map  <silent> <leader>' :call ToggleScrollbar()<cr>
     map  <silent> <leader>[ :setlocal wrap!<cr>:setlocal wrap?<cr>
     map  <silent> <leader>] :noh<cr>
-    map  <silent> <leader>b :NERDTreeToggle<cr>
+    map  <silent> <leader>b :NERDTreeTabsToggle<cr>
    "map  <silent> <leader>c {TAKEN: NERDCommenter}
    "map  <silent> <leader>f {TAKEN: Findstr}
    "map  <silent> <leader>h {TAKEN: GitGutter previews}
@@ -124,6 +124,9 @@ endif
     let Findstr_Default_Options = "/sinp"
     let Findstr_Default_FileList = $SEARCHROOT
 
+    " NERDTreeTabs plugin configuration
+    let g:nerdtree_tabs_open_on_gui_startup = 0
+
     " Pencil colorscheme configuration
     let g:pencil_gutter_color = 1
 
@@ -134,6 +137,7 @@ endif
     let g:startify_session_persistence = 1
     let g:startify_files_number = 8
     let g:startify_change_to_dir = 1
+    let g:startify_enable_unsafe = 1
     let g:startify_bookmarks = [ {'vr': $MYVIMRC}, {'gc': $HOME.s:slash.'.gitconfig'} ]
 
 " Visual configuration
@@ -146,7 +150,7 @@ endif
     if has("gui_running")
         " GVim window style.
         set guitablabel=%t
-        set guioptions=agtLR
+        set guioptions=agt
         set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
 
         " Custom keybindings

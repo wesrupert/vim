@@ -67,6 +67,14 @@
     path = bundle/nerdcommenter
     url = https://github.com/scrooloose/nerdcommenter.git
     ignore = dirty
+[submodule "nerdtree"]
+    path = bundle/nerdtree
+    url = https://github.com/scrooloose/nerdtree.git
+    ignore = dirty
+[submodule "nerdtree-tabs"]
+    path = bundle\\nerdtree-tabs
+    url = https://github.com/jistr/vim-nerdtree-tabs.git
+    ignore = dirty
 [submodule "pathogen"]
     path = bundle/pathogen
     url = https://github.com/tpope/vim-pathogen.git
