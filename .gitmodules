@@ -153,6 +153,10 @@
     path = colorschemes/moria
     url = https://github.com/vim-scripts/moria.git
     ignore = dirty
+[submodule "pencil"]
+    path = colorschemes/pencil
+    url = https://github.com/reedes/vim-colors-pencil.git
+    ignore = dirty
 [submodule "scheakur"]
     path = colorschemes/scheakur
     url = https://github.com/scheakur/vim-scheakur.git
