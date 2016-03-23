@@ -226,7 +226,9 @@ if has("autocmd")
 endif
 
 " Load local customizations
-silent! source vimrc.custom
+if filereadable($MYVIMRC.'.custom')
+    source $MYVIMRC.custom
+endif
 
 " Functions
 function! Tab_Or_Complete()
