@@ -1,15 +1,17 @@
 " Load plugins
     filetype off
-    execute pathogen#infect()
+    execute pathogen#infect('bundle/{}', 'colorschemes/{}')
     execute pathogen#helptags()
 
 " Colorscheme
+colorscheme default
+if exists("$VIMBACKGROUND")
+    let &background = $VIMBACKGROUND
+endif
+
 if has("gui_running")
-    if exists("$VIMBACKGROUND")
-        let &background = $VIMBACKGROUND
-    endif
     if exists("$VIMCOLORSCHEME")
-        " The 'lucius' color scheme has a ton of variants definted by
+        " The 'lucius' color scheme has a ton of variants defined by
         " commands. Intercept these variants and assign them properly.
         if ($VIMCOLORSCHEME =~? 'lucius')
             colorscheme lucius
@@ -17,11 +19,18 @@ if has("gui_running")
         else
             colorscheme $VIMCOLORSCHEME
         endif
-    else
-        colorscheme solarized
     endif
 else
-    colorscheme default
+    if exists("$VIMTERMCOLORS")
+        " The 'lucius' color scheme has a ton of variants defined by
+        " commands. Intercept these variants and assign them properly.
+        if ($VIMTERMCOLORS =~? 'lucius')
+            colorscheme lucius
+            execute $VIMTERMCOLORS
+        else
+            colorscheme $VIMTERMCOLORS
+        endif
+    endif
 endif
 
 " Font

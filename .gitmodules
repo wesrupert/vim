@@ -1,3 +1,4 @@
+; Plugins
 [submodule "airline"]
     path = bundle/airline
     url = https://github.com/vim-airline/vim-airline.git
@@ -13,46 +14,6 @@
 [submodule "autoclosetag"]
     path = bundle/autoclosetag
     url = https://github.com/vim-scripts/HTML-AutoCloseTag.git
-    ignore = dirty
-[submodule "colorscheme-colorsbox"]
-    path = bundle/colorscheme-colorsbox
-    url = https://github.com/mkarmona/colorsbox.git
-    ignore = dirty
-[submodule "colorscheme-fx"]
-    path = bundle/colorscheme-fx
-    url = https://github.com/cesardeazevedo/Fx-ColorScheme.git
-    ignore = dirty
-[submodule "colorscheme-github"]
-    path = bundle/colorscheme-github
-    url = https://github.com/endel/vim-github-colorscheme.git
-    ignore = dirty
-[submodule "colorscheme-jellybeans"]
-    path = bundle/colorscheme-jellybeans
-    url = https://github.com/nanotech/jellybeans.vim.git
-    ignore = dirty
-[submodule "colorscheme-lucian"]
-    path = bundle/colorscheme-lucian
-    url = https://github.com/jonathanfilip/vim-lucius.git
-    ignore = dirty
-[submodule "colorscheme-materialbox"]
-    path = bundle/colorscheme-materialbox
-    url = https://github.com/mkarmona/materialbox.git
-    ignore = dirty
-[submodule "colorscheme-moria"]
-    path = bundle/colorscheme-moria
-    url = https://github.com/vim-scripts/moria.git
-    ignore = dirty
-[submodule "colorscheme-scheakur"]
-    path = bundle/colorscheme-scheakur
-    url = https://github.com/scheakur/vim-scheakur.git
-    ignore = dirty
-[submodule "colorscheme-soda"]
-    path = bundle/colorscheme-soda
-    url = https://github.com/daddye/soda.vim.git
-    ignore = dirty
-[submodule "colorscheme-solarized"]
-    path = bundle/colorscheme-solarized
-    url = https://github.com/altercation/vim-colors-solarized.git
     ignore = dirty
 [submodule "colorscheme-switcher"]
     path = bundle/colorscheme-switcher
@@ -161,3 +122,46 @@
 [submodule "xolox-shell"]
     path = bundle/xolox-shell
     url = https://github.com/xolox/vim-shell.git
+    ignore = dirty
+
+; Colorschemes
+[submodule "colorsbox"]
+    path = colorschemes/colorsbox
+    url = https://github.com/mkarmona/colorsbox.git
+    ignore = dirty
+[submodule "fx"]
+    path = colorschemes/fx
+    url = https://github.com/cesardeazevedo/Fx-ColorScheme.git
+    ignore = dirty
+[submodule "github"]
+    path = colorschemes/github
+    url = https://github.com/endel/vim-github-colorscheme.git
+    ignore = dirty
+[submodule "jellybeans"]
+    path = colorschemes/jellybeans
+    url = https://github.com/nanotech/jellybeans.vim.git
+    ignore = dirty
+[submodule "lucian"]
+    path = colorschemes/lucian
+    url = https://github.com/jonathanfilip/vim-lucius.git
+    ignore = dirty
+[submodule "materialbox"]
+    path = colorschemes/materialbox
+    url = https://github.com/mkarmona/materialbox.git
+    ignore = dirty
+[submodule "moria"]
+    path = colorschemes/moria
+    url = https://github.com/vim-scripts/moria.git
+    ignore = dirty
+[submodule "scheakur"]
+    path = colorschemes/scheakur
+    url = https://github.com/scheakur/vim-scheakur.git
+    ignore = dirty
+[submodule "soda"]
+    path = colorschemes/soda
+    url = https://github.com/daddye/soda.vim.git
+    ignore = dirty
+[submodule "solarized"]
+    path = colorschemes/solarized
+    url = https://github.com/altercation/vim-colors-solarized.git
+    ignore = dirty
