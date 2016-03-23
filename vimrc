@@ -84,7 +84,7 @@ if has("win32")
     set formatoptions=lrocj
 
     map <silent> <c-e> :silent !explorer .<cr>
-    map <silent> <leader>f :Findstring 
+    map <silent> <leader>f :Findstring
     nnoremap <silent> <leader>f :Findstring<cr>
 else
     set formatoptions=lroc
@@ -229,10 +229,10 @@ if has("autocmd")
     endif
 
     " Highlight trailing whitespace
-    highlight ExtraWhitespace guifg=white
+    highlight ExtraWhitespace guifg=red
     augroup ExtraWhitespace
-        autocmd InsertEnter * highlight ExtraWhitespace guifg=red guibg=red
-        autocmd InsertLeave * highlight clear ExtraWhitespace
+        autocmd InsertEnter * highlight! link ExtraWhitespace Error
+        autocmd InsertLeave * highlight! link ExtraWhitespace NONE
     augroup end
     match ExtraWhitespace /\s\+$\| \+\ze\t\|\t\zs \+\ze/
 endif
