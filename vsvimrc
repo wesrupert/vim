@@ -1,0 +1,3 @@
+source $USERPROFILE\vimfiles\vimrc
+
+iunmap <tab>
