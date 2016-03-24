@@ -15,14 +15,6 @@
     path = bundle/autoclosetag
     url = https://github.com/vim-scripts/HTML-AutoCloseTag.git
     ignore = dirty
-[submodule "colorscheme-switcher"]
-    path = bundle/colorscheme-switcher
-    url = https://github.com/xolox/vim-colorscheme-switcher.git
-    ignore = dirty
-[submodule "consolas-fixed"]
-    path = bundle/consolas-fixed
-    url = https://github.com/eugeneching/consolas-powerline-vim.git
-    ignore = dirty
 [submodule "cpp-enhanced"]
     path = bundle/cpp-enhanced
     url = https://github.com/octol/vim-cpp-enhanced-highlight.git
@@ -50,10 +42,6 @@
 [submodule "gitgutter"]
     path = bundle/gitgutter
     url = https://github.com/airblade/vim-gitgutter.git
-    ignore = dirty
-[submodule "goyo"]
-    path = bundle/goyo
-    url = https://github.com/junegunn/goyo.vim.git
     ignore = dirty
 [submodule "jsdoc"]
     path = bundle/jsdoc
@@ -86,10 +74,6 @@
 [submodule "repeat"]
     path = bundle/repeat
     url = https://github.com/tpope/vim-repeat.git
-    ignore = dirty
-[submodule "scmdiff"]
-    path = bundle/scmdiff
-    url = https://github.com/ghewgill/vim-scmdiff.git
     ignore = dirty
 [submodule "startify"]
     path = bundle/startify
