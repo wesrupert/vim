@@ -53,13 +53,20 @@
     cabbrev hel  <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab h' : 'hel')<CR>
     cabbrev help <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab h' : 'help')<CR>
 
-" Tabs should be 4 spaces
+" Visual aesthetics
+    set nowrap
+    set number
+    set showcmd
+    set ruler
+    set equalalways
+
+" Whitespace settings
     set tabstop=4
     set shiftwidth=4
     set expandtab
     set autoindent
 
-" Search options
+" Search settings
     set incsearch
     set ignorecase
     set smartcase
@@ -74,15 +81,18 @@
     set nofoldenable
 
 " Keep your directories free of clutter
-    set nobackup
-    set nowritebackup
-
-" Visual aesthetics
-    set nowrap
-    set number
-    set showcmd
-    set ruler
-    set equalalways
+    set nobackup writebackup
+    if has("persistent_undo")
+        if has("win32")
+            call system('mkdir '.$TEMP.'\Vim')
+            call system('mkdir '.$TEMP.'\Vim\undo')
+            let &undodir = expand($TEMP.'/Vim/undo')
+        else
+            call system('mkdir '.'/.vim/undo')
+            let &undodir = expand($HOME.'/.vim/undo')
+        endif
+        set undofile
+    endif
 
 " Platform-specific settings
 if has("win32")
@@ -132,14 +142,16 @@ endif
     let g:pencil_gutter_color = 1
 
     " Startify plugin configuration
-    let g:startify_custom_header = [
-        \ '   Vim - Vi IMproved',
-    \ ]
+    let g:startify_custom_header = [ '   Vim - Vi IMproved' ]
     let g:startify_session_persistence = 1
     let g:startify_files_number = 8
     let g:startify_change_to_dir = 1
     let g:startify_enable_unsafe = 1
-    let g:startify_bookmarks = [ {'vr': $MYVIMRC}, {'gc': $HOME.s:slash.'.gitconfig'} ]
+    let g:startify_bookmarks = [
+        \ {'vc': $MYVIMRC.'.custom'},
+        \ {'vr': $MYVIMRC},
+        \ {'gc': $HOME.s:slash.'.gitconfig'}
+    \ ]
 
 " GUI configuration
     if has("gui_running")
@@ -205,6 +217,7 @@ if has("autocmd")
         autocmd InsertEnter * highlight! link ExtraWhitespace Error
         autocmd InsertLeave * highlight! link ExtraWhitespace NONE
         autocmd BufEnter * match ExtraWhitespace /\s\+$\| \+\ze\t\|\t\zs \+\ze/
+        autocmd BufLeave * if (v:version >= 702) | call clearmatches() | endif
     augroup end
 endif
 
