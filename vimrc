@@ -1,6 +1,6 @@
 " Load plugins
     filetype off
-    execute pathogen#infect('bundle/{}', 'colorschemes/{}')
+    execute pathogen#infect('plugins/{}', 'colorschemes/{}', 'custom/{}')
     execute pathogen#helptags()
 
 " Top-level settings
@@ -37,12 +37,13 @@
     map  <silent> <leader>M :NextColorScheme<cr>
     map  <silent> <leader>n :setlocal relativenumber!<cr>
     map  <silent> <leader>N :setlocal number!<cr>
-    map  <silent> <leader>r :set columns=80 lines=20<cr>
+    map  <silent> <leader>r :source $MYVIMRC<cr>
     map  <silent> <leader>s :Startify<cr>
     map  <silent> <leader>t <plug>TaskList
     map  <silent> <leader>v "*p
     map  <silent> <leader>y "*y
-    map  <silent> <leader>z :tabnew $MYVIMRC<cr>
+    map  <silent> <leader>z :tabnew $MYVIMRC.custom<cr>
+    map  <silent> <leader>Z :tabnew $MYVIMRC<cr>
     map  <silent> j         gj
     map  <silent> k         gk
 

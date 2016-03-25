@@ -4,13 +4,15 @@
 *.swo
 
 /*
+custom
+vimrc.custom
+
 !.gitignore
 !README.md
-
 !vimrc
-!_vsvimrc
+!vsvimrc
 !setup.sh
 !setup.cmd
 
-!bundle
+!plugins
 !colorschemes
