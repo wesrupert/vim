@@ -60,7 +60,7 @@
     url = https://github.com/scrooloose/nerdtree.git
     ignore = dirty
 [submodule "nerdtree-tabs"]
-    path = bundle\\nerdtree-tabs
+    path = bundle/nerdtree-tabs
     url = https://github.com/jistr/vim-nerdtree-tabs.git
     ignore = dirty
 [submodule "pathogen"]

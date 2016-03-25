@@ -140,58 +140,17 @@ endif
     let g:startify_enable_unsafe = 1
     let g:startify_bookmarks = [ {'vr': $MYVIMRC}, {'gc': $HOME.s:slash.'.gitconfig'} ]
 
-" Visual configuration
-    " Automatically load background type
-    if exists("$VIMBACKGROUND")
-        let &background = $VIMBACKGROUND
-    endif
-
-    " GUI configuration
+" GUI configuration
     if has("gui_running")
         " GVim window style.
         set guitablabel=%t
         set guioptions=agt
         set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
+        set selectmode=
+        colorscheme github
 
         " Custom keybindings
         map  <silent> <leader>m :if &go=~#'m'<bar>set go-=m<bar>else<bar>set go+=m<bar>endif<cr>
-
-        set selectmode=
-
-        " Automatically load font
-        if exists("$VIMFONT")
-            let &guifont = $VIMFONT
-        endif
-
-        " Automatically load colorscheme
-        if exists("$VIMCOLORSCHEME")
-            " The 'lucius' color scheme has a ton of variants defined by
-            " commands. Intercept these variants and assign them properly.
-            if ($VIMCOLORSCHEME =~? 'lucius')
-                colorscheme lucius
-                execute $VIMCOLORSCHEME
-            else
-                colorscheme $VIMCOLORSCHEME
-            endif
-        else
-            " Default GUI colorscheme
-            colorscheme github
-        endif
-    else
-        " Automatically load colorscheme
-        if exists("$VIMTERMCOLORS")
-            " The 'lucius' color scheme has a ton of variants defined by
-            " commands. Intercept these variants and assign them properly.
-            if ($VIMTERMCOLORS =~? 'lucius')
-                colorscheme lucius
-                execute $VIMTERMCOLORS
-            else
-                colorscheme $VIMTERMCOLORS
-            endif
-        else
-            " Default term colorscheme
-            colorscheme default
-        endif
     endif
 
 " Diff configuration
