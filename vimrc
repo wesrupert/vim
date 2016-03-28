@@ -7,45 +7,51 @@
     set nocompatible
     syntax on
     set mouse=a
+    filetype plugin indent on
+    set noerrorbells visualbell t_vb=
 
 " Custom keybindings
-    imap          jk        <esc>
-    imap          kj        <esc>
-    imap <silent> <tab>     <c-r>=Tab_Or_Complete()<cr>
-    imap <silent> <c-a>     <esc>ggVG
-    map  <silent> <c-a>     <esc>ggVG
-   "map  <silent> <c-e>     {TAKEN: Open file explorer}
-    map  <silent> <c-h>     <c-w>h
-    map  <silent> <c-j>     <c-w>j
-    map  <silent> <c-k>     <c-w>k
-    map  <silent> <c-l>     <c-w>l
-   "map  <silent> <c-p>     {TAKEN: Fuzzy file search}
-    map  <silent> <c-t>     :tabnew<cr>:Startify<cr>
-    map  <silent> <c-x>     :tabclose<cr>
-   "map  <silent> <c-tab>   {TAKEN: Switch tab}
-   "map  <silent> <c-f11>   {TAKEN: Fullscreen}
-   "map  <silent> <leader>\ {TAKEN: Easymotion}
-    map  <silent> <leader>' :call ToggleScrollbar()<cr>
-    map  <silent> <leader>[ :setlocal wrap!<cr>:setlocal wrap?<cr>
-    map  <silent> <leader>] :noh<cr>
-    map  <silent> <leader>b :NERDTreeTabsToggle<cr>
-   "map  <silent> <leader>c {TAKEN: NERDCommenter}
-   "map  <silent> <leader>f {TAKEN: Findstr}
-   "map  <silent> <leader>h {TAKEN: GitGutter previews}
-    map  <silent> <leader>i :set foldmethod=indent<cr>
-   "map  <silent> <leader>m {TAKEN: Toggle GUI menu}
-    map  <silent> <leader>M :NextColorScheme<cr>
-    map  <silent> <leader>n :setlocal relativenumber!<cr>
-    map  <silent> <leader>N :setlocal number!<cr>
-    map  <silent> <leader>r :source $MYVIMRC<cr>
-    map  <silent> <leader>s :Startify<cr>
-    map  <silent> <leader>t <plug>TaskList
-    map  <silent> <leader>v "*p
-    map  <silent> <leader>y "*y
-    map  <silent> <leader>z :tabnew $MYVIMRC.custom<cr>
-    map  <silent> <leader>Z :tabnew $MYVIMRC<cr>
-    map  <silent> j         gj
-    map  <silent> k         gk
+    inoremap          jk        <esc>
+    inoremap          kj        <esc>
+    inoremap <silent> <tab>     <c-r>=Tab_Or_Complete()<cr>
+    inoremap <silent> <c-a>     <esc>ggVG
+    noremap  <silent> <c-a>     <esc>ggVG
+   "noremap  <silent> <c-e>     {TAKEN: Open file explorer}
+    noremap  <silent> <c-h>     <c-w>h
+    noremap  <silent> <c-j>     <c-w>j
+    noremap  <silent> <c-k>     <c-w>k
+    noremap  <silent> <c-l>     <c-w>l
+   "noremap  <silent> <c-p>     {TAKEN: Fuzzy file search}
+    noremap           <c-q>     Q
+    noremap  <silent> <c-t>     :tabnew<cr>:Startify<cr>
+    noremap  <silent> <c-w>     :tabclose<cr>
+   "noremap  <silent> <c-tab>   {TAKEN: Switch tab}
+   "noremap  <silent> <c-f11>   {TAKEN: Fullscreen}
+   "noremap  <silent> <leader>\ {TAKEN: Easymotion}
+    noremap  <silent> <leader>' :call ToggleScrollbar()<cr>
+    noremap  <silent> <leader>[ :setlocal wrap!<cr>:setlocal wrap?<cr>
+    noremap  <silent> <leader>] :noh<cr>
+    noremap  <silent> <leader>b :NERDTreeTabsToggle<cr>
+   "noremap  <silent> <leader>c {TAKEN: NERDCommenter}
+   "noremap  <silent> <leader>f {TAKEN: Findstr}
+   "noremap  <silent> <leader>h {TAKEN: GitGutter previews}
+    noremap  <silent> <leader>i :set foldmethod=indent<cr>
+   "noremap  <silent> <leader>m {TAKEN: Toggle GUI menu}
+    noremap  <silent> <leader>M :NextColorScheme<cr>
+    noremap  <silent> <leader>n :setlocal relativenumber!<cr>
+    noremap  <silent> <leader>N :setlocal number!<cr>
+    noremap  <silent> <leader>r :source $MYVIMRC<cr>
+    noremap  <silent> <leader>s :Startify<cr>
+    noremap  <silent> <leader>t <plug>TaskList
+    noremap  <silent> <leader>v "*p
+    noremap  <silent> <leader>y "*y
+    noremap  <silent> <leader>z :tabnew $MYVIMRC.custom<cr>
+    noremap  <silent> <leader>Z :tabnew $MYVIMRC<cr>
+    noremap  <silent> j         gj
+    noremap  <silent> k         gk
+    noremap           Q         :q
+    noremap  <silent> [[        ^
+    noremap  <silent> ]]        $
 
 " Custom commands
     cabbrev h    <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab h' : 'h')<CR>
@@ -78,7 +84,8 @@
 
 " File organization
     set foldmethod=syntax
-    set nofoldenable
+    set foldenable
+    set foldlevelstart=10
 
 " Keep your directories free of clutter
     set nobackup writebackup
@@ -171,10 +178,10 @@ if &diff
     set diffopt=filler,context:3
     if has("autocmd")
         augroup DiffResize
-            autocmd GUIEnter * simalt ~x
-            autocmd VimEnter * vertical resize -80
-            autocmd VimEnter * execute 2 . "wincmd w"
-        augroup end
+            au GUIEnter * simalt ~x
+            au VimEnter * vertical resize -80
+            au VimEnter * execute 2 . "wincmd w"
+        augroup END
     elseif has("gui_running")
         set lines=50
         set columns=200
@@ -186,39 +193,42 @@ endif
 
 " Autocommands
 if has("autocmd")
-    filetype plugin indent on
-
-    " Silence the editor
-    set noerrorbells visualbell t_vb=
     augroup Startup
-        autocmd GUIEnter * set visualbell t_vb=
+        au GUIEnter * set visualbell t_vb=
+        au VimEnter * set autochdir
+        au BufEnter * if @% == '__startify__' | execute 'Startify' | endif
 
-    autocmd VimEnter * set autochdir
-    autocmd BufEnter * if @% == '__startify__' | execute 'Startify' | endif
+        " Jump to line cursor was on when last closed, if available
+        au BufReadPost *
+            \ if line("'\'") > 0 && line("'\'") <= line("$") |
+            \  exe "normal g`\"" |
+            \ endif
+    augroup END
 
-    " Jump to line cursor was on when last closed, if available
-    autocmd BufReadPost *
-        \ if line("'\'") > 0 && line("'\'") <= line("$") |
-        \  exe "normal g`\"" |
-        \ endif
-    augroup end
+    augroup Filetypes
+        au FileType cs set foldmethod=indent
+    augroup END
+
+    augroup HelpShortcuts
+        au BufEnter *.txt if (&buftype == 'help') | noremap q <c-w>c | endif
+    augroup END
 
     if v:version >= 704
         " Toggle relative numbers when typing, if enabled
         augroup RelativeNumber
-            autocmd InsertEnter * let g:relativenumber = &relativenumber | setlocal norelativenumber
-            autocmd InsertLeave * if (g:relativenumber) | setlocal relativenumber | endif
-        augroup end
+            au InsertEnter * let g:relativenumber = &relativenumber | setlocal norelativenumber
+            au InsertLeave * if (g:relativenumber) | setlocal relativenumber | endif
+        augroup END
     endif
 
     " Highlight trailing whitespace
     highlight ExtraWhitespace guifg=red
     augroup ExtraWhitespace
-        autocmd InsertEnter * highlight! link ExtraWhitespace Error
-        autocmd InsertLeave * highlight! link ExtraWhitespace NONE
-        autocmd BufEnter * match ExtraWhitespace /\s\+$\| \+\ze\t\|\t\zs \+\ze/
-        autocmd BufLeave * if (v:version >= 702) | call clearmatches() | endif
-    augroup end
+        au InsertEnter * highlight! link ExtraWhitespace Error
+        au InsertLeave * highlight! link ExtraWhitespace NONE
+        au BufEnter * match ExtraWhitespace /\s\+$\| \+\ze\t\|\t\zs \+\ze/
+        au BufLeave * if (v:version >= 702) | call clearmatches() | endif
+    augroup END
 endif
 
 " Load local customizations and overrides
