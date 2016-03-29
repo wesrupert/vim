@@ -1,19 +1,97 @@
-" Load plugins
-    filetype off
-    execute pathogen#infect('plugins/{}', 'colorschemes/{}', 'custom/{}')
-    execute pathogen#helptags()
+set nocompatible
+filetype off
 
-" Top-level settings
-    set nocompatible
+" Load vimrc.before {{{
+    if filereadable($MYVIMRC.'.before')
+        source $MYVIMRC.before
+    endif
+" }}}
+
+" Load pathogen {{{
+    " Don't load pathogen more than once if the default paths were overriden
+    " in vimrc.before.
+    if !exists("g:plugins_loaded")
+        let g:plugins_loaded = 1
+        execute pathogen#infect('plugins/{}', 'colorschemes/{}', 'custom/{}')
+        execute pathogen#helptags()
+    endif
+" }}}
+
+" Functions {{{
+    function! TabOrComplete()
+        if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
+            return "\<C-N>"
+        else
+            return "\<Tab>"
+        endif
+    endfunction
+
+    let s:scrollbar = 0
+    function! ToggleScrollbar()
+        if s:scrollbar
+            set guioptions-=r
+            let s:scrollbar = 0
+        else
+            set guioptions+=r
+            let s:scrollbar = 1
+        endif
+    endfunction
+
+    function! TryCreateDir(path)
+        if !filereadable(a:path) && filewritable(a:path) != 2
+            call mkdir(a:path)
+        endif
+    endfunction
+" }}}
+
+" Preferences and Settings {{{
     syntax on
-    set mouse=a
     filetype plugin indent on
-    set noerrorbells visualbell t_vb=
+    set mouse=a
 
-" Custom keybindings
+    " Visual aesthetics
+    set noerrorbells visualbell t_vb=
+    set lazyredraw
+    set number
+    set ruler
+    set showcmd
+    set wildmenu
+    set equalalways
+    set scrolloff=3 sidescrolloff=15
+    set sidescroll=1
+
+    " Search
+    set incsearch
+    set hlsearch
+    set ignorecase smartcase
+
+    " Whitespace and comments
+    set tabstop=4 softtabstop=4 shiftwidth=4
+    set expandtab smarttab
+    set autoindent smartindent
+    set formatoptions=jr
+
+    " Word wrap
+    set backspace=indent,eol,start
+    set nowrap
+    set linebreak
+    set formatoptions+=cn
+
+    " File organization
+    set hidden
+    set switchbuf=usetab
+    set shortmess+=A
+    set autochdir
+    set foldmethod=syntax
+    set foldenable
+    set foldlevelstart=10
+    set modeline modelines=1
+" }}}
+
+" Keybindings and Commands {{{
     inoremap          jk        <esc>
     inoremap          kj        <esc>
-    inoremap <silent> <tab>     <c-r>=Tab_Or_Complete()<cr>
+    inoremap <silent> <tab>     <c-r>=TabOrComplete()<cr>
     inoremap <silent> <c-a>     <esc>ggVG
     noremap  <silent> <c-a>     <esc>ggVG
    "noremap  <silent> <c-e>     {TAKEN: Open file explorer}
@@ -30,94 +108,98 @@
    "noremap  <silent> <leader>\ {TAKEN: Easymotion}
     noremap  <silent> <leader>' :call ToggleScrollbar()<cr>
     noremap  <silent> <leader>[ :setlocal wrap!<cr>:setlocal wrap?<cr>
-    noremap  <silent> <leader>] :noh<cr>
+    noremap  <silent> <leader>/ :noh<cr>
     noremap  <silent> <leader>b :NERDTreeTabsToggle<cr>
    "noremap  <silent> <leader>c {TAKEN: NERDCommenter}
    "noremap  <silent> <leader>f {TAKEN: Findstr}
    "noremap  <silent> <leader>h {TAKEN: GitGutter previews}
     noremap  <silent> <leader>i :set foldmethod=indent<cr>
    "noremap  <silent> <leader>m {TAKEN: Toggle GUI menu}
-    noremap  <silent> <leader>M :NextColorScheme<cr>
     noremap  <silent> <leader>n :setlocal relativenumber!<cr>
     noremap  <silent> <leader>N :setlocal number!<cr>
     noremap  <silent> <leader>r :source $MYVIMRC<cr>
     noremap  <silent> <leader>s :Startify<cr>
-    noremap  <silent> <leader>t <plug>TaskList
+    noremap           <leader>t <plug>TaskList
     noremap  <silent> <leader>v "*p
+    noremap  <silent> <leader>w :execute "resize ".line("$")<cr>
     noremap  <silent> <leader>y "*y
-    noremap  <silent> <leader>z :tabnew $MYVIMRC.custom<cr>
-    noremap  <silent> <leader>Z :tabnew $MYVIMRC<cr>
+    noremap  <silent> <leader>z :tabnew $MYVIMRC<cr>
+    noremap  <silent> cd        :execute 'cd '.expand("%:p:h")<cr>
     noremap  <silent> j         gj
     noremap  <silent> k         gk
     noremap           Q         :q
+    noremap           Y         y$
+    noremap           <tab>     %
+    noremap           <space>   za
     noremap  <silent> [[        ^
     noremap  <silent> ]]        $
+   "noremap  <silent> (         {TAKEN: Prev code line}
+   "noremap  <silent> )         {TAKEN: Next code line}
 
-" Custom commands
     cabbrev h    <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab h' : 'h')<CR>
-    cabbrev he   <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab h' : 'he')<CR>
-    cabbrev hel  <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab h' : 'hel')<CR>
-    cabbrev help <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab h' : 'help')<CR>
+    cabbrev he   <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab he' : 'he')<CR>
+    cabbrev hel  <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab hel' : 'hel')<CR>
+    cabbrev help <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab help' : 'help')<CR>
+" }}}
 
-" Visual aesthetics
-    set nowrap
-    set number
-    set showcmd
-    set ruler
-    set equalalways
-
-" Whitespace settings
-    set tabstop=4
-    set shiftwidth=4
-    set expandtab
-    set autoindent
-
-" Search settings
-    set incsearch
-    set ignorecase
-    set smartcase
-    set hlsearch
-
-" Wrap settings
-    set backspace=indent,eol,start
-    set lbr
-
-" File organization
-    set foldmethod=syntax
-    set foldenable
-    set foldlevelstart=10
-
-" Keep your directories free of clutter
-    set nobackup writebackup
-    if has("persistent_undo")
-        if has("win32")
-            call system('mkdir '.$TEMP.'\Vim')
-            call system('mkdir '.$TEMP.'\Vim\undo')
-            let &undodir = expand($TEMP.'/Vim/undo')
-        else
-            call system('mkdir '.'/.vim/undo')
-            let &undodir = expand($HOME.'/.vim/undo')
-        endif
-        set undofile
-    endif
-
-" Platform-specific settings
+" Platform-Specific Settings {{{
 if has("win32")
-    let s:slash = '\'
+    let g:slash = '\'
+    if filewritable($TMP) == 2
+        let g:temp = expand($TMP).'\Vim'
+    elseif filewritable($TEMP) == 2
+        let g:temp = expand($TEMP).'\Vim'
+    elseif filewritable('C:\TMP') == 2
+        let g:temp = 'C:\TMP\Vim'
+    else
+        let g:temp = 'C:\TEMP\Vim'
+    endif
+    call TryCreateDir(g:temp)
+
     source $VIMRUNTIME/mswin.vim
     behave mswin
-    set formatoptions=lrocj
 
     map <silent> <c-e> :silent !explorer .<cr>
     map <silent> <leader>f :Findstring
     nnoremap <silent> <leader>f :Findstring<cr>
 else
-    let s:slash = '/'
-    set formatoptions=lroc
-    map  <silent> <c-e> :silent !open .<cr>
-endif
+    let g:slash = '/'
+    if filewritable($TMPDIR) == 2
+        let g:temp = expand($TMPDIR).'/vim'
+    elseif filewritable('/tmp') == 2
+        let g:temp = '/tmp/vim'
+    else
+        let g:temp = expand('$HOME').'/.vim/temp'
+    endif
+    call TryCreateDir(g:temp)
 
-" Plugin settings
+    map  <silent> <c-e> :silent !open .<cr>
+
+    if has("mac")
+        noremap <silent> <c-t> :tabnew<cr>:Startify<cr>
+    endif
+endif
+" }}}
+
+" Backup and Undo {{{
+    set backup writebackup
+    let s:backupdir = expand(g:temp.g:slash.'backups')
+    let &directory = s:backupdir.g:slash.g:slash
+    if has("autocmd")
+        augroup Backups
+            au BufRead * let &l:backupdir = s:backupdir.g:slash.expand("%:p:h:t") |
+                \ call TryCreateDir(&l:backupdir)
+        augroup END
+    endif
+    call TryCreateDir(s:backupdir)
+    if has("persistent_undo")
+        call TryCreateDir(g:temp.g:slash.'undo')
+        set undofile
+        let &undodir = expand(g:temp.g:slash.'undo')
+    endif
+" }}}
+
+" Plugin Settings {{{
     " Airline plugin configuration
     set encoding=utf-8
     set laststatus=2
@@ -154,13 +236,17 @@ endif
     let g:startify_files_number = 8
     let g:startify_change_to_dir = 1
     let g:startify_enable_unsafe = 1
-    let g:startify_bookmarks = [
-        \ {'vc': $MYVIMRC.'.custom'},
-        \ {'vr': $MYVIMRC},
-        \ {'gc': $HOME.s:slash.'.gitconfig'}
-    \ ]
+    let g:startify_bookmarks = [{'gc': $HOME.g:slash.'.gitconfig'}]
+    if filereadable($MYVIMRC.'.after')
+        let g:startify_bookmarks = [{'va': $MYVIMRC.'.after'}] + g:startify_bookmarks
+    endif
+    let g:startify_bookmarks = [{'vr': $MYVIMRC}] + g:startify_bookmarks
+    if filereadable($MYVIMRC.'.before')
+        let g:startify_bookmarks = [{'vb': $MYVIMRC.'.before'}] + g:startify_bookmarks
+    endif
+" }}}
 
-" GUI configuration
+" GUI Settings {{{
     if has("gui_running")
         " GVim window style.
         set guitablabel=%t
@@ -172,8 +258,9 @@ endif
         " Custom keybindings
         map  <silent> <leader>m :if &go=~#'m'<bar>set go-=m<bar>else<bar>set go+=m<bar>endif<cr>
     endif
+" }}}
 
-" Diff configuration
+" Diff Settings {{{
 if &diff
     set diffopt=filler,context:3
     if has("autocmd")
@@ -190,68 +277,43 @@ elseif has("gui_running")
     set lines=40
     set columns=120
 endif
+" }}}
 
-" Autocommands
+" Autocommands {{{
 if has("autocmd")
     augroup Startup
         au GUIEnter * set visualbell t_vb=
-        au VimEnter * set autochdir
-        au BufEnter * if @% == '__startify__' | execute 'Startify' | endif
 
         " Jump to line cursor was on when last closed, if available
-        au BufReadPost *
-            \ if line("'\'") > 0 && line("'\'") <= line("$") |
-            \  exe "normal g`\"" |
+        au BufReadPost * if line("'\'") > 0 && line("'\'") <= line("$") |
+            \    exe "normal g`\"" |
             \ endif
     augroup END
 
     augroup Filetypes
-        au FileType cs set foldmethod=indent
+        au FileType c,cpp,cs,js,ts set foldmethod=indent |
+            \ noremap <buffer> <silent> ( 0?;<cr>0^:noh<cr>|
+            \ noremap <buffer> <silent> ) $/;<cr>0^:noh<cr>
+        au FileType gitcommit call setpos('.', [0, 1, 1, 0])
     augroup END
 
     augroup HelpShortcuts
         au BufEnter *.txt if (&buftype == 'help') | noremap q <c-w>c | endif
     augroup END
 
-    if v:version >= 704
-        " Toggle relative numbers when typing, if enabled
-        augroup RelativeNumber
-            au InsertEnter * let g:relativenumber = &relativenumber | setlocal norelativenumber
-            au InsertLeave * if (g:relativenumber) | setlocal relativenumber | endif
-        augroup END
-    endif
-
-    " Highlight trailing whitespace
     highlight ExtraWhitespace guifg=red
     augroup ExtraWhitespace
         au InsertEnter * highlight! link ExtraWhitespace Error
         au InsertLeave * highlight! link ExtraWhitespace NONE
         au BufEnter * match ExtraWhitespace /\s\+$\| \+\ze\t\|\t\zs \+\ze/
-        au BufLeave * if (v:version >= 702) | call clearmatches() | endif
     augroup END
 endif
+" }}}
 
-" Load local customizations and overrides
-if filereadable($MYVIMRC.'.custom')
-    source $MYVIMRC.custom
-endif
+" Load vimrc.after {{{
+    if filereadable($MYVIMRC.'.after')
+        source $MYVIMRC.after
+    endif
+" }}}
 
-" Functions
-    function! Tab_Or_Complete()
-        if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
-            return "\<C-N>"
-        else
-            return "\<Tab>"
-        endif
-    endfunction
-
-    let s:scrollbar = 0
-    function! ToggleScrollbar()
-        if s:scrollbar
-            set guioptions-=r
-            let s:scrollbar = 0
-        else
-            set guioptions+=r
-            let s:scrollbar = 1
-        endif
-    endfunction
+" vim: foldmethod=marker foldlevel=0
