@@ -18,22 +18,107 @@ filetype off
 " }}}
 
 " Functions {{{
+    function! GuiTabLabel()
+        " Tab number
+        let label = '['.v:lnum.'] '
+
+        " Buffer name
+        let bufnrlist = tabpagebuflist(v:lnum)
+        let bufnr = tabpagewinnr(v:lnum) - 1
+        let name = bufname(bufnrlist[bufnr])
+        if (name != '' && name !~ 'NERD_tree')
+            " Get the name of the first real buffer
+            let name = fnamemodify(name,":t")
+        else
+            let bufnr = len(bufnrlist)
+            while ((name == '' || name =~ 'NERD_tree') && bufnr >= 0)
+                let bufnr -= 1
+                let name = bufname(bufnrlist[bufnr])
+            endwhile
+            if (name == '')
+                let name = '[No Name]'
+                if (&buftype == 'quickfix')
+                    let name = '[Quickfix List]'
+                endif
+            else
+                " Get the name of the first real buffer
+                let name = fnamemodify(name,":t")
+            endif
+        endif
+        if (getbufvar(bufnrlist[bufnr], '&buftype') == 'help')
+            let name = 'help: '.fnamemodify(name, ':r')
+        endif
+        let label .= name
+
+        " The number of windows in the tab page
+        let uncounted = 0
+        for bufnr in bufnrlist
+            let tmpname = bufname(bufnr)
+            if tmpname == '' || tmpname =~ 'NERD_tree' || getbufvar(bufnr, '&buftype') == 'help'
+                let uncounted += 1
+            endif
+        endfor
+        let wincount = tabpagewinnr(v:lnum, '$') - uncounted
+        if (wincount > 1)
+            let label .= '... ('.wincount.')'
+        endif
+
+        " Add '+' if one of the buffers in the tab page is modified
+        for bufnr in bufnrlist
+            if getbufvar(bufnr, "&modified")
+                let label .= ' [+]'
+                break
+            endif
+        endfor
+
+        return label
+    endfunction
+
+    function! GuiTabToolTip()
+        let tooltip = ''
+        let bufnrlist = tabpagebuflist(v:lnum)
+        for bufnr in bufnrlist
+            let name=bufname(bufnr)
+            if (name =~ 'NERD_tree')
+                continue
+            endif
+
+            " Separate buffer entries
+            if tooltip!=''
+                let tooltip .= "\n"
+            endif
+
+            " Add name of buffer
+            if name == ''
+                " Give a name to no name documents
+                if getbufvar(bufnr,'&buftype')=='quickfix'
+                    let name = '[Quickfix List]'
+                else
+                    let name = '[No Name]'
+                endif
+            elseif getbufvar(bufnr,'&buftype')=='help'
+                let name = 'help: '.fnamemodify(name, ':p:t:r')
+            else 
+                let name = fnamemodify(name, ':p:t')
+            endif
+            let tooltip .= name
+
+            " add modified/modifiable flags
+            if getbufvar(bufnr, "&modified")
+                let tooltip .= ' [+]'
+            endif
+            if getbufvar(bufnr, "&modifiable")==0
+                let tooltip .= ' [-]'
+            endif
+        endfor
+        return tooltip
+    endfunction
+
     function! TabOrComplete()
         if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
             return "\<C-N>"
         else
             return "\<Tab>"
-        endif
-    endfunction
-
-    let s:scrollbar = 0
-    function! ToggleScrollbar()
-        if s:scrollbar
-            set guioptions-=r
-            let s:scrollbar = 0
-        else
-            set guioptions+=r
-            let s:scrollbar = 1
         endif
     endfunction
 
@@ -79,6 +164,7 @@ filetype off
 
     " File organization
     set hidden
+    set autoread
     set switchbuf=usetab
     set shortmess+=A
     set autochdir
@@ -106,7 +192,7 @@ filetype off
    "noremap  <silent> <c-tab>   {TAKEN: Switch tab}
    "noremap  <silent> <c-f11>   {TAKEN: Fullscreen}
    "noremap  <silent> <leader>\ {TAKEN: Easymotion}
-    noremap  <silent> <leader>' :call ToggleScrollbar()<cr>
+    noremap  <silent> <leader>' :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
     noremap  <silent> <leader>[ :setlocal wrap!<cr>:setlocal wrap?<cr>
     noremap  <silent> <leader>/ :noh<cr>
     noremap  <silent> <leader>b :NERDTreeTabsToggle<cr>
@@ -249,8 +335,9 @@ endif
 " GUI Settings {{{
     if has("gui_running")
         " GVim window style.
-        set guitablabel=%t
-        set guioptions=agt
+        set guitablabel=%{GuiTabLabel()}
+        set guitabtooltip=%{GuiTabToolTip()}
+        set guioptions=aegt
         set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
         set selectmode=
         colorscheme github
