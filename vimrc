@@ -211,6 +211,7 @@ filetype off
     noremap  <silent> <leader>y "*y
     noremap  <silent> <leader>z :tabnew $MYVIMRC<cr>
     noremap  <silent> cd        :execute 'cd '.expand("%:p:h")<cr>
+    noremap  <silent> gV        `[v`]
     noremap  <silent> j         gj
     noremap  <silent> k         gk
     noremap           Q         :q
