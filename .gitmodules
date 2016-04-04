@@ -141,6 +141,10 @@
     path = colorschemes/lucian
     url = https://github.com/jonathanfilip/vim-lucius.git
     ignore = dirty
+[submodule "mango"]
+    path = colorschemes/mango
+    url = https://github.com/goatslacker/mango.vim.git
+    ignore = dirty
 [submodule "materialbox"]
     path = colorschemes/materialbox
     url = https://github.com/mkarmona/materialbox.git
@@ -164,4 +168,8 @@
 [submodule "solarized"]
     path = colorschemes/solarized
     url = https://github.com/altercation/vim-colors-solarized.git
+    ignore = dirty
+[submodule "tomorrow"]
+    path = colorschemes/tomorrow
+    url = https://github.com/chriskempson/vim-tomorrow-theme.git
     ignore = dirty
