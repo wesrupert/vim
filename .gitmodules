@@ -133,6 +133,10 @@
     path = colorschemes/github
     url = https://github.com/endel/vim-github-colorscheme.git
     ignore = dirty
+[submodule "hemisu"]
+    path = colorschemes/hemisu
+    url = https://github.com/noahfrederick/vim-hemisu.git
+    ignore = dirty
 [submodule "jellybeans"]
     path = colorschemes/jellybeans
     url = https://github.com/nanotech/jellybeans.vim.git
@@ -168,6 +172,10 @@
 [submodule "solarized"]
     path = colorschemes/solarized
     url = https://github.com/altercation/vim-colors-solarized.git
+    ignore = dirty
+[submodule "summerfruit"]
+    path = colorschemes/summerfruit
+    url = https://github.com/baeuml/summerfruit256.vim.git
     ignore = dirty
 [submodule "tomorrow"]
     path = colorschemes/tomorrow
