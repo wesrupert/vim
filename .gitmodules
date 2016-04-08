@@ -55,6 +55,10 @@
     path = plugins/json
     url = https://github.com/elzr/vim-json.git
     ignore = dirty
+[submodule "interestingwords"]
+    path = plugins/interestingwords
+    url = https://github.com/wesrupert/vim-interestingwords.git
+    ignore = dirty
 [submodule "nerdcommenter"]
     path = plugins/nerdcommenter
     url = https://github.com/scrooloose/nerdcommenter.git

@@ -18,7 +18,7 @@ endif
 " }}}
 
 " Functions {{{
-function! GuiTabLabel()
+function! GuiTabLabel() " {{{
     " Tab number
     let label = '['.v:lnum.'] '
 
@@ -26,27 +26,31 @@ function! GuiTabLabel()
     let bufnrlist = tabpagebuflist(v:lnum)
     let bufnr = tabpagewinnr(v:lnum) - 1
     let name = bufname(bufnrlist[bufnr])
+    let modified = getbufvar(bufnrlist[bufnr], '&modified')
     if (name != '' && name !~ 'NERD_tree')
         " Get the name of the first real buffer
-        let name = fnamemodify(name,":t")
+        let name = fnamemodify(name, ':t')
     else
         let bufnr = len(bufnrlist)
         while ((name == '' || name =~ 'NERD_tree') && bufnr >= 0)
             let bufnr -= 1
             let name = bufname(bufnrlist[bufnr])
+            let modified = getbufvar(bufnrlist[bufnr], '&modified')
         endwhile
         if (name == '')
             let name = '[No Name]'
             if (&buftype == 'quickfix')
                 let name = '[Quickfix List]'
+                let modified = 0
             endif
         else
             " Get the name of the first real buffer
-            let name = fnamemodify(name,":t")
+            let name = fnamemodify(name, ':t')
         endif
     endif
     if (getbufvar(bufnrlist[bufnr], '&buftype') == 'help')
         let name = 'help: '.fnamemodify(name, ':r')
+        let modified = 0
     endif
     let label .= name
 
@@ -60,21 +64,28 @@ function! GuiTabLabel()
     endfor
     let wincount = tabpagewinnr(v:lnum, '$') - uncounted
     if (wincount > 1)
-        let label .= '... ('.wincount.')'
+        let label .= '... ('.wincount
+
+        " Add '[+]' if one of the buffers in the tab page is modified
+        for bufnr in bufnrlist
+            if (modified == 0 && getbufvar(bufnr, '&modified'))
+                let label .= ' [+]'
+                break
+            endif
+        endfor
+
+        let label .= ')'
     endif
 
-    " Add '+' if one of the buffers in the tab page is modified
-    for bufnr in bufnrlist
-        if getbufvar(bufnr, "&modified")
-            let label .= ' [+]'
-            break
-        endif
-    endfor
+    " Add '[+]' if one of the buffers in the tab page is modified
+    if (modified == 1)
+        let label .= ' [+]'
+    endif
 
     return label
-endfunction
+endfunction " }}}
 
-function! GuiTabToolTip()
+function! GuiTabToolTip() " {{{
     let tooltip = ''
     let bufnrlist = tabpagebuflist(v:lnum)
     for bufnr in bufnrlist
@@ -98,7 +109,7 @@ function! GuiTabToolTip()
             endif
         elseif getbufvar(bufnr,'&buftype')=='help'
             let name = 'help: '.fnamemodify(name, ':p:t:r')
-        else 
+        else
             let name = fnamemodify(name, ':p:t')
         endif
         let tooltip .= name
@@ -112,50 +123,90 @@ function! GuiTabToolTip()
         endif
     endfor
     return tooltip
-endfunction
+endfunction " }}}
 
-function! TabOrComplete()
+function! IsEmptyFile() " {{{
+    if @% == ""
+        " No filename for current buffer
+        return 1
+    elseif filereadable(@%) == 0
+        " File doesn't exist yet
+        return 1
+    elseif line('$') == 1 && col('$') == 1
+        " File is empty
+        return 1
+    endif
+    return 0
+endfunction " }}}
+
+function! SetHoverHlColor() " {{{
+    if !exists('s:interestingWordsGUIColors')
+        let s:interestingWordsGUIColors = g:interestingWordsGUIColors
+        if has("autocmd")
+            au ColorScheme * call SetHoverHlColor()
+        endif
+    endif
+    let hlcolor = printf("%s", synIDattr(hlID('Search'), 'bg#'))
+    if (hlcolor != '')
+        let g:interestingWordsGUIColors = [ hlcolor ] + s:interestingWordsGUIColors
+        if exists('*ClearWordColorCache')
+            call ClearWordColorCache()
+        endif
+    endif
+endfunction " }}}
+
+function! TabOrComplete() " {{{
     if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
         return "\<C-N>"
     else
         return "\<Tab>"
     endif
-endfunction
+endfunction " }}}
 
-function! TryCreateDir(path)
+function! ToggleIdeMode() " {{{
+    execute 'NERDTreeTabsToggle'
+    if (g:idemode == 0)
+        set guioptions+=mr
+        let g:idemode = 1
+    else
+        set guioptions-=mr
+        let g:idemode = 0
+    endif
+endfunction " }}}
+
+function! TryCreateDir(path) " {{{
     if !filereadable(a:path) && filewritable(a:path) != 2
         call mkdir(a:path)
     endif
-endfunction
+endfunction " }}}
 " }}}
 
 " Preferences and Settings {{{
 syntax on
 filetype plugin indent on
 set mouse=a
+set encoding=utf-8
+set formatoptions=
 
 " Visual aesthetics
 set noerrorbells visualbell t_vb=
-set lazyredraw
-set number
-set ruler
-set showcmd
+set number norelativenumber
+set laststatus=2 showcmd ruler noshowmode
+set scrolloff=3 sidescrolloff=15 sidescroll=1
 set wildmenu
-set equalalways
-set scrolloff=3 sidescrolloff=15
-set sidescroll=1
+set lazyredraw
+let g:idemode = 0
 
 " Search
 set updatetime=500
-set incsearch
-set hlsearch
+set incsearch hlsearch
 set ignorecase smartcase
 
 " Whitespace and comments
 set tabstop=4 softtabstop=4 shiftwidth=4
 set expandtab smarttab
 set autoindent smartindent
-set formatoptions=jr
+set formatoptions+=jr
 
 " Word wrap
 set backspace=indent,eol,start
@@ -164,69 +215,71 @@ set linebreak
 set formatoptions+=cn
 
 " File organization
-set hidden
 set autoread
-set switchbuf=usetab
 set shortmess+=A
+set hidden
+set switchbuf=usetab
 set noautochdir
-set foldmethod=syntax
-set foldenable
-set foldlevelstart=10
+set foldmethod=syntax foldenable foldlevelstart=10
 set modeline modelines=1
 " }}}
 
 " Keybindings and Commands {{{
-inoremap          jk         <esc>
-inoremap          kj         <esc>
-inoremap <silent> <tab>      <c-r>=TabOrComplete()<cr>
+nnoremap <silent> <c-a>      <esc>ggVG
 inoremap <silent> <c-a>      <esc>ggVG
- noremap <silent> <c-a>      <esc>ggVG
-"noremap <silent> <c-e>      {TAKEN: Open file explorer}
- noremap <silent> <c-h>      <c-w>h
- noremap <silent> <c-j>      <c-w>j
- noremap <silent> <c-k>      <c-w>k
- noremap <silent> <c-l>      <c-w>l
-"noremap <silent> <c-p>      {TAKEN: Fuzzy file search}
- noremap          <c-q>      Q
- noremap <silent> <c-t>      :tabnew<cr>:Startify<cr>
- noremap <silent> <c-w><c-w> :tabclose<cr>
-"noremap <silent> <c-tab>    {TAKEN: Switch tab}
-"noremap <silent> <c-f11>    {TAKEN: Fullscreen}
-"noremap <silent> <leader>\  {TAKEN: Easymotion}
- noremap <silent> <leader>'  :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
- noremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
- noremap <silent> <leader>/  :nohlsearch<cr>:set hlsearch<cr>
- noremap <silent> <leader>?  :nohlsearch<cr>
- noremap <silent> <leader>b  :NERDTreeTabsToggle<cr>
-"noremap <silent> <leader>c  {TAKEN: NERDCommenter}
-"noremap <silent> <leader>f  {TAKEN: Findstr}
- noremap <silent> <leader>g  :GitGutterToggle<cr>
-"noremap <silent> <leader>h  {TAKEN: GitGutter previews}
- noremap <silent> <leader>i  :set foldmethod=indent<cr>
-"noremap <silent> <leader>k  {TAKEN: Toggle important word}
-"noremap <silent> <leader>K  {TAKEN: Clear all important words}
-"noremap <silent> <leader>m  {TAKEN: Toggle GUI menu}
- noremap <silent> <leader>n  :setlocal relativenumber!<cr>
- noremap <silent> <leader>N  :setlocal number!<cr>
- noremap <silent> <leader>r  :source $MYVIMRC<cr>
- noremap <silent> <leader>s  :Startify<cr>
- noremap          <leader>t  <plug>TaskList
- noremap <silent> <leader>v  "*p
- noremap <silent> <leader>w  :execute "resize ".line("$")<cr>
- noremap <silent> <leader>y  "*y
- noremap <silent> <leader>z  :tabnew $MYVIMRC<cr>
- noremap <silent> cd         :execute 'cd '.expand("%:p:h")<cr>
- noremap <silent> gV         `[v`]
- noremap <silent> j          gj
- noremap <silent> k          gk
- noremap          Q          :q
- noremap          Y          y$
- noremap          <tab>      %
- noremap          <space>    za
- noremap <silent> [[         ^
- noremap <silent> ]]         $
-"noremap <silent> (          {TAKEN: Prev code line}
-"noremap <silent> )          {TAKEN: Next code line}
+    "map <silent> <c-e>      {TAKEN: Open file explorer}
+nnoremap <silent> <c-h>      <c-w>h
+nnoremap <silent> <c-j>      <c-w>j
+nnoremap <silent> <c-k>      <c-w>k
+nnoremap <silent> <c-l>      <c-w>l
+    "map <silent> <c-p>      {TAKEN: Fuzzy file search}
+nnoremap          <c-q>      Q
+nnoremap <silent> <c-t>      :tabnew<cr>:Startify<cr>
+    "map <silent> <c-tab>    {TAKEN: Switch tab}
+    "map <silent> <c-f11>    {TAKEN: Fullscreen}
+    "map <silent> <leader>\  {TAKEN: Easymotion}
+nnoremap <silent> <leader>'  :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
+nnoremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
+nnoremap <silent> <leader>/  :nohlsearch<cr>:let g:hoverhl=1<cr>
+nnoremap <silent> <leader>?  :nohlsearch<cr>:call UncolorAllWords()<cr>:let g:hoverhl=0<cr>
+nnoremap <silent> <leader>b  :call ToggleIdeMode()<cr>
+    "map <silent> <leader>c  {TAKEN: NERDCommenter}
+    "map <silent> <leader>f  {TAKEN: Findstr}
+nnoremap <silent> <leader>g  :GitGutterToggle<cr>
+    "map <silent> <leader>h  {TAKEN: GitGutter previews}
+nnoremap <silent> <leader>i  :set foldmethod=indent<cr>
+    nmap <silent> <leader>k  <plug>InterestingWords
+    vmap <silent> <leader>k  <plug>InterestingWords
+    nmap <silent> <leader>K  <plug>InterestingWordsClear
+    "map <silent> <leader>K  {TAKEN: Clear all important words}
+    "map <silent> <leader>m  {TAKEN: Toggle GUI menu}
+    nmap <silent> <leader>n  <plug>InterestingWordsForeward
+    nmap <silent> <leader>N  <plug>InterestingWordsBackward
+nnoremap <silent> <leader>rs :set columns=60 lines=20<cr>
+nnoremap <silent> <leader>rm :set columns=120 lines=40<cr>
+nnoremap <silent> <leader>rl :set columns=180 lines=60<cr>
+nnoremap <silent> <leader>s  :Startify<cr>
+nnoremap          <leader>t  <plug>TaskList
+nnoremap <silent> <leader>v  :source $MYVIMRC<cr>
+nnoremap <silent> <leader>w  :execute "resize ".line("$")<cr>
+nnoremap <silent> <leader>z  :tabnew<bar>args $MYVIMRC*<bar>all<bar>wincmd J<bar>wincmd t<cr>
+nnoremap <silent> cd         :execute 'cd '.expand("%:p:h")<cr>
+nnoremap <silent> gV         `[v`]
+nnoremap <silent> j          gj
+inoremap          jk         <esc>
+nnoremap <silent> k          gk
+nnoremap <silent> K          :tab h <c-r><c-w><cr>
+inoremap          kj         <esc>
+nnoremap          ZT         :tabclose<cr>
+nnoremap          Q          :q
+nnoremap          Y          y$
+inoremap <silent> <tab>      <c-r>=TabOrComplete()<cr>
+nnoremap          <tab>      %
+nnoremap          <space>    za
+nnoremap <silent> [[         ^
+nnoremap <silent> ]]         $
+    "map <silent> (          {TAKEN: Prev code line}
+    "map <silent> )          {TAKEN: Next code line}
 
 cabbrev h    <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab h' : 'h')<CR>
 cabbrev he   <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab he' : 'he')<CR>
@@ -235,8 +288,8 @@ cabbrev help <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab help' : 'help')<C
 " }}}
 
 " Platform-Specific Settings {{{
+let g:slash = pathogen#slash()
 if has("win32")
-    let g:slash = '\'
     if filewritable($TMP) == 2
         let g:temp = expand($TMP).'\Vim'
     elseif filewritable($TEMP) == 2
@@ -255,7 +308,6 @@ if has("win32")
     map <silent> <leader>f :Findstring
     nnoremap <silent> <leader>f :Findstring<cr>
 else
-    let g:slash = '/'
     if filewritable($TMPDIR) == 2
         let g:temp = expand($TMPDIR).'/vim'
     elseif filewritable('/tmp') == 2
@@ -293,13 +345,16 @@ endif
 
 " Plugin Settings {{{
 " Airline plugin configuration
-set encoding=utf-8
-set laststatus=2
-set noshowmode
 let g:airline_left_sep=''
 let g:airline_right_sep=''
 let g:airline_inactive_collapse=1
+let g:airline#extensions#branch#format = 2
 let g:airline#extensions#whitespace#enabled=1
+let g:airline#extensions#whitespace#trailing_format = 't[%s]'
+let g:airline#extensions#whitespace#mixed_indent_format = 'm[%s]'
+let g:airline#extensions#whitespace#long_format = 'l[%s]'
+let g:airline#extensions#whitespace#mixed_indent_file_format = 'mf[%s]'
+
 
 " Colorscheme switcher plugin configuration
 let g:colorscheme_switcher_define_mappings = 0
@@ -315,6 +370,18 @@ let g:ctrlp_working_path_mode = 'a'
 " Findstr plugin configuration
 let Findstr_Default_Options = "/sinp"
 let Findstr_Default_FileList = $SEARCHROOT
+
+" InterestingWords plugin configuration
+if has("autocmd")
+    let g:hoverhl=0
+    augroup HoverHighlight
+        au BufEnter * call SetHoverHlColor()
+        au CursorHold * if (g:hoverhl == 1) |
+                    \     call UncolorAllWords() |
+                    \     call InterestingWords('n') |
+                    \ endif
+    augroup END
+endif
 
 " NERDTree plugin configuration
 let NERDTreeShowHidden = 1
@@ -340,6 +407,9 @@ let g:startify_bookmarks = [{'vr': $MYVIMRC}] + g:startify_bookmarks
 if filereadable($MYVIMRC.'.before')
     let g:startify_bookmarks = [{'vb': $MYVIMRC.'.before'}] + g:startify_bookmarks
 endif
+if has('gui_running')
+    let &lines = 17 + len(g:startify_custom_header) + (2 * g:startify_files_number) + len(g:startify_bookmarks) + 3
+endif
 " }}}
 
 " GUI Settings {{{
@@ -350,6 +420,7 @@ if has("gui_running")
     set guioptions=aegt
     set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
     set selectmode=
+    set cursorline
     colorscheme github
 
     " Custom keybindings
@@ -369,9 +440,6 @@ if &diff
         set lines=50
         set columns=200
     endif
-elseif has("gui_running")
-    set lines=40
-    set columns=120
 endif
 
 function! SetDiffLayout()
@@ -385,7 +453,7 @@ function! SetDiffLayout()
 endfu
 " }}}
 
-" Autocommands {{{
+" Auto Commands {{{
 if has("autocmd")
     augroup Startup
         au GUIEnter * set visualbell t_vb=
@@ -398,14 +466,12 @@ if has("autocmd")
 
     augroup AutoChDir
         au BufEnter * silent! lcd %:p:h
-    augroup END
-
-    augroup HoverHighlight
-        au CursorHold * let @/='\<'.expand("<cword>").'\>'
+        au BufEnter * if IsEmptyFile() | set ft=markdown | end
     augroup END
 
     augroup Filetypes
-        au FileType c,cpp,cs,js,ts setlocal foldmethod=indent |
+        au FileType cs setlocal foldmethod=indent
+        au FileType c,cpp,cs,js,ts let g:hoverhl = 1 |
                     \ noremap <buffer> <silent> ( 0?;<cr>0^:noh<cr>|
                     \ noremap <buffer> <silent> ) $/;<cr>0^:noh<cr>
         au FileType gitcommit call setpos('.', [0, 1, 1, 0])
@@ -420,6 +486,10 @@ if has("autocmd")
         au InsertEnter * highlight! link ExtraWhitespace Error
         au InsertLeave * highlight! link ExtraWhitespace NONE
         au BufEnter * match ExtraWhitespace /\s\+$\| \+\ze\t\|\t\zs \+\ze/
+    augroup END
+
+    augroup WinHeight
+        au VimResized * let &winheight = (&lines * 70) / 100
     augroup END
 endif
 " }}}
