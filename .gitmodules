@@ -1,4 +1,4 @@
-; Plugins
+; Plugins: {{{
 [submodule "airline"]
     path = plugins/airline
     url = https://github.com/vim-airline/vim-airline.git
@@ -123,12 +123,9 @@
     path = plugins/xolox-shell
     url = https://github.com/xolox/vim-shell.git
     ignore = dirty
+; }}}
 
-; Colorschemes
-[submodule "colorsbox"]
-    path = colorschemes/colorsbox
-    url = https://github.com/mkarmona/colorsbox.git
-    ignore = dirty
+; Colorschemes: {{{
 [submodule "fx"]
     path = colorschemes/fx
     url = https://github.com/cesardeazevedo/Fx-ColorScheme.git
@@ -185,3 +182,11 @@
     path = colorschemes/tomorrow
     url = https://github.com/chriskempson/vim-tomorrow-theme.git
     ignore = dirty
+; }}}
+
+[submodule "colorsbox"]
+    path = colorschemes/colorsbox
+    url = https://github.com/mkarmona/colorsbox.git
+    ignore = dirty
+
+; vim: foldmethod=marker foldlevel=0
