@@ -125,18 +125,57 @@ function! GuiTabToolTip() " {{{
     return tooltip
 endfunction " }}}
 
-function! IsEmptyFile() " {{{
-    if @% == ""
-        " No filename for current buffer
-        return 1
-    elseif filereadable(@%) == 0
-        " File doesn't exist yet
-        return 1
-    elseif line('$') == 1 && col('$') == 1
-        " File is empty
-        return 1
+function! GrowToContents(maxlines, maxcolumns) " {{{
+    let totallines = line('$') + 3
+    let linenumbers = 0
+    if (&number == 1 || &relativenumber == 1)
+        let linenumbers = len(line('$')) + 1
     endif
-    return 0
+    let totalcolumns = GetMaxColumn() + linenumbers + 1
+    if (totallines > &lines)
+        if (totallines < a:maxlines)
+            let &lines = totallines
+        else
+            let &lines = a:maxlines
+        endif
+    endif
+    if (totalcolumns > &columns)
+        if (totalcolumns < a:maxcolumns)
+            let &columns = totalcolumns
+        else
+            let &columns = a:maxcolumns
+        endif
+    endif
+endfunction " }}}
+
+function! IsEmptyFile() " {{{
+    if @% != ""
+        " No filename for current buffer
+        return 0
+    elseif filereadable(@%) != 0
+        " File doesn't exist yet
+        return 0
+    elseif line('$') != 1 || col('$') != 1
+        " File is empty
+        return 0
+    endif
+    return 1
+endfunction " }}}
+
+function! GetMaxColumn() " {{{
+    let maxlength = 0
+    let linenr = 1
+    let curline = line('.')
+    while (linenr < line('$'))
+        exe ':'.linenr
+        let linelength = col('$')
+        if (linelength > maxlength)
+            let maxlength = linelength
+        endif
+        let linenr = linenr + 1
+    endwhile
+    exe ':'.curline
+    return maxlength
 endfunction " }}}
 
 function! SetHoverHlColor() " {{{
@@ -270,8 +309,8 @@ inoremap          jk         <esc>
 nnoremap <silent> k          gk
 nnoremap <silent> K          :tab h <c-r><c-w><cr>
 inoremap          kj         <esc>
-nnoremap          ZT         :tabclose<cr>
 nnoremap          Q          :q
+nnoremap          TQ         :tabclose<cr>
 nnoremap          Y          y$
 inoremap <silent> <tab>      <c-r>=TabOrComplete()<cr>
 nnoremap          <tab>      %
@@ -407,8 +446,10 @@ let g:startify_bookmarks = [{'vr': $MYVIMRC}] + g:startify_bookmarks
 if filereadable($MYVIMRC.'.before')
     let g:startify_bookmarks = [{'vb': $MYVIMRC.'.before'}] + g:startify_bookmarks
 endif
-if has('gui_running')
-    let &lines = 17 + len(g:startify_custom_header) + (2 * g:startify_files_number) + len(g:startify_bookmarks) + 3
+if has('gui_running') && has('autocmd')
+    augroup GuiResize
+        autocmd User Startified call GrowToContents(60, 120)
+    augroup END
 endif
 " }}}
 
@@ -420,11 +461,22 @@ if has("gui_running")
     set guioptions=aegt
     set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
     set selectmode=
+    set guicursor+=n-v-c:blinkon0
     set cursorline
     colorscheme github
 
     " Custom keybindings
     map  <silent> <leader>m :if &go=~#'m'<bar>set go-=m<bar>else<bar>set go+=m<bar>endif<cr>
+
+    if has('autocmd')
+        augroup GuiStartup
+            au GUIEnter * set visualbell t_vb=
+        augroup END
+
+        augroup GuiResize
+            au VimEnter * call GrowToContents(60, 180)
+        augroup END
+    endif
 endif
 " }}}
 
@@ -435,6 +487,9 @@ if &diff
         augroup DiffResize
             au GUIEnter * simalt ~x
             au VimEnter * call SetDiffLayout()
+        augroup END
+        augroup GuiResize
+            au!
         augroup END
     elseif has("gui_running")
         set lines=50
@@ -455,9 +510,7 @@ endfu
 
 " Auto Commands {{{
 if has("autocmd")
-    augroup Startup
-        au GUIEnter * set visualbell t_vb=
-
+    augroup RememberCursor
         " Jump to line cursor was on when last closed, if available
         au BufReadPost * if line("'\'") > 0 && line("'\'") <= line("$") |
                     \    exe "normal g`\"" |
