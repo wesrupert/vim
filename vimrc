@@ -452,11 +452,6 @@ let g:startify_bookmarks = [{'vr': $MYVIMRC}] + g:startify_bookmarks
 if filereadable($MYVIMRC.'.before')
     let g:startify_bookmarks = [{'vb': $MYVIMRC.'.before'}] + g:startify_bookmarks
 endif
-if has('gui_running') && has('autocmd')
-    augroup GuiResize
-        autocmd User Startified call GrowToContents(60, 120)
-    augroup END
-endif
 " }}}
 
 " GUI Settings {{{
