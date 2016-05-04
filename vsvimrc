@@ -1,5 +1,2 @@
-silent source $USERPROFILE\vimfiles\vimrc.before
-silent source $USERPROFILE\vimfiles\vimrc
-silent source $USERPROFILE\vimfiles\vimrc.after
-
-iunmap <tab>
+source $USERPROFILE\vimfiles\vimrc
+silent iunmap <tab>
