@@ -166,7 +166,8 @@ function! GetMaxColumn() " {{{
     let maxlength = 0
     let linenr = 1
     let curline = line('.')
-    while (linenr < line('$'))
+    let curcol = col('.')
+    while (linenr <= line('$'))
         exe ':'.linenr
         let linelength = col('$')
         if (linelength > maxlength)
@@ -174,7 +175,7 @@ function! GetMaxColumn() " {{{
         endif
         let linenr = linenr + 1
     endwhile
-    exe ':'.curline
+    exe ':norm '.curline.'G'.curcol.'|'
     return maxlength
 endfunction " }}}
 
@@ -294,9 +295,10 @@ nnoremap <silent> <leader>i  :set foldmethod=indent<cr>
     "map <silent> <leader>m  {TAKEN: Toggle GUI menu}
     nmap <silent> <leader>n  <plug>InterestingWordsForeward
     nmap <silent> <leader>N  <plug>InterestingWordsBackward
-nnoremap <silent> <leader>rs :set columns=60 lines=20<cr>
-nnoremap <silent> <leader>rm :set columns=120 lines=40<cr>
 nnoremap <silent> <leader>rl :set columns=180 lines=60<cr>
+nnoremap <silent> <leader>rm :set columns=120 lines=40<cr>
+nnoremap <silent> <leader>rr :set columns=60 lines=20<cr>:call GrowToContents(60, 180)<cr>
+nnoremap <silent> <leader>rs :set columns=60 lines=20<cr>
 nnoremap <silent> <leader>s  :Startify<cr>
 nnoremap          <leader>t  <plug>TaskList
 nnoremap <silent> <leader>v  :source $MYVIMRC<cr>
@@ -319,6 +321,10 @@ nnoremap <silent> [[         ^
 nnoremap <silent> ]]         $
     "map <silent> (          {TAKEN: Prev code line}
     "map <silent> )          {TAKEN: Next code line}
+
+if (g:mapleader == ',')
+    nnoremap \ ,
+endif
 
 cabbrev h    <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab h' : 'h')<CR>
 cabbrev he   <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab he' : 'he')<CR>
@@ -446,11 +452,6 @@ let g:startify_bookmarks = [{'vr': $MYVIMRC}] + g:startify_bookmarks
 if filereadable($MYVIMRC.'.before')
     let g:startify_bookmarks = [{'vb': $MYVIMRC.'.before'}] + g:startify_bookmarks
 endif
-if has('gui_running') && has('autocmd')
-    augroup GuiResize
-        autocmd User Startified call GrowToContents(60, 120)
-    augroup END
-endif
 " }}}
 
 " GUI Settings {{{
@@ -527,7 +528,11 @@ if has("autocmd")
         au FileType c,cpp,cs,js,ts let g:hoverhl = 1 |
                     \ noremap <buffer> <silent> ( 0?;<cr>0^:noh<cr>|
                     \ noremap <buffer> <silent> ) $/;<cr>0^:noh<cr>
-        au FileType gitcommit call setpos('.', [0, 1, 1, 0])
+        au FileType gitcommit call setpos('.', [0, 1, 1, 0]) |
+                    \ set textwidth=72 formatoptions+=t colorcolumn=50,+0 |
+                    \ set columns=75 lines=20 |
+                    \ set scrolloff=0 sidescrolloff=0 sidescroll=1 |
+                    \ call GrowToContents(50, 80)
     augroup END
 
     augroup HelpShortcuts
