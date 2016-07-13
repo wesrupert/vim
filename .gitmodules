@@ -126,6 +126,14 @@
 ; }}}
 
 ; Colorschemes: {{{
+[submodule "colorsbox"]
+    path = colorschemes/colorsbox
+    url = https://github.com/mkarmona/colorsbox.git
+    ignore = dirty
+[submodule "deepspace"]
+    path = colorschemes/deepspace
+    url = https://github.com/tyrannicaltoucan/vim-deep-space.git
+    ignore = dirty
 [submodule "fx"]
     path = colorschemes/fx
     url = https://github.com/cesardeazevedo/Fx-ColorScheme.git
@@ -158,6 +166,10 @@
     path = colorschemes/moria
     url = https://github.com/vim-scripts/moria.git
     ignore = dirty
+[submodule "one"]
+    path = colorschemes/one
+    url = https://github.com/rakr/vim-one.git
+    ignore = dirty
 [submodule "pencil"]
     path = colorschemes/pencil
     url = https://github.com/reedes/vim-colors-pencil.git
@@ -183,10 +195,5 @@
     url = https://github.com/chriskempson/vim-tomorrow-theme.git
     ignore = dirty
 ; }}}
-
-[submodule "colorsbox"]
-    path = colorschemes/colorsbox
-    url = https://github.com/mkarmona/colorsbox.git
-    ignore = dirty
 
 ; vim: foldmethod=marker foldlevel=0
