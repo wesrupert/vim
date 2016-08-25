@@ -527,11 +527,14 @@ if has("autocmd")
 
     augroup Filetypes
         au FileType cs setlocal foldmethod=indent
-        au FileType c,cpp,cs,js,ts let g:hoverhl = 1 |
+        au FileType c,cpp,cs,js,ps1,ts let g:hoverhl = 1 |
                     \ nnoremap <buffer> <silent> ( 0?;<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> ) $/;<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> { 0?{\s*$<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> } $/{\s*$<cr>0^:noh<cr>
+        au FileType json let g:hoverhl = 1 |
+                    \ nnoremap <buffer> <silent> { 0?[\[{]\s*$<cr>0^:noh<cr>|
+                    \ nnoremap <buffer> <silent> } $/[\[{]\s*$<cr>0^:noh<cr>
         au BufNew,BufReadPre *.xaml setf xml
         au FileType gitcommit call setpos('.', [0, 1, 1, 0]) |
                     \ set textwidth=72 formatoptions+=t colorcolumn=50,+0 |
