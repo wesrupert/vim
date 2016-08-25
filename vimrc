@@ -530,8 +530,8 @@ if has("autocmd")
         au FileType c,cpp,cs,js,ps1,ts let g:hoverhl = 1 |
                     \ nnoremap <buffer> <silent> ( 0?;<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> ) $/;<cr>0^:noh<cr>|
-                    \ nnoremap <buffer> <silent> { 0?{\s*$<cr>0^:noh<cr>|
-                    \ nnoremap <buffer> <silent> } $/{\s*$<cr>0^:noh<cr>
+                    \ nnoremap <buffer> <silent> { 0?{[^}]*$<cr>0^:noh<cr>|
+                    \ nnoremap <buffer> <silent> } $/{[^}]*$<cr>0^:noh<cr>
         au FileType json let g:hoverhl = 1 |
                     \ nnoremap <buffer> <silent> { 0?[\[{]\s*$<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> } $/[\[{]\s*$<cr>0^:noh<cr>
