@@ -282,6 +282,8 @@ nnoremap <silent> <leader>'  :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<
 nnoremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
 nnoremap <silent> <leader>/  :nohlsearch<cr>:let g:hoverhl=1<cr>
 nnoremap <silent> <leader>?  :nohlsearch<cr>:call UncolorAllWords()<cr>:let g:hoverhl=0<cr>
+nnoremap          -          _
+nnoremap          _          -
 nnoremap <silent> <leader>b  :call ToggleIdeMode()<cr>
     "map <silent> <leader>c  {TAKEN: NERDCommenter}
     "map <silent> <leader>f  {TAKEN: Findstr}
@@ -492,6 +494,7 @@ if &diff
             au VimEnter * call SetDiffLayout()
         augroup END
         augroup GuiResize
+            " Clear autoresize command
             au!
         augroup END
     elseif has("gui_running")
