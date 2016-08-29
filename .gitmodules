@@ -111,10 +111,6 @@
     path = plugins/undotree
     url = https://github.com/mbbill/undotree.git
     ignore = dirty
-[submodule "vinegar"]
-    path = plugins/vinegar
-    url = https://github.com/tpope/vim-vinegar.git
-    ignore = dirty
 [submodule "xolox-misc"]
     path = plugins/xolox-misc
     url = https://github.com/xolox/vim-misc.git
