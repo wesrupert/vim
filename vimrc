@@ -203,6 +203,16 @@ function! TabOrComplete() " {{{
     endif
 endfunction " }}}
 
+function! ToggleAlpha() "{{{
+    if exists('s:alpha')
+        execute 'WSetAlpha 256'
+        unlet s:alpha
+    else
+        execute 'WSetAlpha '.g:alpha_level
+        let s:alpha = 1
+    endif
+endfunction "}}}
+
 function! ToggleIdeMode() " {{{
     execute 'NERDTreeTabsToggle'
     if (g:idemode == 0)
@@ -236,6 +246,7 @@ set scrolloff=3 sidescrolloff=15 sidescroll=1
 set wildmenu
 set lazyredraw
 let g:idemode = 0
+let g:alpha_level = 200
 
 " Search
 set updatetime=500
@@ -265,6 +276,7 @@ set modeline modelines=1
 " }}}
 
 " Keybindings and Commands {{{
+     map <silent> <f11>      :WToggleFullscreen<cr>
 nnoremap <silent> <c-a>      <esc>ggVG
 inoremap <silent> <c-a>      <esc>ggVG
     "map <silent> <c-e>      {TAKEN: Open file explorer}
@@ -276,14 +288,6 @@ nnoremap <silent> <c-l>      <c-w>l
 nnoremap          <c-q>      Q
 nnoremap <silent> <c-t>      :tabnew<cr>:Startify<cr>
     "map <silent> <c-tab>    {TAKEN: Switch tab}
-    "map <silent> <c-f11>    {TAKEN: Fullscreen}
-    "map <silent> <leader>\  {TAKEN: Easymotion}
-nnoremap <silent> <leader>'  :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
-nnoremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
-nnoremap <silent> <leader>/  :nohlsearch<cr>:let g:hoverhl=1<cr>
-nnoremap <silent> <leader>?  :nohlsearch<cr>:call UncolorAllWords()<cr>:let g:hoverhl=0<cr>
-nnoremap          -          _
-nnoremap          _          -
 nnoremap <silent> <leader>b  :call ToggleIdeMode()<cr>
     "map <silent> <leader>c  {TAKEN: NERDCommenter}
     "map <silent> <leader>f  {TAKEN: Findstr}
@@ -297,15 +301,21 @@ nnoremap <silent> <leader>i  :set foldmethod=indent<cr>
     "map <silent> <leader>m  {TAKEN: Toggle GUI menu}
     nmap <silent> <leader>n  <plug>InterestingWordsForeward
     nmap <silent> <leader>N  <plug>InterestingWordsBackward
-nnoremap <silent> <leader>rl :set columns=180 lines=60<cr>
-nnoremap <silent> <leader>rm :set columns=120 lines=40<cr>
+nnoremap <silent> <leader>rl :set columns=180 lines=60<cr>:WCenter<cr>
+nnoremap <silent> <leader>rm :set columns=120 lines=40<cr>:WCenter<cr>
 nnoremap <silent> <leader>rr :set columns=60 lines=20<cr>:call GrowToContents(60, 180)<cr>
-nnoremap <silent> <leader>rs :set columns=60 lines=20<cr>
+nnoremap <silent> <leader>rs :set columns=60 lines=20<cr>:WCenter<cr>
 nnoremap <silent> <leader>s  :Startify<cr>
 nnoremap          <leader>t  <plug>TaskList
 nnoremap <silent> <leader>v  :source $MYVIMRC<cr>
 nnoremap <silent> <leader>w  :execute "resize ".line("$")<cr>
 nnoremap <silent> <leader>z  :tabnew<bar>args $MYVIMRC*<bar>all<bar>wincmd J<bar>wincmd t<cr>
+    "map <silent> <leader>\  {TAKEN: Easymotion}
+nnoremap <silent> <leader>'  :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
+nnoremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
+nnoremap <silent> <leader>/  :nohlsearch<cr>:let g:hoverhl=1<cr>
+nnoremap <silent> <leader>?  :nohlsearch<cr>:call UncolorAllWords()<cr>:let g:hoverhl=0<cr>
+nnoremap <silent> <leader>=  :call ToggleAlpha()<cr>
 nnoremap <silent> cd         :execute 'cd '.expand("%:p:h")<cr>
 nnoremap <silent> gV         `[v`]
 nnoremap <silent> j          gj
@@ -319,6 +329,8 @@ nnoremap          Y          y$
 inoremap <silent> <tab>      <c-r>=TabOrComplete()<cr>
 nnoremap          <tab>      %
 nnoremap          <space>    za
+nnoremap          -          _
+nnoremap          _          -
 nnoremap <silent> [[         ^
 nnoremap <silent> ]]         $
     "map <silent> (          {TAKEN: Prev code line}
@@ -456,6 +468,12 @@ let g:startify_bookmarks = [{'vr': $MYVIMRC}] + g:startify_bookmarks
 if filereadable($MYVIMRC.'.before')
     let g:startify_bookmarks = [{'vb': $MYVIMRC.'.before'}] + g:startify_bookmarks
 endif
+
+" Wimproved configuration
+if has('autocmd')
+    autocmd GUIEnter * silent! WToggleClean
+endif
+
 " }}}
 
 " GUI Settings {{{
@@ -505,7 +523,11 @@ endif
 
 function! SetDiffLayout()
     set guifont=consolas
-    colorscheme github
+    if exists('g:diff_colorscheme')
+        execute 'colorscheme '.g:diff_colorscheme
+    else
+        colorscheme github
+    endif
     execute 'vertical resize '.((&columns*75)/100)
     call setpos('.', [0, 1, 1, 0])
     set guioptions-=m
