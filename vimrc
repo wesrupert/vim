@@ -214,7 +214,6 @@ function! ToggleAlpha() "{{{
 endfunction "}}}
 
 function! ToggleIdeMode() " {{{
-    execute 'NERDTreeTabsToggle'
     if (g:idemode == 0)
         set guioptions+=mr
         let g:idemode = 1
@@ -247,6 +246,8 @@ set wildmenu
 set lazyredraw
 let g:idemode = 0
 let g:alpha_level = 200
+let g:height_proportion = 75
+let g:width_proportion = 66
 
 " Search
 set updatetime=500
@@ -580,7 +581,8 @@ if has("autocmd")
     augroup END
 
     augroup WinHeight
-        au VimResized * let &winheight = (&lines * 70) / 100
+        au VimResized * let &winheight = (&lines * g:height_proportion) / 100 |
+                      \ let &winwidth = (&columns * g:width_proportion) / 100
     augroup END
 endif
 " }}}
