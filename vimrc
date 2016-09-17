@@ -6,17 +6,6 @@ if filereadable($MYVIMRC.'.before')
 endif
 " }}}
 
-" Load pathogen {{{
-filetype off
-" Don't load pathogen more than once if the default paths were overriden
-" in vimrc.before.
-if !exists("g:plugins_loaded")
-    let g:plugins_loaded = 1
-    execute pathogen#infect('plugins/{}', 'colorschemes/{}', 'custom/{}')
-    execute pathogen#helptags()
-endif
-" }}}
-
 " Functions {{{
 function! GuiTabLabel() " {{{
     " Tab number
@@ -96,7 +85,7 @@ function! GuiTabToolTip() " {{{
 
         " Separate buffer entries
         if tooltip!=''
-            let tooltip .= "\n"
+            let tooltip .= '\n'
         endif
 
         " Add name of buffer
@@ -115,10 +104,10 @@ function! GuiTabToolTip() " {{{
         let tooltip .= name
 
         " add modified/modifiable flags
-        if getbufvar(bufnr, "&modified")
+        if getbufvar(bufnr, '&modified')
             let tooltip .= ' [+]'
         endif
-        if getbufvar(bufnr, "&modifiable")==0
+        if getbufvar(bufnr, '&modifiable')==0
             let tooltip .= ' [-]'
         endif
     endfor
@@ -149,7 +138,7 @@ function! GrowToContents(maxlines, maxcolumns) " {{{
 endfunction " }}}
 
 function! IsEmptyFile() " {{{
-    if @% != ""
+    if @% != ''
         " No filename for current buffer
         return 0
     elseif filereadable(@%) != 0
@@ -182,11 +171,11 @@ endfunction " }}}
 function! SetHoverHlColor() " {{{
     if !exists('s:interestingWordsGUIColors')
         let s:interestingWordsGUIColors = g:interestingWordsGUIColors
-        if has("autocmd")
+        if has('autocmd')
             au ColorScheme * call SetHoverHlColor()
         endif
     endif
-    let hlcolor = printf("%s", synIDattr(hlID('Search'), 'bg#'))
+    let hlcolor = printf('%s', synIDattr(hlID('Search'), 'bg#'))
     if (hlcolor != '')
         let g:interestingWordsGUIColors = [ hlcolor ] + s:interestingWordsGUIColors
         if exists('*ClearWordColorCache')
@@ -197,9 +186,9 @@ endfunction " }}}
 
 function! TabOrComplete() " {{{
     if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
-        return "\<C-N>"
+        return '\<C-N>'
     else
-        return "\<Tab>"
+        return '\<Tab>'
     endif
 endfunction " }}}
 
@@ -309,7 +298,7 @@ nnoremap <silent> <leader>rs :set columns=60 lines=20<cr>:WCenter<cr>
 nnoremap <silent> <leader>s  :Startify<cr>
 nnoremap          <leader>t  <plug>TaskList
 nnoremap <silent> <leader>v  :source $MYVIMRC<cr>
-nnoremap <silent> <leader>w  :execute "resize ".line("$")<cr>
+nnoremap <silent> <leader>w  :execute 'resize '.line('$')<cr>
 nnoremap <silent> <leader>z  :tabnew<bar>args $MYVIMRC*<bar>all<bar>wincmd J<bar>wincmd t<cr>
     "map <silent> <leader>\  {TAKEN: Easymotion}
 nnoremap <silent> <leader>'  :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
@@ -317,7 +306,7 @@ nnoremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
 nnoremap <silent> <leader>/  :nohlsearch<cr>:let g:hoverhl=1<cr>
 nnoremap <silent> <leader>?  :nohlsearch<cr>:call UncolorAllWords()<cr>:let g:hoverhl=0<cr>
 nnoremap <silent> <leader>=  :call ToggleAlpha()<cr>
-nnoremap <silent> cd         :execute 'cd '.expand("%:p:h")<cr>
+nnoremap <silent> cd         :execute 'cd '.expand('%:p:h')<cr>
 nnoremap <silent> gV         `[v`]
 nnoremap <silent> j          gj
 inoremap          jk         <esc>
@@ -350,8 +339,8 @@ cabbrev help <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab help' : 'help')<C
 " }}}
 
 " Platform-Specific Settings {{{
-let g:slash = pathogen#slash()
-if has("win32")
+if has('win32')
+    let g:slash = '\\'
     if filewritable($TMP) == 2
         let g:temp = expand($TMP).'\Vim'
     elseif filewritable($TEMP) == 2
@@ -370,6 +359,7 @@ if has("win32")
     map <silent> <leader>f :Findstring
     nnoremap <silent> <leader>f :Findstring<cr>
 else
+    let g:slash = '/'
     if filewritable($TMPDIR) == 2
         let g:temp = expand($TMPDIR).'/vim'
     elseif filewritable('/tmp') == 2
@@ -381,7 +371,7 @@ else
 
     map  <silent> <c-e> :silent !open .<cr>
 
-    if has("mac")
+    if has('mac')
         noremap <silent> <c-t> :tabnew<cr>:Startify<cr>
     endif
 endif
@@ -391,14 +381,14 @@ endif
 set backup writebackup
 let s:backupdir = expand(g:temp.g:slash.'backups')
 let &directory = s:backupdir.g:slash.g:slash
-if has("autocmd")
+if has('autocmd')
     augroup Backups
         au BufRead * let &l:backupdir = s:backupdir.g:slash.expand("%:p:h:t") |
                     \ call TryCreateDir(&l:backupdir)
     augroup END
 endif
 call TryCreateDir(s:backupdir)
-if has("persistent_undo")
+if has('persistent_undo')
     call TryCreateDir(g:temp.g:slash.'undo')
     set undofile
     let &undodir = expand(g:temp.g:slash.'undo')
@@ -430,11 +420,11 @@ let g:ctrlp_clear_cache_on_exit = 0
 let g:ctrlp_working_path_mode = 'a'
 
 " Findstr plugin configuration
-let Findstr_Default_Options = "/sinp"
+let Findstr_Default_Options = '/sinp'
 let Findstr_Default_FileList = $SEARCHROOT
 
 " InterestingWords plugin configuration
-if has("autocmd")
+if has('autocmd')
     let g:hoverhl=0
     augroup HoverHighlight
         au BufEnter * call SetHoverHlColor()
@@ -478,7 +468,7 @@ endif
 " }}}
 
 " GUI Settings {{{
-if has("gui_running")
+if has('gui_running')
     " GVim window style.
     set guitablabel=%{GuiTabLabel()}
     set guitabtooltip=%{GuiTabToolTip()}
@@ -507,7 +497,7 @@ endif
 " Diff Settings {{{
 if &diff
     set diffopt=filler,context:3
-    if has("autocmd")
+    if has('autocmd')
         augroup DiffResize
             au GUIEnter * simalt ~x
             au VimEnter * call SetDiffLayout()
@@ -516,7 +506,7 @@ if &diff
             " Clear autoresize command
             au!
         augroup END
-    elseif has("gui_running")
+    elseif has('gui_running')
         set lines=50
         set columns=200
     endif
@@ -538,10 +528,10 @@ endfu
 " }}}
 
 " Auto Commands {{{
-if has("autocmd")
+if has('autocmd')
     augroup RememberCursor
         " Jump to line cursor was on when last closed, if available
-        au BufReadPost * if line("'\'") > 0 && line("'\'") <= line("$") |
+        au BufReadPost * if line("'\'") > 0 && line("'\'") <= line('$') |
                     \    exe "normal g`\"" |
                     \ endif
     augroup END

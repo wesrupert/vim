@@ -1,118 +1,118 @@
 ; Plugins: {{{
 [submodule "airline"]
-    path = plugins/airline
+	path = pack/airline/start/airline
     url = https://github.com/vim-airline/vim-airline.git
     ignore = dirty
 [submodule "airline-themes"]
-    path = plugins/airline-themes
+	path = pack/airline-themes/start/airline-themes
     url = https://github.com/vim-airline/vim-airline-themes.git
     ignore = dirty
 [submodule "autoclose"]
-    path = plugins/autoclose
+	path = pack/autoclose/start/autoclose
     url = https://github.com/Townk/vim-autoclose.git
     ignore = dirty
 [submodule "autoclosetag"]
-    path = plugins/autoclosetag
+	path = pack/autoclosetag/start/autoclosetag
     url = https://github.com/vim-scripts/HTML-AutoCloseTag.git
     ignore = dirty
 [submodule "cpp-enhanced"]
-    path = plugins/cpp-enhanced
+	path = pack/cpp-enhanced/start/cpp-enhanced
     url = https://github.com/octol/vim-cpp-enhanced-highlight.git
     ignore = dirty
 [submodule "csharp"]
-    path = plugins/csharp
+	path = pack/csharp/start/csharp
     url = https://github.com/OrangeT/vim-csharp.git
     ignore = dirty
 [submodule "ctrlp"]
-    path = plugins/ctrlp
+	path = pack/ctrlp/start/ctrlp
     url = https://github.com/ctrlpvim/ctrlp.vim.git
     ignore = dirty
 [submodule "diff-enhanced"]
-    path = plugins/diff-enhanced
+	path = pack/diff-enhanced/start/diff-enhanced
     url = https://github.com/chrisbra/vim-diff-enhanced.git
     ignore = dirty
 [submodule "easy-align"]
-    path = plugins/easy-align
+	path = pack/easy-align/start/easy-align
     url = https://github.com/junegunn/vim-easy-align.git
     ignore = dirty
 [submodule "easymotion"]
-    path = plugins/easymotion
+	path = pack/easymotion/start/easymotion
     url = https://github.com/easymotion/vim-easymotion.git
     ignore = dirty
 [submodule "fugitive"]
-    path = plugins/fugitive
+	path = pack/fugitive/start/fugitive
     url = https://github.com/tpope/vim-fugitive.git
     ignore = dirty
 [submodule "gitgutter"]
-    path = plugins/gitgutter
+	path = pack/gitgutter/start/gitgutter
     url = https://github.com/airblade/vim-gitgutter.git
     ignore = dirty
 [submodule "jsdoc"]
-    path = plugins/jsdoc
+	path = pack/jsdoc/start/jsdoc
     url = https://github.com/heavenshell/vim-jsdoc
     ignore = dirty
 [submodule "json"]
-    path = plugins/json
+	path = pack/json/start/json
     url = https://github.com/elzr/vim-json.git
     ignore = dirty
 [submodule "interestingwords"]
-    path = plugins/interestingwords
+	path = pack/interestingwords/start/interestingwords
     url = https://github.com/wesrupert/vim-interestingwords.git
     ignore = dirty
 [submodule "nerdcommenter"]
-    path = plugins/nerdcommenter
+	path = pack/nerdcommenter/start/nerdcommenter
     url = https://github.com/scrooloose/nerdcommenter.git
     ignore = dirty
 [submodule "nerdtree"]
-    path = plugins/nerdtree
+	path = pack/nerdtree/start/nerdtree
     url = https://github.com/scrooloose/nerdtree.git
     ignore = dirty
 [submodule "nerdtree-tabs"]
-    path = plugins/nerdtree-tabs
+	path = pack/nerdtree-tabs/start/nerdtree-tabs
     url = https://github.com/jistr/vim-nerdtree-tabs.git
     ignore = dirty
 [submodule "pathogen"]
-    path = plugins/pathogen
+	path = pack/pathogen/start/pathogen
     url = https://github.com/tpope/vim-pathogen.git
     ignore = dirty
 [submodule "powershell"]
-    path = plugins/powershell
+	path = pack/powershell/start/powershell
     url = https://github.com/PProvost/vim-ps1.git
     ignore = dirty
 [submodule "repeat"]
-    path = plugins/repeat
+	path = pack/repeat/start/repeat
     url = https://github.com/tpope/vim-repeat.git
     ignore = dirty
 [submodule "startify"]
-    path = plugins/startify
+	path = pack/startify/start/startify
     url = https://github.com/mhinz/vim-startify.git
     ignore = dirty
 [submodule "supertab"]
-    path = plugins/supertab
+	path = pack/supertab/start/supertab
     url = https://github.com/ervandew/supertab.git
     ignore = dirty
 [submodule "surround"]
-    path = plugins/surround
+	path = pack/surround/start/surround
     url = https://github.com/tpope/vim-surround.git
     ignore = dirty
 [submodule "syntastic"]
-    path = plugins/syntastic
+	path = pack/syntastic/start/syntastic
     url = https://github.com/scrooloose/syntastic.git
     ignore = dirty
 [submodule "tasklist"]
-    path = plugins/tasklist
+	path = pack/tasklist/start/tasklist
     url = https://github.com/vim-scripts/TaskList.vim.git
     ignore = dirty
 [submodule "typescript"]
-    path = plugins/typescript
+	path = pack/typescript/start/typescript
     url = https://github.com/leafgarland/typescript-vim.git
     ignore = dirty
 [submodule "undotree"]
-    path = plugins/undotree
+	path = pack/undotree/start/undotree
     url = https://github.com/mbbill/undotree.git
     ignore = dirty
 [submodule "wimproved"]
-    path = plugins/wimproved
+	path = pack/wimproved/start/wimproved
     url = https://github.com/kkoenig/wimproved.vim.git
     ignore = dirty
 ; }}}
@@ -123,73 +123,76 @@
     url = https://github.com/mkarmona/colorsbox.git
     ignore = dirty
 [submodule "deepspace"]
-    path = colorschemes/deepspace
+	path = pack/_colors-deepspace/start/deepspace
     url = https://github.com/tyrannicaltoucan/vim-deep-space.git
     ignore = dirty
 [submodule "fx"]
-    path = colorschemes/fx
+	path = pack/_colors-fx/start/fx
     url = https://github.com/cesardeazevedo/Fx-ColorScheme.git
     ignore = dirty
 [submodule "github"]
-    path = colorschemes/github
+	path = pack/_colors-github/start/github
     url = https://github.com/endel/vim-github-colorscheme.git
     ignore = dirty
 [submodule "hemisu"]
-    path = colorschemes/hemisu
+	path = pack/_colors-hemisu/start/hemisu
     url = https://github.com/noahfrederick/vim-hemisu.git
     ignore = dirty
 [submodule "jellybeans"]
-    path = colorschemes/jellybeans
+	path = pack/_colors-jellybeans/start/jellybeans
     url = https://github.com/nanotech/jellybeans.vim.git
     ignore = dirty
 [submodule "lucian"]
-    path = colorschemes/lucian
+	path = pack/_colors-lucian/start/lucian
     url = https://github.com/jonathanfilip/vim-lucius.git
     ignore = dirty
 [submodule "mango"]
-    path = colorschemes/mango
+	path = pack/_colors-mango/start/mango
     url = https://github.com/goatslacker/mango.vim.git
     ignore = dirty
 [submodule "materialbox"]
-    path = colorschemes/materialbox
+	path = pack/_colors-materialbox/start/materialbox
     url = https://github.com/mkarmona/materialbox.git
     ignore = dirty
 [submodule "moria"]
-    path = colorschemes/moria
+	path = pack/_colors-moria/start/moria
     url = https://github.com/vim-scripts/moria.git
     ignore = dirty
 [submodule "one"]
-    path = colorschemes/one
+	path = pack/_colors-one/start/one
     url = https://github.com/rakr/vim-one.git
     ignore = dirty
 [submodule "pencil"]
-    path = colorschemes/pencil
+	path = pack/_colors-pencil/start/pencil
     url = https://github.com/reedes/vim-colors-pencil.git
     ignore = dirty
 [submodule "scheakur"]
-    path = colorschemes/scheakur
+	path = pack/_colors-scheakur/start/scheakur
     url = https://github.com/scheakur/vim-scheakur.git
     ignore = dirty
 [submodule "soda"]
-    path = colorschemes/soda
+	path = pack/_colors-soda/start/soda
     url = https://github.com/daddye/soda.vim.git
     ignore = dirty
 [submodule "solarized"]
-    path = colorschemes/solarized
+	path = pack/_colors-solarized/start/solarized
     url = https://github.com/altercation/vim-colors-solarized.git
     ignore = dirty
 [submodule "summerfruit"]
-    path = colorschemes/summerfruit
+	path = pack/_colors-summerfruit/start/summerfruit
     url = https://github.com/baeuml/summerfruit256.vim.git
     ignore = dirty
 [submodule "tomorrow"]
-    path = colorschemes/tomorrow
+	path = pack/_colors-tomorrow/start/tomorrow
     url = https://github.com/chriskempson/vim-tomorrow-theme.git
     ignore = dirty
 [submodule "twofirewatch"]
-    path = colorschemes/twofirewatch
+	path = pack/_colors-twofirewatch/start/twofirewatch
     url = https://github.com/rakr/vim-two-firewatch.git
     ignore = dirty
 ; }}}
 
 ; vim: foldmethod=marker foldlevel=0
+[submodule "colorscheme/papercolor"]
+	path = pack/_colors-papercolor/start/papercolor
+	url = https://github.com/NLKNguyen/papercolor-theme
