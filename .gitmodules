@@ -44,7 +44,7 @@
     url = https://github.com/tpope/vim-fugitive.git
     ignore = dirty
 [submodule "gitgutter"]
-	path = pack/gitgutter/start/gitgutter
+	path = pack/gitgutter/opt/gitgutter
     url = https://github.com/airblade/vim-gitgutter.git
     ignore = dirty
 [submodule "jsdoc"]
@@ -71,10 +71,6 @@
 	path = pack/nerdtree-tabs/start/nerdtree-tabs
     url = https://github.com/jistr/vim-nerdtree-tabs.git
     ignore = dirty
-[submodule "pathogen"]
-	path = pack/pathogen/start/pathogen
-    url = https://github.com/tpope/vim-pathogen.git
-    ignore = dirty
 [submodule "powershell"]
 	path = pack/powershell/start/powershell
     url = https://github.com/PProvost/vim-ps1.git
@@ -96,7 +92,7 @@
     url = https://github.com/tpope/vim-surround.git
     ignore = dirty
 [submodule "syntastic"]
-	path = pack/syntastic/start/syntastic
+	path = pack/syntastic/opt/syntastic
     url = https://github.com/scrooloose/syntastic.git
     ignore = dirty
 [submodule "tasklist"]
@@ -123,76 +119,76 @@
     url = https://github.com/mkarmona/colorsbox.git
     ignore = dirty
 [submodule "deepspace"]
-	path = pack/_colors-deepspace/start/deepspace
+	path = pack/_colors-deepspace/opt/deepspace
     url = https://github.com/tyrannicaltoucan/vim-deep-space.git
     ignore = dirty
 [submodule "fx"]
-	path = pack/_colors-fx/start/fx
+	path = pack/_colors-fx/opt/fx
     url = https://github.com/cesardeazevedo/Fx-ColorScheme.git
     ignore = dirty
 [submodule "github"]
-	path = pack/_colors-github/start/github
+	path = pack/_colors-github/opt/github
     url = https://github.com/endel/vim-github-colorscheme.git
     ignore = dirty
 [submodule "hemisu"]
-	path = pack/_colors-hemisu/start/hemisu
+	path = pack/_colors-hemisu/opt/hemisu
     url = https://github.com/noahfrederick/vim-hemisu.git
     ignore = dirty
 [submodule "jellybeans"]
-	path = pack/_colors-jellybeans/start/jellybeans
+	path = pack/_colors-jellybeans/opt/jellybeans
     url = https://github.com/nanotech/jellybeans.vim.git
     ignore = dirty
 [submodule "lucian"]
-	path = pack/_colors-lucian/start/lucian
+	path = pack/_colors-lucian/opt/lucian
     url = https://github.com/jonathanfilip/vim-lucius.git
     ignore = dirty
 [submodule "mango"]
-	path = pack/_colors-mango/start/mango
+	path = pack/_colors-mango/opt/mango
     url = https://github.com/goatslacker/mango.vim.git
     ignore = dirty
 [submodule "materialbox"]
-	path = pack/_colors-materialbox/start/materialbox
+	path = pack/_colors-materialbox/opt/materialbox
     url = https://github.com/mkarmona/materialbox.git
     ignore = dirty
 [submodule "moria"]
-	path = pack/_colors-moria/start/moria
+	path = pack/_colors-moria/opt/moria
     url = https://github.com/vim-scripts/moria.git
     ignore = dirty
 [submodule "one"]
-	path = pack/_colors-one/start/one
+	path = pack/_colors-one/opt/one
     url = https://github.com/rakr/vim-one.git
     ignore = dirty
 [submodule "pencil"]
-	path = pack/_colors-pencil/start/pencil
+	path = pack/_colors-pencil/opt/pencil
     url = https://github.com/reedes/vim-colors-pencil.git
     ignore = dirty
 [submodule "scheakur"]
-	path = pack/_colors-scheakur/start/scheakur
+	path = pack/_colors-scheakur/opt/scheakur
     url = https://github.com/scheakur/vim-scheakur.git
     ignore = dirty
 [submodule "soda"]
-	path = pack/_colors-soda/start/soda
+	path = pack/_colors-soda/opt/soda
     url = https://github.com/daddye/soda.vim.git
     ignore = dirty
 [submodule "solarized"]
-	path = pack/_colors-solarized/start/solarized
+	path = pack/_colors-solarized/opt/solarized
     url = https://github.com/altercation/vim-colors-solarized.git
     ignore = dirty
 [submodule "summerfruit"]
-	path = pack/_colors-summerfruit/start/summerfruit
+	path = pack/_colors-summerfruit/opt/summerfruit
     url = https://github.com/baeuml/summerfruit256.vim.git
     ignore = dirty
 [submodule "tomorrow"]
-	path = pack/_colors-tomorrow/start/tomorrow
+	path = pack/_colors-tomorrow/opt/tomorrow
     url = https://github.com/chriskempson/vim-tomorrow-theme.git
     ignore = dirty
 [submodule "twofirewatch"]
-	path = pack/_colors-twofirewatch/start/twofirewatch
+	path = pack/_colors-twofirewatch/opt/twofirewatch
     url = https://github.com/rakr/vim-two-firewatch.git
     ignore = dirty
 ; }}}
 
 ; vim: foldmethod=marker foldlevel=0
 [submodule "colorscheme/papercolor"]
-	path = pack/_colors-papercolor/start/papercolor
+	path = pack/_colors-papercolor/opt/papercolor
 	url = https://github.com/NLKNguyen/papercolor-theme

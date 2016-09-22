@@ -278,6 +278,7 @@ nnoremap <silent> <c-l>      <c-w>l
 nnoremap          <c-q>      Q
 nnoremap <silent> <c-t>      :tabnew<cr>:Startify<cr>
     "map <silent> <c-tab>    {TAKEN: Switch tab}
+    "map  <leader><leader>   {TAKEN: Easymotion}
 nnoremap <silent> <leader>b  :call ToggleIdeMode()<cr>
     "map <silent> <leader>c  {TAKEN: NERDCommenter}
     "map <silent> <leader>f  {TAKEN: Findstr}
@@ -296,11 +297,12 @@ nnoremap <silent> <leader>rm :set columns=120 lines=40<cr>:WCenter<cr>
 nnoremap <silent> <leader>rr :set columns=60 lines=20<cr>:call GrowToContents(60, 180)<cr>
 nnoremap <silent> <leader>rs :set columns=60 lines=20<cr>:WCenter<cr>
 nnoremap <silent> <leader>s  :Startify<cr>
-nnoremap          <leader>t  <plug>TaskList
+nnoremap          <leader>t  :TaskList<cr>
+nnoremap <silent> <leader>u  :UndotreeToggle<cr>
 nnoremap <silent> <leader>v  :source $MYVIMRC<cr>
 nnoremap <silent> <leader>w  :execute 'resize '.line('$')<cr>
 nnoremap <silent> <leader>z  :tabnew<bar>args $MYVIMRC*<bar>all<bar>wincmd J<bar>wincmd t<cr>
-    "map <silent> <leader>\  {TAKEN: Easymotion}
+nnoremap <silent> <leader>-  :e .<cr>
 nnoremap <silent> <leader>'  :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
 nnoremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
 nnoremap <silent> <leader>/  :nohlsearch<cr>:let g:hoverhl=1<cr>
@@ -494,39 +496,6 @@ if has('gui_running')
 endif
 " }}}
 
-" Diff Settings {{{
-if &diff
-    set diffopt=filler,context:3
-    if has('autocmd')
-        augroup DiffResize
-            au GUIEnter * simalt ~x
-            au VimEnter * call SetDiffLayout()
-        augroup END
-        augroup GuiResize
-            " Clear autoresize command
-            au!
-        augroup END
-    elseif has('gui_running')
-        set lines=50
-        set columns=200
-    endif
-endif
-
-function! SetDiffLayout()
-    set guifont=consolas
-    if exists('g:diff_colorscheme')
-        execute 'colorscheme '.g:diff_colorscheme
-    else
-        colorscheme github
-    endif
-    execute 'vertical resize '.((&columns*75)/100)
-    call setpos('.', [0, 1, 1, 0])
-    set guioptions-=m
-    set guioptions+=lr
-    noremap q :qa<cr>
-endfu
-" }}}
-
 " Auto Commands {{{
 if has('autocmd')
     augroup RememberCursor
@@ -575,6 +544,44 @@ if has('autocmd')
                       \ let &winwidth = (&columns * g:width_proportion) / 100
     augroup END
 endif
+" }}}
+
+" Diff Settings {{{
+" NOTE: Must be after autocommands, as it clears some augroups!
+if &diff
+    set diffopt=filler,context:3
+    if has('autocmd')
+        augroup DiffResize
+            au GUIEnter * simalt ~x
+            au VimEnter * call SetDiffLayout()
+        augroup END
+        augroup RememberCursor
+            " Clear cursor jump command
+            au!
+        augroup END
+        augroup GuiResize
+            " Clear autoresize command
+            au!
+        augroup END
+    elseif has('gui_running')
+        set lines=50
+        set columns=200
+    endif
+endif
+
+function! SetDiffLayout()
+    set guifont=consolas
+    if exists('g:diff_colorscheme')
+        execute 'colorscheme '.g:diff_colorscheme
+    else
+        colorscheme github
+    endif
+    execute 'vertical resize '.((&columns*75)/100)
+    call setpos('.', [0, 1, 1, 0])
+    set guioptions-=m
+    set guioptions+=lr
+    noremap q :qa<cr>
+endfu
 " }}}
 
 " Load vimrc.after {{{

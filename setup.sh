@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pushd ~/.vim
+pushd ~/.vim > /dev/null
 
 echo Updating vim...
 git pull
@@ -11,5 +11,15 @@ git submodule update --init
 echo Updating auxiliary files...
 ln -f ~/.vim/vimrc ~/.vimrc
 
-echo Setup done!
-popd
+echo Setup done! Plugins up to date.
+echo Note that the following are disabled by default:
+pushd pack > /dev/null
+for plug in */; do
+    if [ ! -d "$plug/start" && -d "$plug/opt" ]; then
+        sub = ls "$plug/opt" | head 1
+        echo $sub
+    fi
+done
+popd > /dev/null
+
+popd > /dev/null
