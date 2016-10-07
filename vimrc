@@ -233,6 +233,7 @@ set laststatus=2 showcmd ruler noshowmode
 set scrolloff=3 sidescrolloff=15 sidescroll=1
 set wildmenu
 set lazyredraw
+set conceallevel=2
 let g:idemode = 0
 let g:alpha_level = 200
 let g:height_proportion = 75
@@ -269,27 +270,27 @@ set modeline modelines=1
      map <silent> <f11>      :WToggleFullscreen<cr>
 nnoremap <silent> <c-a>      <esc>ggVG
 inoremap <silent> <c-a>      <esc>ggVG
-    "map <silent> <c-e>      {TAKEN: Open file explorer}
+    "map          <c-e>      {TAKEN: Open file explorer}
 nnoremap <silent> <c-h>      <c-w>h
 nnoremap <silent> <c-j>      <c-w>j
 nnoremap <silent> <c-k>      <c-w>k
 nnoremap <silent> <c-l>      <c-w>l
-    "map <silent> <c-p>      {TAKEN: Fuzzy file search}
+    "map          <c-p>      {TAKEN: Fuzzy file search}
 nnoremap          <c-q>      Q
 nnoremap <silent> <c-t>      :tabnew<cr>:Startify<cr>
-    "map <silent> <c-tab>    {TAKEN: Switch tab}
+    "map          <c-tab>    {TAKEN: Switch tab}
     "map  <leader><leader>   {TAKEN: Easymotion}
 nnoremap <silent> <leader>b  :call ToggleIdeMode()<cr>
-    "map <silent> <leader>c  {TAKEN: NERDCommenter}
-    "map <silent> <leader>f  {TAKEN: Findstr}
+    "map          <leader>c  {TAKEN: NERDCommenter}
+    "map          <leader>f  {TAKEN: Findstr}
 nnoremap <silent> <leader>g  :GitGutterToggle<cr>
-    "map <silent> <leader>h  {TAKEN: GitGutter previews}
+    "map          <leader>h  {TAKEN: GitGutter previews}
 nnoremap <silent> <leader>i  :set foldmethod=indent<cr>
     nmap <silent> <leader>k  <plug>InterestingWords
     vmap <silent> <leader>k  <plug>InterestingWords
     nmap <silent> <leader>K  <plug>InterestingWordsClear
-    "map <silent> <leader>K  {TAKEN: Clear all important words}
-    "map <silent> <leader>m  {TAKEN: Toggle GUI menu}
+    "map          <leader>K  {TAKEN: Clear all important words}
+    "map          <leader>m  {TAKEN: Toggle GUI menu}
     nmap <silent> <leader>n  <plug>InterestingWordsForeward
     nmap <silent> <leader>N  <plug>InterestingWordsBackward
 nnoremap <silent> <leader>rl :set columns=180 lines=60<cr>:WCenter<cr>
@@ -297,7 +298,7 @@ nnoremap <silent> <leader>rm :set columns=120 lines=40<cr>:WCenter<cr>
 nnoremap <silent> <leader>rr :set columns=60 lines=20<cr>:call GrowToContents(60, 180)<cr>
 nnoremap <silent> <leader>rs :set columns=60 lines=20<cr>:WCenter<cr>
 nnoremap <silent> <leader>s  :Startify<cr>
-nnoremap          <leader>t  :TaskList<cr>
+    "map          <leader>t  {TAKEN: TaskList}
 nnoremap <silent> <leader>u  :UndotreeToggle<cr>
 nnoremap <silent> <leader>v  :source $MYVIMRC<cr>
 nnoremap <silent> <leader>w  :execute 'resize '.line('$')<cr>
@@ -325,10 +326,10 @@ nnoremap          -          _
 nnoremap          _          -
 nnoremap <silent> [[         ^
 nnoremap <silent> ]]         $
-    "map <silent> (          {TAKEN: Prev code line}
-    "map <silent> )          {TAKEN: Next code line}
-    "map <silent> {          {TAKEN: Prev code block}
-    "map <silent> }          {TAKEN: Next code block}
+    "map          (          {TAKEN: Prev code line}
+    "map          )          {TAKEN: Next code line}
+    "map          {          {TAKEN: Prev code block}
+    "map          }          {TAKEN: Next code block}
 
 if (exists('g:mapleader') && g:mapleader == ',')
     nnoremap \ ,
