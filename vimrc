@@ -168,22 +168,6 @@ function! GetMaxColumn() " {{{
     return maxlength
 endfunction " }}}
 
-function! SetHoverHlColor() " {{{
-    if !exists('s:interestingWordsGUIColors')
-        let s:interestingWordsGUIColors = g:interestingWordsGUIColors
-        if has('autocmd')
-            au ColorScheme * call SetHoverHlColor()
-        endif
-    endif
-    let hlcolor = printf('%s', synIDattr(hlID('Search'), 'bg#'))
-    if (hlcolor != '')
-        let g:interestingWordsGUIColors = [ hlcolor ] + s:interestingWordsGUIColors
-        if exists('*ClearWordColorCache')
-            call ClearWordColorCache()
-        endif
-    endif
-endfunction " }}}
-
 function! TabOrComplete() " {{{
     if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
         return '\<C-N>'
@@ -278,7 +262,6 @@ nnoremap <silent> <c-l>      <c-w>l
     "map          <c-p>      {TAKEN: Fuzzy file search}
 nnoremap          <c-q>      Q
 nnoremap <silent> <c-t>      :tabnew<cr>:Startify<cr>
-    "map          <c-tab>    {TAKEN: Switch tab}
     "map  <leader><leader>   {TAKEN: Easymotion}
 nnoremap <silent> <leader>b  :call ToggleIdeMode()<cr>
     "map          <leader>c  {TAKEN: NERDCommenter}
@@ -286,13 +269,9 @@ nnoremap <silent> <leader>b  :call ToggleIdeMode()<cr>
 nnoremap <silent> <leader>g  :GitGutterToggle<cr>
     "map          <leader>h  {TAKEN: GitGutter previews}
 nnoremap <silent> <leader>i  :set foldmethod=indent<cr>
-    nmap <silent> <leader>k  <plug>InterestingWords
-    vmap <silent> <leader>k  <plug>InterestingWords
-    nmap <silent> <leader>K  <plug>InterestingWordsClear
-    "map          <leader>K  {TAKEN: Clear all important words}
     "map          <leader>m  {TAKEN: Toggle GUI menu}
-    nmap <silent> <leader>n  <plug>InterestingWordsForeward
-    nmap <silent> <leader>N  <plug>InterestingWordsBackward
+nnoremap <silent> <leader>n  :call HoverHlForward()<cr>
+nnoremap <silent> <leader>N  :call HoverHlBackward()<cr>
 nnoremap <silent> <leader>rl :set columns=180 lines=60<cr>:WCenter<cr>
 nnoremap <silent> <leader>rm :set columns=120 lines=40<cr>:WCenter<cr>
 nnoremap <silent> <leader>rr :set columns=60 lines=20<cr>:call GrowToContents(60, 180)<cr>
@@ -306,8 +285,8 @@ nnoremap <silent> <leader>z  :tabnew<bar>args $MYVIMRC*<bar>all<bar>wincmd J<bar
 nnoremap <silent> <leader>-  :e .<cr>
 nnoremap <silent> <leader>'  :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
 nnoremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
-nnoremap <silent> <leader>/  :nohlsearch<cr>:let g:hoverhl=1<cr>
-nnoremap <silent> <leader>?  :nohlsearch<cr>:call UncolorAllWords()<cr>:let g:hoverhl=0<cr>
+nnoremap <silent> <leader>/  :nohlsearch<cr>:call HoverHlEnable()<cr>
+nnoremap <silent> <leader>?  :nohlsearch<cr>:call HoverHlDisable()<cr>
 nnoremap <silent> <leader>=  :call ToggleAlpha()<cr>
 nnoremap <silent> cd         :execute 'cd '.expand('%:p:h')<cr>
 nnoremap <silent> gV         `[v`]
@@ -373,10 +352,6 @@ else
     call TryCreateDir(g:temp)
 
     map  <silent> <c-e> :silent !open .<cr>
-
-    if has('mac')
-        noremap <silent> <c-t> :tabnew<cr>:Startify<cr>
-    endif
 endif
 " }}}
 
@@ -425,18 +400,6 @@ let g:ctrlp_working_path_mode = 'a'
 " Findstr plugin configuration
 let Findstr_Default_Options = '/sinp'
 let Findstr_Default_FileList = $SEARCHROOT
-
-" InterestingWords plugin configuration
-if has('autocmd')
-    let g:hoverhl=0
-    augroup HoverHighlight
-        au BufEnter * call SetHoverHlColor()
-        au CursorHold * if (g:hoverhl == 1) |
-                    \     call UncolorAllWords() |
-                    \     call InterestingWords('n') |
-                    \ endif
-    augroup END
-endif
 
 " NERDTree plugin configuration
 let NERDTreeShowHidden = 1
@@ -513,12 +476,12 @@ if has('autocmd')
 
     augroup Filetypes
         au FileType cs setlocal foldmethod=indent
-        au FileType c,cpp,cs,js,ps1,ts let g:hoverhl = 1 |
+        au FileType c,cpp,cs,js,ps1,ts call HoverHlEnable() |
                     \ nnoremap <buffer> <silent> ( 0?;<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> ) $/;<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> { 0?{[^}]*$<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> } $/{[^}]*$<cr>0^:noh<cr>
-        au FileType json let g:hoverhl = 1 |
+        au FileType json call HoverHlEnable() |
                     \ nnoremap <buffer> <silent> { 0?[\[{]\s*$<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> } $/[\[{]\s*$<cr>0^:noh<cr>
         au BufNew,BufReadPre *.xaml setf xml

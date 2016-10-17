@@ -59,6 +59,11 @@
     url = https://github.com/airblade/vim-gitgutter.git
     ignore = dirty
 ; }}}
+[submodule "hoverhl"] ; {{{
+	path = pack/hoverhl
+    url = https://github.com/wesrupert/vim-hoverhl.git
+    ignore = dirty
+; }}}
 [submodule "jsdoc"] ; {{{
 	path = pack/jsdoc/start/jsdoc
     url = https://github.com/heavenshell/vim-jsdoc
@@ -67,11 +72,6 @@
 [submodule "json"] ; {{{
 	path = pack/json/start/json
     url = https://github.com/elzr/vim-json.git
-    ignore = dirty
-; }}}
-[submodule "interestingwords"] ; {{{
-	path = pack/interestingwords/start/interestingwords
-    url = https://github.com/wesrupert/vim-interestingwords.git
     ignore = dirty
 ; }}}
 [submodule "nerdcommenter"] ; {{{
