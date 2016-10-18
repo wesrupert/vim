@@ -272,6 +272,7 @@ nnoremap <silent> <leader>i  :set foldmethod=indent<cr>
     "map          <leader>m  {TAKEN: Toggle GUI menu}
 nnoremap <silent> <leader>n  :call HoverHlForward()<cr>
 nnoremap <silent> <leader>N  :call HoverHlBackward()<cr>
+nnoremap <silent> <leader>rc :WCenter<cr>
 nnoremap <silent> <leader>rl :set columns=180 lines=60<cr>:WCenter<cr>
 nnoremap <silent> <leader>rm :set columns=120 lines=40<cr>:WCenter<cr>
 nnoremap <silent> <leader>rr :set columns=60 lines=20<cr>:call GrowToContents(60, 180)<cr>

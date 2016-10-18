@@ -54,6 +54,11 @@
     url = https://github.com/tpope/vim-fugitive.git
     ignore = dirty
 ; }}}
+[submodule "fsharp"] ; {{{
+	path = pack/fsharp/start/fsharp
+	url = https://github.com/fsharp/vim-fsharp.git
+    ignore = dirty
+; }}}
 [submodule "gitgutter"] ; opt {{{
 	path = pack/gitgutter/opt/gitgutter
     url = https://github.com/airblade/vim-gitgutter.git
