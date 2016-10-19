@@ -7,13 +7,42 @@ endif
 " }}}
 
 " Functions {{{
-function! GuiTabLabel() " {{{
-    " Tab number
-    let label = '['.v:lnum.'] '
+function! TermTabLabel() " {{{
+    let label = ''
+    for i in range(tabpagenr('$'))
+        " Select the highlighting
+        if i + 1 == tabpagenr()
+            let label .= '%#TabLineSel#'
+        else
+            let label .= '%#TabLine#'
+        endif
 
+        " Set the tab page number (for mouse clicks)
+        let label .= '%'.(i+1).'T'
+
+        " The label is made by MyTabLabel()
+        let label .= ' %{MyTabLabel('.(i+1).')} '
+    endfor
+
+    " After the last tab fill with TabLineFill and reset tab page nr
+    let label .= '%#TabLineFill#%T'
+
+    " Right-align the label to close the current tab page
+    if tabpagenr('$') > 1
+        let label .= '%=%#TabLine#%999XX'
+    endif
+
+    return l:label
+endfunction " }}}
+
+function! GuiTabLabel() " {{{
+    return MyTabLabel(v:lnum)
+endfunction " }}}
+
+function! MyTabLabel(lnum) " {{{
     " Buffer name
-    let bufnrlist = tabpagebuflist(v:lnum)
-    let bufnr = tabpagewinnr(v:lnum) - 1
+    let bufnrlist = tabpagebuflist(a:lnum)
+    let bufnr = tabpagewinnr(a:lnum) - 1
     let name = bufname(bufnrlist[bufnr])
     let modified = getbufvar(bufnrlist[bufnr], '&modified')
     if (name != '' && name !~ 'NERD_tree')
@@ -27,7 +56,7 @@ function! GuiTabLabel() " {{{
             let modified = getbufvar(bufnrlist[bufnr], '&modified')
         endwhile
         if (name == '')
-            let name = '[No Name]'
+            let name = '[Scratch]'
             if (&buftype == 'quickfix')
                 let name = '[Quickfix List]'
                 let modified = 0
@@ -38,10 +67,10 @@ function! GuiTabLabel() " {{{
         endif
     endif
     if (getbufvar(bufnrlist[bufnr], '&buftype') == 'help')
-        let name = 'help: '.fnamemodify(name, ':r')
+        let name = '[h] '.fnamemodify(name, ':r')
         let modified = 0
     endif
-    let label .= name
+    let label = name
 
     " The number of windows in the tab page
     let uncounted = 0
@@ -51,9 +80,9 @@ function! GuiTabLabel() " {{{
             let uncounted += 1
         endif
     endfor
-    let wincount = tabpagewinnr(v:lnum, '$') - uncounted
+    let wincount = tabpagewinnr(a:lnum, '$') - uncounted
     if (wincount > 1)
-        let label .= '... ('.wincount
+        let label .= ' (..'.wincount
 
         " Add '[+]' if one of the buffers in the tab page is modified
         for bufnr in bufnrlist
@@ -214,6 +243,7 @@ set formatoptions=
 set noerrorbells visualbell t_vb=
 set number norelativenumber
 set laststatus=2 showcmd ruler noshowmode
+set tabline=%!TermTabLabel()
 set scrolloff=3 sidescrolloff=15 sidescroll=1
 set wildmenu
 set lazyredraw
@@ -315,6 +345,9 @@ if (exists('g:mapleader') && g:mapleader == ',')
     nnoremap \ ,
 endif
 
+command! Light :set background=light
+command! Dark  :set background=dark
+
 cabbrev h    <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab h' : 'h')<CR>
 cabbrev he   <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab he' : 'he')<CR>
 cabbrev hel  <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab hel' : 'hel')<CR>
@@ -375,7 +408,8 @@ endif
 " }}}
 
 " Plugin Settings {{{
-" Airline plugin configuration
+
+" Airline configuration {{{
 let g:airline_left_sep=''
 let g:airline_right_sep=''
 let g:airline_inactive_collapse=1
@@ -385,34 +419,24 @@ let g:airline#extensions#whitespace#trailing_format = 't[%s]'
 let g:airline#extensions#whitespace#mixed_indent_format = 'm[%s]'
 let g:airline#extensions#whitespace#long_format = 'l[%s]'
 let g:airline#extensions#whitespace#mixed_indent_file_format = 'mf[%s]'
+" }}}
 
-
-" Colorscheme switcher plugin configuration
-let g:colorscheme_switcher_define_mappings = 0
-let g:colorscheme_switcher_keep_background = 1
-let g:colorscheme_switcher_exclude = [ 'default' ]
-
-" Ctrlp plugin configuration
+" Ctrlp configuration {{{
 let g:ctrlp_clear_cache_on_exit = 0
 " Disable ctrlp checking for source control, it
 " makes it unusable on large repositories
 let g:ctrlp_working_path_mode = 'a'
+" }}}
 
-" Findstr plugin configuration
-let Findstr_Default_Options = '/sinp'
-let Findstr_Default_FileList = $SEARCHROOT
-
-" NERDTree plugin configuration
+" NERDTree configuration {{{
 let NERDTreeShowHidden = 1
+" }}}
 
-" NERDTreeTabs plugin configuration
-let g:nerdtree_tabs_open_on_gui_startup = 0
-let g:nerdtree_tabs_smart_startup_focus = 2
-
-" Pencil colorscheme configuration
+" Pencil configuration {{{
 let g:pencil_gutter_color = 1
+" }}}
 
-" Startify plugin configuration
+" Startify configuration {{{
 let g:startify_custom_header = [ '   Vim - Vi IMproved' ]
 let g:startify_session_persistence = 1
 let g:startify_files_number = 8
@@ -426,12 +450,38 @@ let g:startify_bookmarks = [{'vr': $MYVIMRC}] + g:startify_bookmarks
 if filereadable($MYVIMRC.'.before')
     let g:startify_bookmarks = [{'vb': $MYVIMRC.'.before'}] + g:startify_bookmarks
 endif
+" }}}
 
-" Wimproved configuration
+" Wimproved configuration {{{
 if has('autocmd')
     autocmd GUIEnter * silent! WToggleClean
 endif
+" }}}
 
+" }}}
+
+" Filetype Settings {{{
+let g:markdown_fenced_languages = ['cs', 'cpp', 'c', 'typescript', 'javascript', 'sh', 'dosbatch', 'vim']
+
+if has('autocmd')
+    augroup Filetypes
+        au FileType cs setlocal foldmethod=indent
+        au FileType c,cpp,cs,js,ps1,ts call HoverHlEnable() |
+                    \ nnoremap <buffer> <silent> ( 0?;<cr>0^:noh<cr>|
+                    \ nnoremap <buffer> <silent> ) $/;<cr>0^:noh<cr>|
+                    \ nnoremap <buffer> <silent> { 0?{[^}]*$<cr>0^:noh<cr>|
+                    \ nnoremap <buffer> <silent> } $/{[^}]*$<cr>0^:noh<cr>
+        au FileType json call HoverHlEnable() |
+                    \ nnoremap <buffer> <silent> { 0?[\[{]\s*$<cr>0^:noh<cr>|
+                    \ nnoremap <buffer> <silent> } $/[\[{]\s*$<cr>0^:noh<cr>
+        au BufNew,BufReadPre *.xaml setf xml
+        au FileType gitcommit call setpos('.', [0, 1, 1, 0]) |
+                    \ set textwidth=72 formatoptions+=t colorcolumn=50,+0 |
+                    \ set columns=80 lines=20 |
+                    \ set scrolloff=0 sidescrolloff=0 sidescroll=1 |
+                    \ call GrowToContents(50, 80)
+    augroup END
+endif
 " }}}
 
 " GUI Settings {{{
@@ -463,7 +513,7 @@ endif
 
 " Auto Commands {{{
 if has('autocmd')
-    augroup RememberCursor
+    augroup RememberCursorLine
         " Jump to line cursor was on when last closed, if available
         au BufReadPost * if line("'\'") > 0 && line("'\'") <= line('$') |
                     \    exe "normal g`\"" |
@@ -475,26 +525,8 @@ if has('autocmd')
         au BufEnter * if IsEmptyFile() | set ft=markdown | end
     augroup END
 
-    augroup Filetypes
-        au FileType cs setlocal foldmethod=indent
-        au FileType c,cpp,cs,js,ps1,ts call HoverHlEnable() |
-                    \ nnoremap <buffer> <silent> ( 0?;<cr>0^:noh<cr>|
-                    \ nnoremap <buffer> <silent> ) $/;<cr>0^:noh<cr>|
-                    \ nnoremap <buffer> <silent> { 0?{[^}]*$<cr>0^:noh<cr>|
-                    \ nnoremap <buffer> <silent> } $/{[^}]*$<cr>0^:noh<cr>
-        au FileType json call HoverHlEnable() |
-                    \ nnoremap <buffer> <silent> { 0?[\[{]\s*$<cr>0^:noh<cr>|
-                    \ nnoremap <buffer> <silent> } $/[\[{]\s*$<cr>0^:noh<cr>
-        au BufNew,BufReadPre *.xaml setf xml
-        au FileType gitcommit call setpos('.', [0, 1, 1, 0]) |
-                    \ set textwidth=72 formatoptions+=t colorcolumn=50,+0 |
-                    \ set columns=80 lines=20 |
-                    \ set scrolloff=0 sidescrolloff=0 sidescroll=1 |
-                    \ call GrowToContents(50, 80)
-    augroup END
-
     augroup HelpShortcuts
-        au BufEnter *.txt if (&buftype == 'help') | noremap q <c-w>c | endif
+        au BufEnter *.txt if (&buftype == 'help') | noremap <buffer> q <c-w>c | endif
     augroup END
 
     highlight ExtraWhitespace guifg=red
@@ -512,22 +544,21 @@ endif
 " }}}
 
 " Diff Settings {{{
-" NOTE: Must be after autocommands, as it clears some augroups!
+" NOTE: Group must be last, as it clears some augroups!
+
+let g:diff_font = 'consolas'
+let g:diff_colorscheme = 'github'
+let g:diff_width = g:width_proportion
+
 if &diff
     set diffopt=filler,context:3
     if has('autocmd')
-        augroup DiffResize
-            au GUIEnter * simalt ~x
+        augroup DiffLayout
             au VimEnter * call SetDiffLayout()
+            au GUIEnter * simalt ~x
         augroup END
-        augroup RememberCursor
-            " Clear cursor jump command
-            au!
-        augroup END
-        augroup GuiResize
-            " Clear autoresize command
-            au!
-        augroup END
+        augroup RememberCursor | au! | augroup END " Clear cursor jump command
+        augroup GuiResize      | au! | augroup END " Clear autoresize command
     elseif has('gui_running')
         set lines=50
         set columns=200
@@ -535,17 +566,16 @@ if &diff
 endif
 
 function! SetDiffLayout()
-    set guifont=consolas
-    if exists('g:diff_colorscheme')
-        execute 'colorscheme '.g:diff_colorscheme
-    else
-        colorscheme github
-    endif
-    execute 'vertical resize '.((&columns*75)/100)
-    call setpos('.', [0, 1, 1, 0])
-    set guioptions-=m
-    set guioptions+=lr
-    noremap q :qa<cr>
+    " Allow for a different diff ui, as many configurations that
+    " look nice in edit mode don't look nice in diff mode.
+    let &guifont = g:diff_font
+    execute 'colorscheme '.g:diff_colorscheme
+    execute 'vertical resize '.((&columns * g:diff_width) / 100)
+
+    call setpos('.', [0, 1, 1, 0]) " Start at the top of the diff
+    set guioptions-=m              " Maximize screen space during diff
+    set guioptions+=lr             " Show both scroll bars
+    noremap <buffer> q :qa<cr>
 endfu
 " }}}
 
