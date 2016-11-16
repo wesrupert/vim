@@ -313,6 +313,9 @@ nnoremap <silent> <leader>u  :UndotreeToggle<cr>
 nnoremap <silent> <leader>v  :source $MYVIMRC<cr>
 nnoremap <silent> <leader>w  :execute 'resize '.line('$')<cr>
 nnoremap <silent> <leader>z  :tabnew<bar>args $MYVIMRC*<bar>all<bar>wincmd J<bar>wincmd t<cr>
+nnoremap <silent> <leader>za :tabnew<bar>args $MYVIMRC.after<cr>
+nnoremap <silent> <leader>zb :tabnew<bar>args $MYVIMRC.before<cr>
+nnoremap <silent> <leader>zr :tabnew<bar>args $MYVIMRC<cr>
 nnoremap <silent> <leader>-  :e .<cr>
 nnoremap <silent> <leader>'  :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
 nnoremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
@@ -428,6 +431,10 @@ let g:ctrlp_clear_cache_on_exit = 0
 let g:ctrlp_working_path_mode = 'a'
 " }}}
 
+" HoverHl configuration {{{
+let g:hoverHlEnabledFiletypes = [ 'cs', 'cpp', 'c', 'typescript', 'javascript', 'sh', 'dosbatch', 'vim' ]
+" }}}
+
 " NERDTree configuration {{{
 let NERDTreeShowHidden = 1
 " }}}
@@ -449,12 +456,6 @@ endif
 let g:startify_bookmarks = [{'vr': $MYVIMRC}] + g:startify_bookmarks
 if filereadable($MYVIMRC.'.before')
     let g:startify_bookmarks = [{'vb': $MYVIMRC.'.before'}] + g:startify_bookmarks
-endif
-" }}}
-
-" Wimproved configuration {{{
-if has('autocmd')
-    autocmd GUIEnter * silent! WToggleClean
 endif
 " }}}
 
@@ -513,7 +514,7 @@ endif
 
 " Auto Commands {{{
 if has('autocmd')
-    augroup RememberCursorLine
+    augroup RememberCursor
         " Jump to line cursor was on when last closed, if available
         au BufReadPost * if line("'\'") > 0 && line("'\'") <= line('$') |
                     \    exe "normal g`\"" |
@@ -529,11 +530,13 @@ if has('autocmd')
         au BufEnter *.txt if (&buftype == 'help') | noremap <buffer> q <c-w>c | endif
     augroup END
 
-    highlight ExtraWhitespace guifg=red
+    highlight link ExtraWhitespace Underlined
+    highlight link BadBraces Error
     augroup ExtraWhitespace
-        au InsertEnter * highlight! link ExtraWhitespace Error
-        au InsertLeave * highlight! link ExtraWhitespace NONE
-        au BufEnter * match ExtraWhitespace /\s\+$\| \+\ze\t\|\t\zs \+\ze/
+        au InsertEnter * highlight! link BadBraces NONE
+        au InsertLeave * highlight! link BadBraces Error
+        au BufEnter * match ExtraWhitespace /\s\+$\|\s*\( \t\)\|\(\t \)\s*/
+        au BufEnter *.c,*.cpp,*.cs,*.js,*.ps1,*.ts 2match BadBraces /[^}]\s*\n\s*\n\s*\zs{\ze\|\s*\n\s*\n\s*\zs}\ze\|\zs}\ze\s*\n\s*\(else\|}\|\s\|\n\)\@!\|\zs{\ze\s*\n\s*\n/
     augroup END
 
     augroup WinHeight
