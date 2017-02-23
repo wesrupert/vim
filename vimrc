@@ -7,6 +7,8 @@ endif
 " }}}
 
 " Functions {{{
+
+" Tabs {{{
 function! TermTabLabel() " {{{
     let label = ''
     for i in range(tabpagenr('$'))
@@ -142,6 +144,7 @@ function! GuiTabToolTip() " {{{
     endfor
     return tooltip
 endfunction " }}}
+" }}}
 
 function! GrowToContents(maxlines, maxcolumns) " {{{
     let totallines = line('$') + 3
@@ -295,7 +298,8 @@ nnoremap <silent> <c-t>      :tabnew<cr>:Startify<cr>
     "map  <leader><leader>   {TAKEN: Easymotion}
 nnoremap <silent> <leader>b  :call ToggleIdeMode()<cr>
     "map          <leader>c  {TAKEN: NERDCommenter}
-    "map          <leader>f  {TAKEN: Findstr}
+nnoremap <silent> <leader>d  <c-x>
+nnoremap <silent> <leader>f  <c-a>
 nnoremap <silent> <leader>g  :GitGutterToggle<cr>
     "map          <leader>h  {TAKEN: GitGutter previews}
 nnoremap <silent> <leader>i  :set foldmethod=indent<cr>
@@ -359,7 +363,7 @@ cabbrev help <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab help' : 'help')<C
 
 " Platform-Specific Settings {{{
 if has('win32')
-    let g:slash = '\\'
+    let g:slash = '\'
     if filewritable($TMP) == 2
         let g:temp = expand($TMP).'\Vim'
     elseif filewritable($TEMP) == 2
@@ -375,8 +379,6 @@ if has('win32')
     behave mswin
 
     map <silent> <c-e> :silent !explorer .<cr>
-    map <silent> <leader>f :Findstring
-    nnoremap <silent> <leader>f :Findstring<cr>
 else
     let g:slash = '/'
     if filewritable($TMPDIR) == 2
@@ -475,7 +477,7 @@ if has('autocmd')
         au FileType json call HoverHlEnable() |
                     \ nnoremap <buffer> <silent> { 0?[\[{]\s*$<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> } $/[\[{]\s*$<cr>0^:noh<cr>
-        au BufNew,BufReadPre *.xaml setf xml
+        au BufNew,BufReadPre *.xaml,*.targets setf xml
         au FileType gitcommit call setpos('.', [0, 1, 1, 0]) |
                     \ set textwidth=72 formatoptions+=t colorcolumn=50,+0 |
                     \ set columns=80 lines=20 |
@@ -505,8 +507,10 @@ if has('gui_running')
             au GUIEnter * set visualbell t_vb=
         augroup END
 
-        augroup GuiResize
-            au VimEnter * call GrowToContents(60, 180)
+        augroup MdResize
+            au BufReadPost *.md set lines=40 columns=75 wrap |
+                          \ set nonumber norelativenumber |
+                          \ exe 'WCenter'
         augroup END
     endif
 endif
