@@ -142,6 +142,11 @@
 ; }}}
 
 ; Colorschemes: {{{
+[submodule "afterglow"] ; opt {{{
+	path = pack/_colors-afterglow/opt/afterglow
+    url = https://github.com/danilo-augusto/vim-afterglow.git
+    ignore = dirty
+; }}}
 [submodule "deepspace"] ; opt {{{
 	path = pack/_colors-deepspace/opt/deepspace
     url = https://github.com/tyrannicaltoucan/vim-deep-space.git
@@ -190,6 +195,11 @@
 [submodule "one"] ; opt {{{
 	path = pack/_colors-one/opt/one
     url = https://github.com/rakr/vim-one.git
+    ignore = dirty
+; }}}
+[submodule "orbital"] ; opt {{{
+	path = pack/_colors-orbital/opt/orbital
+	url = https://github.com/fcpg/vim-orbital.git
     ignore = dirty
 ; }}}
 [submodule "papercolor"] ; opt {{{
