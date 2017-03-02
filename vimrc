@@ -298,6 +298,7 @@ nnoremap <silent> <c-t>      :tabnew<cr>:Startify<cr>
     "map  <leader><leader>   {TAKEN: Easymotion}
 nnoremap <silent> <leader>b  :call ToggleIdeMode()<cr>
     "map          <leader>c  {TAKEN: NERDCommenter}
+nnoremap          <leader>co :colorscheme <c-d>
 nnoremap <silent> <leader>d  <c-x>
 nnoremap <silent> <leader>f  <c-a>
 nnoremap <silent> <leader>g  :GitGutterToggle<cr>
@@ -314,12 +315,12 @@ nnoremap <silent> <leader>rs :set columns=60 lines=20<cr>:WCenter<cr>
 nnoremap <silent> <leader>s  :Startify<cr>
     "map          <leader>t  {TAKEN: TaskList}
 nnoremap <silent> <leader>u  :UndotreeToggle<cr>
-nnoremap <silent> <leader>v  :source $MYVIMRC<cr>
+nnoremap <silent> <leader>va :tabnew<bar>args $MYVIMRC.after<cr>
+nnoremap <silent> <leader>vb :tabnew<bar>args $MYVIMRC.before<cr>
+nnoremap <silent> <leader>vr :tabnew<bar>args $MYVIMRC<cr>
+nnoremap <silent> <leader>vv :tabnew<bar>args $MYVIMRC*<bar>all<bar>wincmd J<bar>wincmd t<cr>
+nnoremap <silent> <leader>vz :source $MYVIMRC<cr>
 nnoremap <silent> <leader>w  :execute 'resize '.line('$')<cr>
-nnoremap <silent> <leader>z  :tabnew<bar>args $MYVIMRC*<bar>all<bar>wincmd J<bar>wincmd t<cr>
-nnoremap <silent> <leader>za :tabnew<bar>args $MYVIMRC.after<cr>
-nnoremap <silent> <leader>zb :tabnew<bar>args $MYVIMRC.before<cr>
-nnoremap <silent> <leader>zr :tabnew<bar>args $MYVIMRC<cr>
 nnoremap <silent> <leader>-  :e .<cr>
 nnoremap <silent> <leader>'  :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
 nnoremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
@@ -377,6 +378,9 @@ if has('win32')
 
     source $VIMRUNTIME/mswin.vim
     behave mswin
+    if has('directx')
+        set renderoptions=type:directx
+    endif
 
     map <silent> <c-e> :silent !explorer .<cr>
 else
@@ -461,6 +465,14 @@ if filereadable($MYVIMRC.'.before')
 endif
 " }}}
 
+" GitGutter configuration {{{
+let g:gitgutter_sign_added = '>>'
+let g:gitgutter_sign_modified = '<>'
+let g:gitgutter_sign_removed = '__'
+let g:gitgutter_sign_removed_first_line = '¯¯'
+let g:gitgutter_sign_modified_removed = '≤≥'
+" }}}
+
 " }}}
 
 " Filetype Settings {{{
@@ -540,7 +552,7 @@ if has('autocmd')
         au InsertEnter * highlight! link BadBraces NONE
         au InsertLeave * highlight! link BadBraces Error
         au BufEnter * match ExtraWhitespace /\s\+$\|\s*\( \t\)\|\(\t \)\s*/
-        au BufEnter *.c,*.cpp,*.cs,*.js,*.ps1,*.ts 2match BadBraces /[^}]\s*\n\s*\n\s*\zs{\ze\|\s*\n\s*\n\s*\zs}\ze\|\zs}\ze\s*\n\s*\(else\|}\|\s\|\n\)\@!\|\zs{\ze\s*\n\s*\n/
+        au BufEnter *.c,*.cpp,*.cs,*.js,*.ps1,*.ts 2match BadBraces /[^}]\s*\n\s*\n\s*\zs{\ze\|\s*\n\s*\n\s*\zs}\ze\|\zs}\ze\s*\n\s*\(else\>\|catch\>\|finally\>\|while\>\|}\|\s\|\n\)\@!\|\zs{\ze\s*\n\s*\n/
     augroup END
 
     augroup WinHeight
