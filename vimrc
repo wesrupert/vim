@@ -169,6 +169,14 @@ function! GrowToContents(maxlines, maxcolumns) " {{{
     endif
 endfunction " }}}
 
+function! OpenHelp(topic) " {{{
+    if &columns > 80 + g:help_threshold
+        exe 'vert rightbelow help '.a:topic
+    else
+        exe 'tab help '.a:topic
+    endif
+endfunction " }}}
+
 function! IsEmptyFile() " {{{
     if @% != ''
         " No filename for current buffer
@@ -240,6 +248,7 @@ syntax on
 filetype plugin indent on
 set mouse=a
 set encoding=utf-8
+set spell spelllang=en_us
 set formatoptions=
 
 " Visual aesthetics
@@ -247,7 +256,7 @@ set noerrorbells visualbell t_vb=
 set number norelativenumber
 set laststatus=2 showcmd ruler noshowmode
 set tabline=%!TermTabLabel()
-set scrolloff=3 sidescrolloff=15 sidescroll=1
+set scrolloff=3 sidescrolloff=8 sidescroll=1
 set wildmenu
 set lazyredraw
 set conceallevel=2
@@ -255,6 +264,7 @@ let g:idemode = 0
 let g:alpha_level = 200
 let g:height_proportion = 75
 let g:width_proportion = 66
+let g:help_threshold = 80
 
 " Search
 set updatetime=500
@@ -266,6 +276,7 @@ set tabstop=4 softtabstop=4 shiftwidth=4
 set expandtab smarttab
 set autoindent smartindent
 set formatoptions+=jr
+set listchars=tab:»\ ,space:·,trail:◌
 
 " Word wrap
 set backspace=indent,eol,start
@@ -332,7 +343,7 @@ nnoremap <silent> gV         `[v`]
 nnoremap <silent> j          gj
 inoremap          jk         <esc>
 nnoremap <silent> k          gk
-nnoremap <silent> K          :tab h <c-r><c-w><cr>
+nnoremap <silent> K          :Help <c-r><c-w><cr>
 inoremap          kj         <esc>
 nnoremap          Q          :q
 nnoremap          TQ         :tabclose<cr>
@@ -355,11 +366,12 @@ endif
 
 command! Light :set background=light
 command! Dark  :set background=dark
+command! -nargs=1 -complete=help Help call OpenHelp(<f-args>)
 
-cabbrev h    <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab h' : 'h')<CR>
-cabbrev he   <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab he' : 'he')<CR>
-cabbrev hel  <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab hel' : 'hel')<CR>
-cabbrev help <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'tab help' : 'help')<CR>
+cabbrev h    <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'Help' : 'h')<CR>
+cabbrev he   <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'Help' : 'he')<CR>
+cabbrev hel  <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'Help' : 'hel')<CR>
+cabbrev help <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'Help' : 'help')<CR>
 " }}}
 
 " Platform-Specific Settings {{{
@@ -377,7 +389,8 @@ if has('win32')
     call TryCreateDir(g:temp)
 
     source $VIMRUNTIME/mswin.vim
-    behave mswin
+    set selectmode=
+
     if has('directx')
         set renderoptions=type:directx
     endif
@@ -417,6 +430,11 @@ endif
 " }}}
 
 " Plugin Settings {{{
+
+" Builtin plugins {{{
+packadd! matchit
+" }}}
+
 
 " Airline configuration {{{
 let g:airline_left_sep=''
@@ -490,11 +508,20 @@ if has('autocmd')
                     \ nnoremap <buffer> <silent> { 0?[\[{]\s*$<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> } $/[\[{]\s*$<cr>0^:noh<cr>
         au BufNew,BufReadPre *.xaml,*.targets setf xml
+        au FileType xml,html setlocal matchpairs+=<:> nospell
         au FileType gitcommit call setpos('.', [0, 1, 1, 0]) |
-                    \ set textwidth=72 formatoptions+=t colorcolumn=50,+0 |
+                    \ setlocal textwidth=72 formatoptions+=t colorcolumn=50,+0 |
+                    \ setlocal scrolloff=0 sidescrolloff=0 sidescroll=1 |
                     \ set columns=80 lines=20 |
-                    \ set scrolloff=0 sidescrolloff=0 sidescroll=1 |
                     \ call GrowToContents(50, 80)
+    augroup END
+
+    augroup HelpFiles
+        au BufEnter *.txt if (&buftype == 'help') |
+                        \     setlocal winwidth=80 sidescrolloff=0 |
+                        \     vertical resize 80 |
+                        \     noremap <buffer> q <c-w>c |
+                        \ endif
     augroup END
 endif
 " }}}
@@ -504,7 +531,7 @@ if has('gui_running')
     " GVim window style.
     set guitablabel=%{GuiTabLabel()}
     set guitabtooltip=%{GuiTabToolTip()}
-    set guioptions=aegt
+    set guioptions=egt
     set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
     set selectmode=
     set guicursor+=n-v-c:blinkon0
@@ -533,8 +560,13 @@ if has('autocmd')
     augroup RememberCursor
         " Jump to line cursor was on when last closed, if available
         au BufReadPost * if line("'\'") > 0 && line("'\'") <= line('$') |
-                    \    exe "normal g`\"" |
-                    \ endif
+                       \    exe "normal g`\"" |
+                       \ endif
+    augroup END
+
+    augroup Spelling
+        au ColorScheme * hi clear SpellRare | hi clear SpellLocal
+        au BufRead * if &l:modifiable == 0 | setlocal nospell | endif
     augroup END
 
     augroup AutoChDir
@@ -542,22 +574,20 @@ if has('autocmd')
         au BufEnter * if IsEmptyFile() | set ft=markdown | end
     augroup END
 
-    augroup HelpShortcuts
-        au BufEnter *.txt if (&buftype == 'help') | noremap <buffer> q <c-w>c | endif
-    augroup END
-
-    highlight link ExtraWhitespace Underlined
+    highlight link MixedWhitespace Underlined
     highlight link BadBraces Error
-    augroup ExtraWhitespace
+    augroup MixedWhitespace
         au InsertEnter * highlight! link BadBraces NONE
         au InsertLeave * highlight! link BadBraces Error
-        au BufEnter * match ExtraWhitespace /\s\+$\|\s*\( \t\)\|\(\t \)\s*/
+        au BufEnter * match MixedWhitespace /\s*\(\( \t\)\|\(\t \)\)\s*/
         au BufEnter *.c,*.cpp,*.cs,*.js,*.ps1,*.ts 2match BadBraces /[^}]\s*\n\s*\n\s*\zs{\ze\|\s*\n\s*\n\s*\zs}\ze\|\zs}\ze\s*\n\s*\(else\>\|catch\>\|finally\>\|while\>\|}\|\s\|\n\)\@!\|\zs{\ze\s*\n\s*\n/
     augroup END
 
     augroup WinHeight
-        au VimResized * let &winheight = (&lines * g:height_proportion) / 100 |
-                      \ let &winwidth = (&columns * g:width_proportion) / 100
+        au VimResized * if (&buftype != 'help') |
+                      \     let &l:winheight = (&lines * g:height_proportion) / 100 |
+                      \     let &l:winwidth = (&columns * g:width_proportion) / 100 |
+                      \ endif
     augroup END
 endif
 " }}}
