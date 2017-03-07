@@ -116,7 +116,7 @@ function! GuiTabToolTip() " {{{
 
         " Separate buffer entries
         if tooltip!=''
-            let tooltip .= '\n'
+            let tooltip .= "\n"
         endif
 
         " Add name of buffer
