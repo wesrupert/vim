@@ -14,11 +14,6 @@
     url = https://github.com/Townk/vim-autoclose.git
     ignore = dirty
 ; }}}
-[submodule "autoclosetag"] ; opt {{{
-	path = pack/autoclosetag/opt/autoclosetag
-    url = https://github.com/vim-scripts/HTML-AutoCloseTag.git
-    ignore = dirty
-; }}}
 [submodule "cpp-enhanced"] ; {{{
 	path = pack/cpp-enhanced/start/cpp-enhanced
     url = https://github.com/octol/vim-cpp-enhanced-highlight.git
