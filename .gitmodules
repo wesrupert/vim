@@ -34,6 +34,11 @@
     url = https://github.com/chrisbra/vim-diff-enhanced.git
     ignore = dirty
 ; }}}
+[submodule "dispatch"] ; {{{
+    path = pack/dispatch/start/dispatch
+    url = https://github.com/tpope/vim-dispatch.git
+    ignore = dirty
+; }}}
 [submodule "easy-align"] ; {{{
 	path = pack/easy-align/start/easy-align
     url = https://github.com/junegunn/vim-easy-align.git
@@ -82,6 +87,11 @@
 [submodule "nerdtree"] ; {{{
 	path = pack/nerdtree/start/nerdtree
     url = https://github.com/scrooloose/nerdtree.git
+    ignore = dirty
+; }}}
+[submodule "omnisharp"] ; {{{
+	path = pack/omnisharp/start/omnisharp
+	url = https://github.com/OmniSharp/omnisharp-vim.git
     ignore = dirty
 ; }}}
 [submodule "powershell"] ; {{{
