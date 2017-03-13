@@ -170,11 +170,19 @@ function! GrowToContents(maxlines, maxcolumns) " {{{
 endfunction " }}}
 
 function! OpenHelp(topic) " {{{
-    if &columns > 80 + g:help_threshold
-        exe 'vert rightbelow help '.a:topic
-    else
-        exe 'tab help '.a:topic
-    endif
+    try
+        if &columns > 80 + g:help_threshold
+            let position = 'vert'
+            if exists('g:open_help_on_right') && g:open_help_on_right != 0
+                let position = l:position.' rightbelow'
+            endif
+            exe l:position.' help '.a:topic
+        else
+            exe 'tab help '.a:topic
+        endif
+    catch
+        echohl ErrorMsg | echo 'Help:'.split(v:exception, ':')[-1] | echohl None
+    endtry
 endfunction " }}}
 
 function! IsEmptyFile() " {{{
@@ -208,12 +216,24 @@ function! GetMaxColumn() " {{{
     return maxlength
 endfunction " }}}
 
-function! TabOrComplete() " {{{
-    if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
-        return '\<C-N>'
+function! ResizeWindow(class) " {{{
+    if a:class == 's' " Small
+        set lines=20 columns=60
+    elseif a:class == 'm' " Medium
+        set lines=40 columns=120
+    elseif a:class == 'l' " Large
+        set lines=60 columns=180
+    elseif a:class == 'n' " Narrow
+        set lines=20 columns=60
+    elseif a:class == 'd' " Diff
+        set lines=50 columns=200
+    elseif a:class == 'r' " Resized
+        set lines=20 columns=60
+        call GrowToContents(60, 180)
     else
-        return '\<Tab>'
+        echoerr 'Unknown size class: '.a:class
     endif
+    silent call wimproved#set_monitor_center()
 endfunction " }}}
 
 function! ToggleAlpha() "{{{
@@ -248,7 +268,7 @@ syntax on
 filetype plugin indent on
 set mouse=a
 set encoding=utf-8
-set spell spelllang=en_us
+set spelllang=en_us
 set formatoptions=
 
 " Visual aesthetics
@@ -270,6 +290,7 @@ let g:help_threshold = 80
 set updatetime=500
 set incsearch hlsearch
 set ignorecase smartcase
+set completeopt=longest,menuone,preview
 
 " Whitespace and comments
 set tabstop=4 softtabstop=4 shiftwidth=4
@@ -296,6 +317,7 @@ set modeline modelines=1
 
 " Keybindings and Commands {{{
      map <silent> <f11>      :WToggleFullscreen<cr>
+    imap <silent> <c-space>  <tab>
 nnoremap <silent> <c-a>      <esc>ggVG
 inoremap <silent> <c-a>      <esc>ggVG
     "map          <c-e>      {TAKEN: Open file explorer}
@@ -319,10 +341,10 @@ nnoremap <silent> <leader>i  :set foldmethod=indent<cr>
 nnoremap <silent> <leader>n  :call HoverHlForward()<cr>
 nnoremap <silent> <leader>N  :call HoverHlBackward()<cr>
 nnoremap <silent> <leader>rc :WCenter<cr>
-nnoremap <silent> <leader>rl :set columns=180 lines=60<cr>:WCenter<cr>
-nnoremap <silent> <leader>rm :set columns=120 lines=40<cr>:WCenter<cr>
-nnoremap <silent> <leader>rr :set columns=60 lines=20<cr>:call GrowToContents(60, 180)<cr>
-nnoremap <silent> <leader>rs :set columns=60 lines=20<cr>:WCenter<cr>
+nnoremap <silent> <leader>rl :call ResizeWindow('l')<cr>
+nnoremap <silent> <leader>rm :call ResizeWindow('m')<cr>
+nnoremap <silent> <leader>rr :call ResizeWindow('r')<cr>
+nnoremap <silent> <leader>rs :call ResizeWindow('s')<cr>
 nnoremap <silent> <leader>s  :Startify<cr>
     "map          <leader>t  {TAKEN: TaskList}
 nnoremap <silent> <leader>u  :UndotreeToggle<cr>
@@ -348,7 +370,7 @@ inoremap          kj         <esc>
 nnoremap          Q          :q
 nnoremap          TQ         :tabclose<cr>
 nnoremap          Y          y$
-inoremap <silent> <tab>      <c-r>=TabOrComplete()<cr>
+   "imap          <tab>      {TAKEN: Supertab}
 nnoremap          <tab>      %
 nnoremap          <space>    za
 nnoremap          -          _
@@ -390,6 +412,7 @@ if has('win32')
 
     source $VIMRUNTIME/mswin.vim
     set selectmode=
+    noremap <c-a> <c-c>ggVG
 
     if has('directx')
         set renderoptions=type:directx
@@ -417,7 +440,7 @@ let s:backupdir = expand(g:temp.g:slash.'backups')
 let &directory = s:backupdir.g:slash.g:slash
 if has('autocmd')
     augroup Backups
-        au BufRead * let &l:backupdir = s:backupdir.g:slash.expand("%:p:h:t") |
+        autocmd BufRead * let &l:backupdir = s:backupdir.g:slash.expand("%:p:h:t") |
                     \ call TryCreateDir(&l:backupdir)
     augroup END
 endif
@@ -435,12 +458,13 @@ endif
 packadd! matchit
 " }}}
 
-
 " Airline configuration {{{
-let g:airline_left_sep=''
-let g:airline_right_sep=''
-let g:airline_inactive_collapse=1
-let g:airline#extensions#branch#format = 2
+let g:airline_left_sep=''
+let g:airline_right_sep=''
+let g:airline_inactive_collapse=1 " Only show file name for inactive buffers
+let g:airline#extensions#branch#format = 2 " Truncate branch name from long/section/name/branch to l/s/n/branch
+
+" Show whitespace, with more compact messages
 let g:airline#extensions#whitespace#enabled=1
 let g:airline#extensions#whitespace#trailing_format = 't[%s]'
 let g:airline#extensions#whitespace#mixed_indent_format = 'm[%s]'
@@ -461,6 +485,37 @@ let g:hoverHlEnabledFiletypes = [ 'cs', 'cpp', 'c', 'typescript', 'javascript', 
 
 " NERDTree configuration {{{
 let NERDTreeShowHidden = 1
+" }}}
+
+" Omnisharp configuration {{{
+let g:OmniSharp_selector_ui = 'ctrlp'
+let g:omnicomplete_fetch_documentation = 1
+let g:syntastic_cs_checkers = ['syntax', 'semantic', 'issues']
+
+augroup Omnisharp
+    autocmd!
+
+    "Set autocomplete function to OmniSharp (if not using YouCompleteMe completion plugin)
+    autocmd FileType cs setlocal omnifunc=OmniSharp#Complete |
+                      \ let b:SuperTabDefaultCompletionType = '<c-x><c-o>'
+
+    "show type information automatically when the cursor stops moving
+    autocmd CursorHold *.cs call OmniSharp#TypeLookupWithoutDocumentation()
+
+    "The following commands are contextual, based on the current cursor position.
+
+    autocmd FileType cs nnoremap gd :OmniSharpGotoDefinition<cr>
+    autocmd FileType cs nnoremap gc :OmniSharpFindUsages<cr>
+
+    " cursor can be anywhere on the line containing an issue
+    autocmd FileType cs nnoremap <c-.>  :OmniSharpFixIssue<cr>
+    autocmd FileType cs nnoremap <leader>fx :OmniSharpFixUsings<cr>
+    autocmd FileType cs nnoremap <leader>gd :OmniSharpDocumentation<cr>
+
+    "navigate up by method/property/field
+    autocmd FileType cs nnoremap { :OmniSharpNavigateUp<cr>
+    autocmd FileType cs nnoremap } :OmniSharpNavigateDown<cr>
+augroup END
 " }}}
 
 " Pencil configuration {{{
@@ -498,18 +553,19 @@ let g:markdown_fenced_languages = ['cs', 'cpp', 'c', 'typescript', 'javascript',
 
 if has('autocmd')
     augroup Filetypes
-        au FileType cs setlocal foldmethod=indent
-        au FileType c,cpp,cs,js,ps1,ts call HoverHlEnable() |
+        autocmd!
+        autocmd FileType cs setlocal foldmethod=indent
+        autocmd FileType c,cpp,cs,js,ps1,ts call HoverHlEnable() |
                     \ nnoremap <buffer> <silent> ( 0?;<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> ) $/;<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> { 0?{[^}]*$<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> } $/{[^}]*$<cr>0^:noh<cr>
-        au FileType json call HoverHlEnable() |
+        autocmd FileType json call HoverHlEnable() |
                     \ nnoremap <buffer> <silent> { 0?[\[{]\s*$<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> } $/[\[{]\s*$<cr>0^:noh<cr>
-        au BufNew,BufReadPre *.xaml,*.targets setf xml
-        au FileType xml,html setlocal matchpairs+=<:> nospell
-        au FileType gitcommit call setpos('.', [0, 1, 1, 0]) |
+        autocmd BufNew,BufReadPre *.xaml,*.targets setf xml
+        autocmd FileType xml,html setlocal matchpairs+=<:> nospell
+        autocmd FileType gitcommit call setpos('.', [0, 1, 1, 0]) |
                     \ setlocal textwidth=72 formatoptions+=t colorcolumn=50,+0 |
                     \ setlocal scrolloff=0 sidescrolloff=0 sidescroll=1 |
                     \ set columns=80 lines=20 |
@@ -517,11 +573,13 @@ if has('autocmd')
     augroup END
 
     augroup HelpFiles
-        au BufEnter *.txt if (&buftype == 'help') |
+        autocmd!
+        autocmd BufWinEnter * if (&buftype == 'help') |
                         \     setlocal winwidth=80 sidescrolloff=0 |
                         \     vertical resize 80 |
                         \     noremap <buffer> q <c-w>c |
                         \ endif
+        autocmd BufWinEnter * if (&buftype == 'quickfix') | noremap <buffer> q <c-w>c | endif
     augroup END
 endif
 " }}}
@@ -543,13 +601,15 @@ if has('gui_running')
 
     if has('autocmd')
         augroup GuiStartup
-            au GUIEnter * set visualbell t_vb=
+            autocmd!
+            autocmd GUIEnter * set visualbell t_vb= | call ResizeWindow('l')
         augroup END
 
         augroup MdResize
-            au BufReadPost *.md set lines=40 columns=75 wrap |
-                          \ set nonumber norelativenumber |
-                          \ exe 'WCenter'
+            autocmd!
+            autocmd BufReadPost *.md setlocal wrap |
+                          \ setlocal nonumber norelativenumber |
+                          \ call ResizeWindow('n')
         augroup END
     endif
 endif
@@ -558,33 +618,38 @@ endif
 " Auto Commands {{{
 if has('autocmd')
     augroup RememberCursor
+        autocmd!
         " Jump to line cursor was on when last closed, if available
-        au BufReadPost * if line("'\'") > 0 && line("'\'") <= line('$') |
+        autocmd BufReadPost * if line("'\'") > 0 && line("'\'") <= line('$') |
                        \    exe "normal g`\"" |
                        \ endif
     augroup END
 
     augroup Spelling
-        au ColorScheme * hi clear SpellRare | hi clear SpellLocal
-        au BufRead * if &l:modifiable == 0 | setlocal nospell | endif
+        autocmd!
+        autocmd ColorScheme * hi clear SpellRare | hi clear SpellLocal
+        autocmd BufRead * if &l:modifiable == 0 | setlocal nospell | endif
     augroup END
 
     augroup AutoChDir
-        au BufEnter * silent! lcd %:p:h
-        au BufEnter * if IsEmptyFile() | set ft=markdown | end
+        autocmd!
+        autocmd BufEnter * silent! lcd %:p:h
+        autocmd BufEnter * if IsEmptyFile() | set ft=markdown | end
     augroup END
 
     highlight link MixedWhitespace Underlined
     highlight link BadBraces Error
     augroup MixedWhitespace
-        au InsertEnter * highlight! link BadBraces NONE
-        au InsertLeave * highlight! link BadBraces Error
-        au BufEnter * match MixedWhitespace /\s*\(\( \t\)\|\(\t \)\)\s*/
-        au BufEnter *.c,*.cpp,*.cs,*.js,*.ps1,*.ts 2match BadBraces /[^}]\s*\n\s*\n\s*\zs{\ze\|\s*\n\s*\n\s*\zs}\ze\|\zs}\ze\s*\n\s*\(else\>\|catch\>\|finally\>\|while\>\|}\|\s\|\n\)\@!\|\zs{\ze\s*\n\s*\n/
+        autocmd!
+        autocmd InsertEnter * highlight! link BadBraces NONE
+        autocmd InsertLeave * highlight! link BadBraces Error
+        autocmd BufEnter * match MixedWhitespace /\s*\(\( \t\)\|\(\t \)\)\s*/
+        autocmd BufEnter *.c,*.cpp,*.cs,*.js,*.ps1,*.ts 2match BadBraces /[^}]\s*\n\s*\n\s*\zs{\ze\|\s*\n\s*\n\s*\zs}\ze\|\zs}\ze\s*\n\s*\(else\>\|catch\>\|finally\>\|while\>\|}\|\s\|\n\)\@!\|\zs{\ze\s*\n\s*\n/
     augroup END
 
     augroup WinHeight
-        au VimResized * if (&buftype != 'help') |
+        autocmd!
+        autocmd VimResized * if (&buftype != 'help') |
                       \     let &l:winheight = (&lines * g:height_proportion) / 100 |
                       \     let &l:winwidth = (&columns * g:width_proportion) / 100 |
                       \ endif
@@ -603,14 +668,13 @@ if &diff
     set diffopt=filler,context:3
     if has('autocmd')
         augroup DiffLayout
-            au VimEnter * call SetDiffLayout()
-            au GUIEnter * simalt ~x
+            autocmd VimEnter * call SetDiffLayout()
+            autocmd GUIEnter * simalt ~x
         augroup END
-        augroup RememberCursor | au! | augroup END " Clear cursor jump command
-        augroup GuiResize      | au! | augroup END " Clear autoresize command
+        augroup RememberCursor | autocmd! | augroup END " Clear cursor jump command
+        augroup GuiResize      | autocmd! | augroup END " Clear autoresize command
     elseif has('gui_running')
-        set lines=50
-        set columns=200
+        call ResizeWindow('d')
     endif
 endif
 
@@ -632,6 +696,34 @@ endfu
 if filereadable($MYVIMRC.'.after')
     source $MYVIMRC.after
 endif
+" }}}
+
+" Load help docs {{{
+
+" Credit goes to Tim Pope (https://tpo.pe/) for these functions.
+
+function! s:Helptags() abort "| Invoke :helptags on all non-$VIM doc directories in runtimepath. {{{
+    for glob in s:Split(&rtp)
+        for dir in map(split(glob(glob), "\n"), 'v:val.g:slash."/doc/".g:slash')
+            if (dir)[0 : strlen($VIMRUNTIME)] !=# $VIMRUNTIME.g:slash &&
+                        \ filewritable(dir) == 2 &&
+                        \ !empty(split(glob(dir.'*.txt'))) &&
+                        \ (!filereadable(dir.'tags') || filewritable(dir.'tags'))
+                silent! execute 'helptags' fnameescape(dir)
+            endif
+        endfor
+    endfor
+endfunction " }}}
+
+function! s:Split(path) abort "| Split a path into a list. {{{
+    if type(a:path) == type([]) | return a:path | endif
+    if empty(a:path) | return [] | endif
+    let split = split(a:path,'\\\@<!\%(\\\\\)*\zs,')
+    return map(split,'substitute(v:val,''\\\([\\,]\)'',''\1'',"g")')
+endfunction " }}}
+
+call s:Helptags()
+
 " }}}
 
 " vim: foldmethod=marker foldlevel=0
