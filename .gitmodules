@@ -59,8 +59,8 @@
 	url = https://github.com/fsharp/vim-fsharp.git
     ignore = dirty
 ; }}}
-[submodule "gitgutter"] ; opt {{{
-	path = pack/gitgutter/opt/gitgutter
+[submodule "gitgutter"] ; {{{
+    path = pack/gitgutter/start/gitgutter
     url = https://github.com/airblade/vim-gitgutter.git
     ignore = dirty
 ; }}}
@@ -77,6 +77,11 @@
 [submodule "json"] ; {{{
 	path = pack/json/start/json
     url = https://github.com/elzr/vim-json.git
+    ignore = dirty
+; }}}
+[submodule "markdown"] ; {{{
+    path = .\\pack\\markdown\\start\\markdown
+    url = https://github.com/plasticboy/vim-markdown.git
     ignore = dirty
 ; }}}
 [submodule "nerdcommenter"] ; {{{
@@ -144,7 +149,7 @@
     url = https://github.com/kkoenig/wimproved.vim.git
     ignore = dirty
 ; }}}
-; }}}
+; endregion plugins }}}
 
 ; Colorschemes: {{{
 [submodule "afterglow"] ; opt {{{
@@ -246,6 +251,6 @@
     url = https://github.com/rakr/vim-two-firewatch.git
     ignore = dirty
 ; }}}
-; }}}
+; endregion colorschemes }}}
 
 ; vim: foldmethod=marker foldlevel=1
