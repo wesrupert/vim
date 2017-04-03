@@ -114,8 +114,8 @@
     url = https://github.com/tpope/vim-repeat.git
     ignore = dirty
 ; }}}
-[submodule "startify"] ; {{{
-	path = pack/startify/start/startify
+[submodule "startify"] ; opt {{{
+    path = pack/startify/opt/startify
     url = https://github.com/mhinz/vim-startify.git
     ignore = dirty
 ; }}}
