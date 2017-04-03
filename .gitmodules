@@ -69,6 +69,11 @@
     url = https://github.com/wesrupert/vim-hoverhl.git
     ignore = dirty
 ; }}}
+[submodule "incsearch"] ; {{{
+    path = pack/incsearch/start/incsearch
+    url = https://github.com/haya14busa/incsearch.vim.git
+    ignore = dirty
+; }}}
 [submodule "jsdoc"] ; {{{
 	path = pack/jsdoc/start/jsdoc
     url = https://github.com/heavenshell/vim-jsdoc
@@ -80,7 +85,7 @@
     ignore = dirty
 ; }}}
 [submodule "markdown"] ; {{{
-    path = .\\pack\\markdown\\start\\markdown
+    path = pack/markdown/start/markdown
     url = https://github.com/plasticboy/vim-markdown.git
     ignore = dirty
 ; }}}

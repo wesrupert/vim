@@ -224,7 +224,7 @@ function! ResizeWindow(class) " {{{
     elseif a:class == 'l' " Large
         set lines=60 columns=180
     elseif a:class == 'n' " Narrow
-        set lines=20 columns=60
+        set lines=40 columns=60
     elseif a:class == 'd' " Diff
         set lines=50 columns=200
     elseif a:class == 'r' " Resized
@@ -235,6 +235,25 @@ function! ResizeWindow(class) " {{{
     endif
     silent call wimproved#set_monitor_center()
 endfunction " }}}
+
+function! SetRenderOptions(mode) "{{{
+    if !has('directx')
+        return
+    endif
+
+    if (a:mode == 1) || (a:mode != 0 && &renderoptions == '')
+        set renderoptions=type:directx
+        let system = 'DirectX'
+    else
+        set renderoptions=
+        let system = 'default'
+    endif
+
+    if a:mode > 1
+        redraw
+        echo '[render system set to: '.l:system.']'
+    endif
+endfunction "}}}
 
 function! ToggleAlpha() "{{{
     if exists('s:alpha')
@@ -261,6 +280,15 @@ function! TryCreateDir(path) " {{{
         call mkdir(a:path)
     endif
 endfunction " }}}
+
+function! GenerateCAbbrev(orig, new) "{{{
+    let l = len(a:orig)
+    while l > 0
+        let s = strpart(a:orig, 0, l)
+        execute "cabbrev ".s." <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? '".a:new."' : '".s."')<CR>"
+        let l = l - 1
+    endwhile
+endfunction" }}}
 " }}}
 
 " Preferences and Settings {{{
@@ -297,7 +325,7 @@ set tabstop=4 softtabstop=4 shiftwidth=4
 set expandtab smarttab
 set autoindent smartindent
 set formatoptions+=jr
-set listchars=tab:»\ ,space:·,trail:◌
+set list listchars=tab:»\ ,space:·,trail:◌
 
 " Word wrap
 set backspace=indent,eol,start
@@ -340,6 +368,7 @@ nnoremap <silent> <leader>i  :set foldmethod=indent<cr>
     "map          <leader>m  {TAKEN: Toggle GUI menu}
 nnoremap <silent> <leader>n  :call HoverHlForward()<cr>
 nnoremap <silent> <leader>N  :call HoverHlBackward()<cr>
+nnoremap <silent> <leader>o  :call SetRenderOptions(2)<cr>
 nnoremap <silent> <leader>rc :WCenter<cr>
 nnoremap <silent> <leader>rl :call ResizeWindow('l')<cr>
 nnoremap <silent> <leader>rm :call ResizeWindow('m')<cr>
@@ -362,9 +391,12 @@ nnoremap <silent> <leader>?  :nohlsearch<cr>:call HoverHlDisable()<cr>
 nnoremap <silent> <leader>=  :call ToggleAlpha()<cr>
 nnoremap <silent> cd         :execute 'cd '.expand('%:p:h')<cr>
 nnoremap <silent> gV         `[v`]
+    nmap          g/         <Plug>(incsearch-stay)
 nnoremap <silent> j          gj
+nnoremap <silent> gj         j
 inoremap          jk         <esc>
 nnoremap <silent> k          gk
+nnoremap <silent> gk         k
 nnoremap <silent> K          :Help <c-r><c-w><cr>
 inoremap          kj         <esc>
 nnoremap          Q          :q
@@ -377,6 +409,8 @@ nnoremap          -          _
 nnoremap          _          -
 nnoremap <silent> [[         ^
 nnoremap <silent> ]]         $
+    nmap          /          <Plug>(incsearch-forward)
+    nmap          ?          <Plug>(incsearch-backward)
     "map          (          {TAKEN: Prev code line}
     "map          )          {TAKEN: Next code line}
     "map          {          {TAKEN: Prev code block}
@@ -386,14 +420,11 @@ if (exists('g:mapleader') && g:mapleader == ',')
     nnoremap \ ,
 endif
 
-command! Light :set background=light
-command! Dark  :set background=dark
+command! -nargs=0 Light set background=light
+command! -nargs=0 Dark set background=dark
 command! -nargs=1 -complete=help Help call OpenHelp(<f-args>)
+call GenerateCAbbrev('help', 'Help')
 
-cabbrev h    <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'Help' : 'h')<CR>
-cabbrev he   <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'Help' : 'he')<CR>
-cabbrev hel  <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'Help' : 'hel')<CR>
-cabbrev help <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? 'Help' : 'help')<CR>
 " }}}
 
 " Platform-Specific Settings {{{
@@ -413,10 +444,7 @@ if has('win32')
     source $VIMRUNTIME/mswin.vim
     set selectmode=
     noremap <c-a> <c-c>ggVG
-
-    if has('directx')
-        set renderoptions=type:directx
-    endif
+    call SetRenderOptions(1)
 
     map <silent> <c-e> :silent !explorer .<cr>
 else
@@ -504,17 +532,17 @@ augroup Omnisharp
 
     "The following commands are contextual, based on the current cursor position.
 
-    autocmd FileType cs nnoremap gd :OmniSharpGotoDefinition<cr>
-    autocmd FileType cs nnoremap gc :OmniSharpFindUsages<cr>
+    autocmd FileType cs nnoremap <buffer> gd :OmniSharpGotoDefinition<cr>
+    autocmd FileType cs nnoremap <buffer> gc :OmniSharpFindUsages<cr>
 
     " cursor can be anywhere on the line containing an issue
-    autocmd FileType cs nnoremap <c-.>  :OmniSharpFixIssue<cr>
-    autocmd FileType cs nnoremap <leader>fx :OmniSharpFixUsings<cr>
-    autocmd FileType cs nnoremap <leader>gd :OmniSharpDocumentation<cr>
+    autocmd FileType cs nnoremap <buffer> <c-.>  :OmniSharpFixIssue<cr>
+    autocmd FileType cs nnoremap <buffer> <leader>fx :OmniSharpFixUsings<cr>
+    autocmd FileType cs nnoremap <buffer> <leader>gd :OmniSharpDocumentation<cr>
 
     "navigate up by method/property/field
-    autocmd FileType cs nnoremap { :OmniSharpNavigateUp<cr>
-    autocmd FileType cs nnoremap } :OmniSharpNavigateDown<cr>
+    autocmd FileType cs nnoremap <buffer> { :OmniSharpNavigateUp<cr>
+    autocmd FileType cs nnoremap <buffer> } :OmniSharpNavigateDown<cr>
 augroup END
 " }}}
 
@@ -544,6 +572,32 @@ let g:gitgutter_sign_modified = '<>'
 let g:gitgutter_sign_removed = '__'
 let g:gitgutter_sign_removed_first_line = '¯¯'
 let g:gitgutter_sign_modified_removed = '≤≥'
+
+augroup UpdateGitGutter
+    autocmd!
+    autocmd BufEnter * call UpdateGitGutter()
+augroup END
+
+function! UpdateGitGutter() " {{{
+    if exists('g:gitgutter_disabled_paths')
+        for path in g:gitgutter_disabled_paths
+            if expand('%:p') =~? l:path
+                if g:gitgutter_enabled == 1
+                    redraw
+                    echo '[gitgutter disabled]'
+                endif
+                call gitgutter#disable()
+                return
+            endif
+        endfor
+        call gitgutter#enable()
+        if g:gitgutter_enabled == 0
+            redraw
+            echo '[gitgutter enabled]'
+        endif
+    endif
+endfunction " }}}
+
 " }}}
 
 " }}}
@@ -558,12 +612,18 @@ if has('autocmd')
         autocmd FileType c,cpp,cs,js,ps1,ts call HoverHlEnable() |
                     \ nnoremap <buffer> <silent> ( 0?;<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> ) $/;<cr>0^:noh<cr>|
-                    \ nnoremap <buffer> <silent> { 0?{[^}]*$<cr>0^:noh<cr>|
-                    \ nnoremap <buffer> <silent> } $/{[^}]*$<cr>0^:noh<cr>
+                    \ if &filetype == 'cs' |
+                    \     nnoremap <buffer> <silent> [[ 0?{[^}]*$<cr>0^:noh<cr>|
+                    \     nnoremap <buffer> <silent> ]] $/{[^}]*$<cr>0^:noh<cr>|
+                    \ else |
+                    \     nnoremap <buffer> <silent> { 0?{[^}]*$<cr>0^:noh<cr>|
+                    \     nnoremap <buffer> <silent> } $/{[^}]*$<cr>0^:noh<cr>|
+                    \ endif
         autocmd FileType json call HoverHlEnable() |
                     \ nnoremap <buffer> <silent> { 0?[\[{]\s*$<cr>0^:noh<cr>|
                     \ nnoremap <buffer> <silent> } $/[\[{]\s*$<cr>0^:noh<cr>
         autocmd BufNew,BufReadPre *.xaml,*.targets setf xml
+        autocmd BufNew,BufReadPre *.xml,*.html let b:match_words = '<.\{-}[^/]>:</[^>]*>'
         autocmd FileType xml,html setlocal matchpairs+=<:> nospell
         autocmd FileType gitcommit call setpos('.', [0, 1, 1, 0]) |
                     \ setlocal textwidth=72 formatoptions+=t colorcolumn=50,+0 |
@@ -628,7 +688,8 @@ if has('autocmd')
     augroup Spelling
         autocmd!
         autocmd ColorScheme * hi clear SpellRare | hi clear SpellLocal
-        autocmd BufRead * if &l:modifiable == 0 | setlocal nospell | endif
+        autocmd FileType markdown,txt setlocal spell
+        autocmd BufReadPost * if &l:modifiable == 0 | setlocal nospell | endif
     augroup END
 
     augroup AutoChDir
