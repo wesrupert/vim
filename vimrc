@@ -516,9 +516,12 @@ let NERDTreeShowHidden = 1
 " }}}
 
 " Omnisharp configuration {{{
-let g:OmniSharp_selector_ui = 'ctrlp'
-let g:omnicomplete_fetch_documentation = 1
-let g:syntastic_cs_checkers = ['syntax', 'semantic', 'issues']
+if has('python')
+    packadd omnisharp
+    let g:OmniSharp_selector_ui = 'ctrlp'
+    let g:omnicomplete_fetch_documentation = 1
+    let g:syntastic_cs_checkers = ['syntax', 'semantic', 'issues']
+endif
 
 augroup Omnisharp
     autocmd!

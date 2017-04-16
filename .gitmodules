@@ -100,8 +100,8 @@
     ignore = dirty
 ; }}}
 [submodule "omnisharp"] ; {{{
-	path = pack/omnisharp/start/omnisharp
-	url = https://github.com/OmniSharp/omnisharp-vim.git
+    path = pack/omnisharp/opt/omnisharp
+    url = https://github.com/OmniSharp/omnisharp-vim.git
     ignore = dirty
 ; }}}
 [submodule "powershell"] ; {{{
