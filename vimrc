@@ -346,78 +346,82 @@ set modeline modelines=1
 " Keybindings and Commands {{{
      map <silent> <f11>      :WToggleFullscreen<cr>
     imap <silent> <c-space>  <tab>
-nnoremap <silent> <c-a>      <esc>ggVG
+ noremap <silent> <c-a>      <esc>ggVG
 inoremap <silent> <c-a>      <esc>ggVG
     "map          <c-e>      {TAKEN: Open file explorer}
-nnoremap <silent> <c-h>      <c-w>h
-nnoremap <silent> <c-j>      <c-w>j
-nnoremap <silent> <c-k>      <c-w>k
-nnoremap <silent> <c-l>      <c-w>l
+ noremap <silent> <c-h>      <c-w>h
+ noremap <silent> <c-j>      <c-w>j
+ noremap <silent> <c-k>      <c-w>k
+ noremap <silent> <c-l>      <c-w>l
     "map          <c-p>      {TAKEN: Fuzzy file search}
-nnoremap          <c-q>      Q
-nnoremap <silent> <c-t>      :tabnew<cr>:Startify<cr>
+ noremap          <c-q>      Q
+ noremap <silent> <c-t>      :tabnew<cr>:Startify<cr>
     "map  <leader><leader>   {TAKEN: Easymotion}
-nnoremap <silent> <leader>b  :call ToggleIdeMode()<cr>
+ noremap <silent> <leader>b  :call ToggleIdeMode()<cr>
     "map          <leader>c  {TAKEN: NERDCommenter}
-nnoremap          <leader>co :colorscheme <c-d>
-nnoremap <silent> <leader>d  <c-x>
-nnoremap <silent> <leader>f  <c-a>
-nnoremap <silent> <leader>g  :GitGutterToggle<cr>
+ noremap          <leader>co :colorscheme <c-d>
+ noremap <silent> <leader>d  <c-x>
+ noremap <silent> <leader>f  <c-a>
+ noremap <silent> <leader>g  :GitGutterToggle<cr>
     "map          <leader>h  {TAKEN: GitGutter previews}
-nnoremap <silent> <leader>i  :set foldmethod=indent<cr>
+ noremap <silent> <leader>i  :set foldmethod=indent<cr>
     "map          <leader>m  {TAKEN: Toggle GUI menu}
-nnoremap <silent> <leader>n  :call HoverHlForward()<cr>
-nnoremap <silent> <leader>N  :call HoverHlBackward()<cr>
-nnoremap <silent> <leader>o  :call SetRenderOptions(2)<cr>
-nnoremap <silent> <leader>rc :WCenter<cr>
-nnoremap <silent> <leader>rl :call ResizeWindow('l')<cr>
-nnoremap <silent> <leader>rm :call ResizeWindow('m')<cr>
-nnoremap <silent> <leader>rr :call ResizeWindow('r')<cr>
-nnoremap <silent> <leader>rs :call ResizeWindow('s')<cr>
-nnoremap <silent> <leader>s  :Startify<cr>
+ noremap <silent> <leader>n  :call HoverHlForward()<cr>
+ noremap <silent> <leader>N  :call HoverHlBackward()<cr>
+ noremap <silent> <leader>o  :call SetRenderOptions(2)<cr>
+ noremap <silent> <leader>rc :WCenter<cr>
+ noremap <silent> <leader>rl :call ResizeWindow('l')<cr>
+ noremap <silent> <leader>rm :call ResizeWindow('m')<cr>
+ noremap <silent> <leader>rr :call ResizeWindow('r')<cr>
+ noremap <silent> <leader>rs :call ResizeWindow('s')<cr>
+ noremap <silent> <leader>s  :Startify<cr>
     "map          <leader>t  {TAKEN: TaskList}
-nnoremap <silent> <leader>u  :UndotreeToggle<cr>
-nnoremap <silent> <leader>va :tabnew<bar>args $MYVIMRC.after<cr>
-nnoremap <silent> <leader>vb :tabnew<bar>args $MYVIMRC.before<cr>
-nnoremap <silent> <leader>vr :tabnew<bar>args $MYVIMRC<cr>
-nnoremap <silent> <leader>vv :tabnew<bar>args $MYVIMRC*<bar>all<bar>wincmd J<bar>wincmd t<cr>
-nnoremap <silent> <leader>vz :source $MYVIMRC<cr>
-nnoremap <silent> <leader>w  :execute 'resize '.line('$')<cr>
-nnoremap <silent> <leader>-  :e .<cr>
-nnoremap <silent> <leader>'  :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
-nnoremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
-nnoremap <silent> <leader>/  :nohlsearch<cr>:call HoverHlEnable()<cr>
-nnoremap <silent> <leader>?  :nohlsearch<cr>:call HoverHlDisable()<cr>
-nnoremap <silent> <leader>=  :call ToggleAlpha()<cr>
-nnoremap <silent> cd         :execute 'cd '.expand('%:p:h')<cr>
-nnoremap <silent> gV         `[v`]
-    nmap          g/         <Plug>(incsearch-stay)
-nnoremap <silent> j          gj
-nnoremap <silent> gj         j
+ noremap <silent> <leader>u  :UndotreeToggle<cr>
+ noremap <silent> <leader>va :tabnew<bar>args $MYVIMRC.after<cr>
+ noremap <silent> <leader>vb :tabnew<bar>args $MYVIMRC.before<cr>
+ noremap <silent> <leader>vr :tabnew<bar>args $MYVIMRC<cr>
+ noremap <silent> <leader>vv :tabnew<bar>args $MYVIMRC*<bar>all<bar>wincmd J<bar>wincmd t<cr>
+ noremap <silent> <leader>vz :source $MYVIMRC<cr>
+ noremap <silent> <leader>w  :execute 'resize '.line('$')<cr>
+ noremap <silent> <leader>-  :e .<cr>
+ noremap <silent> <leader>'  :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
+ noremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
+ noremap <silent> <leader>/  :nohlsearch<cr>:call HoverHlEnable()<cr>
+ noremap <silent> <leader>?  :nohlsearch<cr>:call HoverHlDisable()<cr>
+ noremap <silent> <leader>=  :call ToggleAlpha()<cr>
+ noremap <silent> cd         :execute 'cd '.expand('%:p:h')<cr>
+ noremap <silent> gV         `[v`]
+     map          g/         <Plug>(incsearch-stay)
+ noremap <silent> j          gj
+ noremap <silent> gj         j
 inoremap          jk         <esc>
-nnoremap <silent> k          gk
-nnoremap <silent> gk         k
-nnoremap <silent> K          :Help <c-r><c-w><cr>
+ noremap <silent> k          gk
+ noremap <silent> gk         k
+ noremap <silent> K          :Help <c-r><c-w><cr>
 inoremap          kj         <esc>
-nnoremap          Q          :q
-nnoremap          TQ         :tabclose<cr>
-nnoremap          Y          y$
+ noremap          Q          :q
+ noremap          TQ         :tabclose<cr>
+ noremap          Y          y$
    "imap          <tab>      {TAKEN: Supertab}
-nnoremap          <tab>      %
-nnoremap          <space>    za
-nnoremap          -          _
-nnoremap          _          -
-nnoremap <silent> [[         ^
-nnoremap <silent> ]]         $
-    nmap          /          <Plug>(incsearch-forward)
-    nmap          ?          <Plug>(incsearch-backward)
+ noremap          <tab>      %
+ noremap          <space>    za
+ noremap          ;          :
+ noremap          :          ;
+ noremap          '          "
+ noremap          "          '
+ noremap          -          _
+ noremap          _          -
+ noremap <silent> [[         ^
+ noremap <silent> ]]         $
+     map          /          <Plug>(incsearch-forward)
+     map          ?          <Plug>(incsearch-backward)
     "map          (          {TAKEN: Prev code line}
     "map          )          {TAKEN: Next code line}
     "map          {          {TAKEN: Prev code block}
     "map          }          {TAKEN: Next code block}
 
-if (exists('g:mapleader') && g:mapleader == ',')
-    nnoremap \ ,
+if (exists('g:mapleader'))
+    exe 'noremap \ '.g:mapleader
 endif
 
 command! -nargs=0 Light set background=light
@@ -446,7 +450,7 @@ if has('win32')
     noremap <c-a> <c-c>ggVG
     call SetRenderOptions(1)
 
-    map <silent> <c-e> :silent !explorer .<cr>
+    noremap <silent> <c-e> :execute "silent !explorer ".shellescape(expand('%:p:h'))<cr>
 else
     let g:slash = '/'
     if filewritable($TMPDIR) == 2
@@ -535,17 +539,17 @@ augroup Omnisharp
 
     "The following commands are contextual, based on the current cursor position.
 
-    autocmd FileType cs nnoremap <buffer> gd :OmniSharpGotoDefinition<cr>
-    autocmd FileType cs nnoremap <buffer> gc :OmniSharpFindUsages<cr>
+    autocmd FileType cs noremap <buffer> gd :OmniSharpGotoDefinition<cr>
+    autocmd FileType cs noremap <buffer> gc :OmniSharpFindUsages<cr>
 
     " cursor can be anywhere on the line containing an issue
-    autocmd FileType cs nnoremap <buffer> <c-.>  :OmniSharpFixIssue<cr>
-    autocmd FileType cs nnoremap <buffer> <leader>fx :OmniSharpFixUsings<cr>
-    autocmd FileType cs nnoremap <buffer> <leader>gd :OmniSharpDocumentation<cr>
+    autocmd FileType cs noremap <buffer> <c-.>  :OmniSharpFixIssue<cr>
+    autocmd FileType cs noremap <buffer> <leader>fx :OmniSharpFixUsings<cr>
+    autocmd FileType cs noremap <buffer> <leader>gd :OmniSharpDocumentation<cr>
 
     "navigate up by method/property/field
-    autocmd FileType cs nnoremap <buffer> { :OmniSharpNavigateUp<cr>
-    autocmd FileType cs nnoremap <buffer> } :OmniSharpNavigateDown<cr>
+    autocmd FileType cs noremap <buffer> { :OmniSharpNavigateUp<cr>
+    autocmd FileType cs noremap <buffer> } :OmniSharpNavigateDown<cr>
 augroup END
 " }}}
 
@@ -613,18 +617,18 @@ if has('autocmd')
         autocmd!
         autocmd FileType cs setlocal foldmethod=indent
         autocmd FileType c,cpp,cs,js,ps1,ts call HoverHlEnable() |
-                    \ nnoremap <buffer> <silent> ( 0?;<cr>0^:noh<cr>|
-                    \ nnoremap <buffer> <silent> ) $/;<cr>0^:noh<cr>|
+                    \ noremap <buffer> <silent> ( 0?;<cr>0^:noh<cr>|
+                    \ noremap <buffer> <silent> ) $/;<cr>0^:noh<cr>|
                     \ if &filetype == 'cs' |
-                    \     nnoremap <buffer> <silent> [[ 0?{[^}]*$<cr>0^:noh<cr>|
-                    \     nnoremap <buffer> <silent> ]] $/{[^}]*$<cr>0^:noh<cr>|
+                    \     noremap <buffer> <silent> [[ 0?{[^}]*$<cr>0^:noh<cr>|
+                    \     noremap <buffer> <silent> ]] $/{[^}]*$<cr>0^:noh<cr>|
                     \ else |
-                    \     nnoremap <buffer> <silent> { 0?{[^}]*$<cr>0^:noh<cr>|
-                    \     nnoremap <buffer> <silent> } $/{[^}]*$<cr>0^:noh<cr>|
+                    \     noremap <buffer> <silent> { 0?{[^}]*$<cr>0^:noh<cr>|
+                    \     noremap <buffer> <silent> } $/{[^}]*$<cr>0^:noh<cr>|
                     \ endif
         autocmd FileType json call HoverHlEnable() |
-                    \ nnoremap <buffer> <silent> { 0?[\[{]\s*$<cr>0^:noh<cr>|
-                    \ nnoremap <buffer> <silent> } $/[\[{]\s*$<cr>0^:noh<cr>
+                    \ noremap <buffer> <silent> { 0?[\[{]\s*$<cr>0^:noh<cr>|
+                    \ noremap <buffer> <silent> } $/[\[{]\s*$<cr>0^:noh<cr>
         autocmd BufNew,BufReadPre *.xaml,*.targets setf xml
         autocmd BufNew,BufReadPre *.xml,*.html let b:match_words = '<.\{-}[^/]>:</[^>]*>'
         autocmd FileType xml,html setlocal matchpairs+=<:> nospell
@@ -642,7 +646,7 @@ if has('autocmd')
                         \     vertical resize 80 |
                         \     noremap <buffer> q <c-w>c |
                         \ endif
-        autocmd BufWinEnter * if (&buftype == 'quickfix') | noremap <buffer> q <c-w>c | endif
+        autocmd BufWinEnter * if (&buftype == 'quickfix' || &previewwindow) | noremap <buffer> q <c-w>c | endif
     augroup END
 endif
 " }}}
