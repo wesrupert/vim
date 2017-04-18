@@ -2,9 +2,6 @@
 
 pushd %UserProfile%\vimfiles
 
-echo Updating vim...
-git pull
-
 echo Updating plugins...
 git submodule update --init
 
@@ -21,6 +18,7 @@ for /D %%P in ("*") do (
         echo.    %%P
     )
 )
+
 popd
 echo.
 
