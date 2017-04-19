@@ -1,36 +1,26 @@
 ; Plugins: {{{
 [submodule "airline"] ; {{{
-	path = pack/airline/start/airline
+    path = pack/airline/start/airline
     url = https://github.com/vim-airline/vim-airline.git
     ignore = dirty
 ; }}}
 [submodule "airline-themes"] ; {{{
-	path = pack/airline-themes/start/airline-themes
+    path = pack/airline-themes/start/airline-themes
     url = https://github.com/vim-airline/vim-airline-themes.git
     ignore = dirty
 ; }}}
 [submodule "autoclose"] ; {{{
-	path = pack/autoclose/start/autoclose
+    path = pack/autoclose/start/autoclose
     url = https://github.com/Townk/vim-autoclose.git
     ignore = dirty
 ; }}}
-[submodule "cpp-enhanced"] ; {{{
-	path = pack/cpp-enhanced/start/cpp-enhanced
-    url = https://github.com/octol/vim-cpp-enhanced-highlight.git
-    ignore = dirty
-; }}}
-[submodule "csharp"] ; {{{
-	path = pack/csharp/start/csharp
-    url = https://github.com/OrangeT/vim-csharp.git
-    ignore = dirty
-; }}}
 [submodule "ctrlp"] ; {{{
-	path = pack/ctrlp/start/ctrlp
+    path = pack/ctrlp/start/ctrlp
     url = https://github.com/ctrlpvim/ctrlp.vim.git
     ignore = dirty
 ; }}}
 [submodule "diff-enhanced"] ; {{{
-	path = pack/diff-enhanced/start/diff-enhanced
+    path = pack/diff-enhanced/start/diff-enhanced
     url = https://github.com/chrisbra/vim-diff-enhanced.git
     ignore = dirty
 ; }}}
@@ -39,33 +29,13 @@
     url = https://github.com/tpope/vim-dispatch.git
     ignore = dirty
 ; }}}
-[submodule "easy-align"] ; {{{
-	path = pack/easy-align/start/easy-align
-    url = https://github.com/junegunn/vim-easy-align.git
-    ignore = dirty
-; }}}
-[submodule "easymotion"] ; {{{
-	path = pack/easymotion/start/easymotion
-    url = https://github.com/easymotion/vim-easymotion.git
-    ignore = dirty
-; }}}
-[submodule "fugitive"] ; {{{
-	path = pack/fugitive/start/fugitive
-    url = https://github.com/tpope/vim-fugitive.git
-    ignore = dirty
-; }}}
-[submodule "fsharp"] ; {{{
-	path = pack/fsharp/start/fsharp
-	url = https://github.com/fsharp/vim-fsharp.git
-    ignore = dirty
-; }}}
 [submodule "gitgutter"] ; {{{
     path = pack/gitgutter/start/gitgutter
     url = https://github.com/airblade/vim-gitgutter.git
     ignore = dirty
 ; }}}
 [submodule "hoverhl"] ; {{{
-	path = pack/hoverhl
+    path = pack/hoverhl
     url = https://github.com/wesrupert/vim-hoverhl.git
     ignore = dirty
 ; }}}
@@ -74,28 +44,13 @@
     url = https://github.com/haya14busa/incsearch.vim.git
     ignore = dirty
 ; }}}
-[submodule "jsdoc"] ; {{{
-	path = pack/jsdoc/start/jsdoc
-    url = https://github.com/heavenshell/vim-jsdoc
-    ignore = dirty
-; }}}
-[submodule "json"] ; {{{
-	path = pack/json/start/json
-    url = https://github.com/elzr/vim-json.git
-    ignore = dirty
-; }}}
-[submodule "markdown"] ; {{{
-    path = pack/markdown/start/markdown
-    url = https://github.com/plasticboy/vim-markdown.git
-    ignore = dirty
-; }}}
 [submodule "nerdcommenter"] ; {{{
-	path = pack/nerdcommenter/start/nerdcommenter
+    path = pack/nerdcommenter/start/nerdcommenter
     url = https://github.com/scrooloose/nerdcommenter.git
     ignore = dirty
 ; }}}
 [submodule "nerdtree"] ; {{{
-	path = pack/nerdtree/start/nerdtree
+    path = pack/nerdtree/start/nerdtree
     url = https://github.com/scrooloose/nerdtree.git
     ignore = dirty
 ; }}}
@@ -104,156 +59,119 @@
     url = https://github.com/OmniSharp/omnisharp-vim.git
     ignore = dirty
 ; }}}
-[submodule "powershell"] ; {{{
-	path = pack/powershell/start/powershell
-    url = https://github.com/PProvost/vim-ps1.git
-    ignore = dirty
-; }}}
 [submodule "repeat"] ; {{{
-	path = pack/repeat/start/repeat
+    path = pack/repeat/start/repeat
     url = https://github.com/tpope/vim-repeat.git
     ignore = dirty
 ; }}}
-[submodule "startify"] ; opt {{{
-    path = pack/startify/opt/startify
-    url = https://github.com/mhinz/vim-startify.git
-    ignore = dirty
-; }}}
 [submodule "supertab"] ; {{{
-	path = pack/supertab/start/supertab
+    path = pack/supertab/start/supertab
     url = https://github.com/ervandew/supertab.git
     ignore = dirty
 ; }}}
 [submodule "surround"] ; {{{
-	path = pack/surround/start/surround
+    path = pack/surround/start/surround
     url = https://github.com/tpope/vim-surround.git
     ignore = dirty
 ; }}}
-[submodule "syntastic"] ; opt {{{
-	path = pack/syntastic/opt/syntastic
-    url = https://github.com/scrooloose/syntastic.git
-    ignore = dirty
-; }}}
-[submodule "tasklist"] ; {{{
-	path = pack/tasklist/start/tasklist
-    url = https://github.com/vim-scripts/TaskList.vim.git
-    ignore = dirty
-; }}}
-[submodule "typescript"] ; {{{
-	path = pack/typescript/start/typescript
-    url = https://github.com/leafgarland/typescript-vim.git
-    ignore = dirty
-; }}}
-[submodule "undotree"] ; {{{
-	path = pack/undotree/start/undotree
-    url = https://github.com/mbbill/undotree.git
-    ignore = dirty
-; }}}
 [submodule "wimproved"] ; {{{
-	path = pack/wimproved/start/wimproved
+    path = pack/wimproved/start/wimproved
     url = https://github.com/kkoenig/wimproved.vim.git
     ignore = dirty
 ; }}}
 ; endregion plugins }}}
 
-; Colorschemes: {{{
-[submodule "afterglow"] ; opt {{{
-	path = pack/_colors-afterglow/opt/afterglow
-    url = https://github.com/danilo-augusto/vim-afterglow.git
+; Filetype Plugins: {{{
+[submodule "cpp-enhanced"] ; {{{
+    path = pack/cpp-enhanced/start/cpp-enhanced
+    url = https://github.com/octol/vim-cpp-enhanced-highlight.git
     ignore = dirty
 ; }}}
+[submodule "csharp"] ; {{{
+    path = pack/csharp/start/csharp
+    url = https://github.com/OrangeT/vim-csharp.git
+    ignore = dirty
+; }}}
+[submodule "json"] ; {{{
+    path = pack/json/start/json
+    url = https://github.com/elzr/vim-json.git
+    ignore = dirty
+; }}}
+[submodule "markdown"] ; {{{
+    path = pack/markdown/start/markdown
+    url = https://github.com/plasticboy/vim-markdown.git
+    ignore = dirty
+; }}}
+[submodule "powershell"] ; {{{
+    path = pack/powershell/start/powershell
+    url = https://github.com/PProvost/vim-ps1.git
+    ignore = dirty
+; }}}
+[submodule "typescript"] ; {{{
+    path = pack/typescript/start/typescript
+    url = https://github.com/leafgarland/typescript-vim.git
+    ignore = dirty
+; }}}
+; }}}
+
+; Colorschemes: {{{
 [submodule "deepspace"] ; opt {{{
-	path = pack/_colors-deepspace/opt/deepspace
+    path = pack/_colors-deepspace/opt/deepspace
     url = https://github.com/tyrannicaltoucan/vim-deep-space.git
     ignore = dirty
 ; }}}
 [submodule "fx"] ; opt {{{
-	path = pack/_colors-fx/opt/fx
+    path = pack/_colors-fx/opt/fx
     url = https://github.com/cesardeazevedo/Fx-ColorScheme.git
     ignore = dirty
 ; }}}
 [submodule "github"] ; opt {{{
-	path = pack/_colors-github/opt/github
+    path = pack/_colors-github/opt/github
     url = https://github.com/endel/vim-github-colorscheme.git
     ignore = dirty
 ; }}}
-[submodule "hemisu"] ; opt {{{
-	path = pack/_colors-hemisu/opt/hemisu
-    url = https://github.com/noahfrederick/vim-hemisu.git
-    ignore = dirty
-; }}}
-[submodule "jellybeans"] ; opt {{{
-	path = pack/_colors-jellybeans/opt/jellybeans
-    url = https://github.com/nanotech/jellybeans.vim.git
-    ignore = dirty
-; }}}
 [submodule "lucian"] ; opt {{{
-	path = pack/_colors-lucian/opt/lucian
+    path = pack/_colors-lucian/opt/lucian
     url = https://github.com/jonathanfilip/vim-lucius.git
     ignore = dirty
 ; }}}
-[submodule "mango"] ; opt {{{
-	path = pack/_colors-mango/opt/mango
-    url = https://github.com/goatslacker/mango.vim.git
-    ignore = dirty
-; }}}
 [submodule "materialbox"] ; opt {{{
-	path = pack/_colors-materialbox/opt/materialbox
+    path = pack/_colors-materialbox/opt/materialbox
     url = https://github.com/mkarmona/materialbox.git
     ignore = dirty
 ; }}}
-[submodule "moria"] ; opt {{{
-	path = pack/_colors-moria/opt/moria
-    url = https://github.com/vim-scripts/moria.git
-    ignore = dirty
-; }}}
 [submodule "one"] ; opt {{{
-	path = pack/_colors-one/opt/one
+    path = pack/_colors-one/opt/one
     url = https://github.com/rakr/vim-one.git
     ignore = dirty
 ; }}}
 [submodule "orbital"] ; opt {{{
-	path = pack/_colors-orbital/opt/orbital
-	url = https://github.com/fcpg/vim-orbital.git
+    path = pack/_colors-orbital/opt/orbital
+    url = https://github.com/fcpg/vim-orbital.git
     ignore = dirty
 ; }}}
 [submodule "papercolor"] ; opt {{{
-	path = pack/_colors-papercolor/opt/papercolor
-	url = https://github.com/NLKNguyen/papercolor-theme.git
+    path = pack/_colors-papercolor/opt/papercolor
+    url = https://github.com/NLKNguyen/papercolor-theme.git
 ; }}}
 [submodule "pencil"] ; opt {{{
-	path = pack/_colors-pencil/opt/pencil
+    path = pack/_colors-pencil/opt/pencil
     url = https://github.com/reedes/vim-colors-pencil.git
     ignore = dirty
 ; }}}
-[submodule "scheakur"] ; opt {{{
-	path = pack/_colors-scheakur/opt/scheakur
-    url = https://github.com/scheakur/vim-scheakur.git
-    ignore = dirty
-; }}}
 [submodule "soda"] ; opt {{{
-	path = pack/_colors-soda/opt/soda
+    path = pack/_colors-soda/opt/soda
     url = https://github.com/daddye/soda.vim.git
     ignore = dirty
 ; }}}
 [submodule "solarized"] ; opt {{{
-	path = pack/_colors-solarized/opt/solarized
+    path = pack/_colors-solarized/opt/solarized
     url = https://github.com/altercation/vim-colors-solarized.git
     ignore = dirty
 ; }}}
-[submodule "summerfruit"] ; opt {{{
-	path = pack/_colors-summerfruit/opt/summerfruit
-    url = https://github.com/baeuml/summerfruit256.vim.git
-    ignore = dirty
-; }}}
 [submodule "tomorrow"] ; opt {{{
-	path = pack/_colors-tomorrow/opt/tomorrow
+    path = pack/_colors-tomorrow/opt/tomorrow
     url = https://github.com/chriskempson/vim-tomorrow-theme.git
-    ignore = dirty
-; }}}
-[submodule "twofirewatch"] ; opt {{{
-	path = pack/_colors-twofirewatch/opt/twofirewatch
-    url = https://github.com/rakr/vim-two-firewatch.git
     ignore = dirty
 ; }}}
 ; endregion colorschemes }}}

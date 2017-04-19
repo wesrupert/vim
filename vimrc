@@ -355,7 +355,7 @@ inoremap <silent> <c-a>      <esc>ggVG
  noremap <silent> <c-l>      <c-w>l
     "map          <c-p>      {TAKEN: Fuzzy file search}
  noremap          <c-q>      Q
- noremap <silent> <c-t>      :tabnew<cr>:Startify<cr>
+ noremap <silent> <c-t>      :tabnew<cr>
     "map  <leader><leader>   {TAKEN: Easymotion}
  noremap <silent> <leader>b  :call ToggleIdeMode()<cr>
     "map          <leader>c  {TAKEN: NERDCommenter}
@@ -374,7 +374,6 @@ inoremap <silent> <c-a>      <esc>ggVG
  noremap <silent> <leader>rm :call ResizeWindow('m')<cr>
  noremap <silent> <leader>rr :call ResizeWindow('r')<cr>
  noremap <silent> <leader>rs :call ResizeWindow('s')<cr>
- noremap <silent> <leader>s  :Startify<cr>
     "map          <leader>t  {TAKEN: TaskList}
  noremap <silent> <leader>u  :UndotreeToggle<cr>
  noremap <silent> <leader>va :tabnew<bar>args $MYVIMRC.after<cr>
@@ -402,6 +401,10 @@ inoremap          kj         <esc>
  noremap          Q          :q
  noremap          TQ         :tabclose<cr>
  noremap          Y          y$
+ noremap          zj         jzz
+ noremap          zJ         Hzz
+ noremap          zk         kzz
+ noremap          zK         Lzz
    "imap          <tab>      {TAKEN: Supertab}
  noremap          <tab>      %
  noremap          <space>    za
@@ -555,22 +558,6 @@ augroup END
 
 " Pencil configuration {{{
 let g:pencil_gutter_color = 1
-" }}}
-
-" Startify configuration {{{
-let g:startify_custom_header = [ '   Vim - Vi IMproved' ]
-let g:startify_session_persistence = 1
-let g:startify_files_number = 8
-let g:startify_change_to_dir = 1
-let g:startify_enable_unsafe = 1
-let g:startify_bookmarks = [{'gc': $HOME.g:slash.'.gitconfig'}]
-if filereadable($MYVIMRC.'.after')
-    let g:startify_bookmarks = [{'va': $MYVIMRC.'.after'}] + g:startify_bookmarks
-endif
-let g:startify_bookmarks = [{'vr': $MYVIMRC}] + g:startify_bookmarks
-if filereadable($MYVIMRC.'.before')
-    let g:startify_bookmarks = [{'vb': $MYVIMRC.'.before'}] + g:startify_bookmarks
-endif
 " }}}
 
 " GitGutter configuration {{{
