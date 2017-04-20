@@ -24,12 +24,15 @@ $null = git submodule update --remote --merge 2>&1
 echo 'Getting new commit hashes...'
 $null, $news = Get-Commits
 
-echo 'Done!'
-echo ''
-
 if ($paths.Count -eq 0 -or $($paths.Count + $olds.Count + $news.Count) -ne $($paths.Count * 3)) {
     Write-Host "ERROR: Log data counts don't match!" -ForegroundColor 'Red'
+} elseif ($paths.Count -eq 0) {
+    echo 'Done! No updates found.'
+} else {
+    echo 'Done!'
+    echo ''
 }
+
 
 for ($i = 0; $i -lt $paths.Count; $i++) {
     $old = $olds[$i]
