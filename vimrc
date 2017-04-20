@@ -365,13 +365,16 @@ inoremap <silent> <c-a>      <esc>ggVG
  noremap <silent> <leader>g  :GitGutterToggle<cr>
     "map          <leader>h  {TAKEN: GitGutter previews}
  noremap <silent> <leader>i  :set foldmethod=indent<cr>
+ noremap <silent> <leader>l  :setlocal list!<cr>:setlocal list?<cr>
     "map          <leader>m  {TAKEN: Toggle GUI menu}
  noremap <silent> <leader>n  :call HoverHlForward()<cr>
  noremap <silent> <leader>N  :call HoverHlBackward()<cr>
  noremap <silent> <leader>o  :call SetRenderOptions(2)<cr>
  noremap <silent> <leader>rc :WCenter<cr>
+ noremap <silent> <leader>rd :call ResizeWindow('d')<cr>
  noremap <silent> <leader>rl :call ResizeWindow('l')<cr>
  noremap <silent> <leader>rm :call ResizeWindow('m')<cr>
+ noremap <silent> <leader>rn :call ResizeWindow('n')<cr>
  noremap <silent> <leader>rr :call ResizeWindow('r')<cr>
  noremap <silent> <leader>rs :call ResizeWindow('s')<cr>
     "map          <leader>t  {TAKEN: TaskList}
@@ -656,14 +659,27 @@ if has('gui_running')
     if has('autocmd')
         augroup GuiStartup
             autocmd!
-            autocmd GUIEnter * set visualbell t_vb= | call ResizeWindow('l')
+            autocmd GUIEnter * set visualbell t_vb= | call ResizeWindow('s')
+        augroup END
+
+        let g:auto_resized = 0
+        augroup GuiResize
+            autocmd!
+            autocmd BufReadPost * if has('gui_running') && g:auto_resized == 0 |
+                        \     call ResizeWindow('r') |
+                        \     let g:auto_resized = 1 |
+                        \ endif
+            autocmd VimResized let g:auto_resized = 1
         augroup END
 
         augroup MdResize
             autocmd!
-            autocmd BufReadPost *.md setlocal wrap |
-                          \ setlocal nonumber norelativenumber |
-                          \ call ResizeWindow('n')
+            autocmd BufRead *.md setlocal wrap |
+                        \ setlocal nonumber norelativenumber |
+                        \ if has('gui_running') && g:auto_resized == 0 |
+                        \     call ResizeWindow('n') |
+                        \     let g:auto_resized = 1 |
+                        \ endif
         augroup END
     endif
 endif
