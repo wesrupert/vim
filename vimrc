@@ -666,20 +666,15 @@ if has('gui_running')
         augroup GuiResize
             autocmd!
             autocmd BufReadPost * if has('gui_running') && g:auto_resized == 0 |
-                        \     call ResizeWindow('r') |
+                        \     if &filetype == 'markdown' |
+                        \         call ResizeWindow('n') |
+                        \     else |
+                        \         call ResizeWindow('r') |
+                        \     endif |
                         \     let g:auto_resized = 1 |
                         \ endif
             autocmd VimResized let g:auto_resized = 1
-        augroup END
-
-        augroup MdResize
-            autocmd!
-            autocmd BufRead *.md setlocal wrap |
-                        \ setlocal nonumber norelativenumber |
-                        \ if has('gui_running') && g:auto_resized == 0 |
-                        \     call ResizeWindow('n') |
-                        \     let g:auto_resized = 1 |
-                        \ endif
+            autocmd BufRead *.md setlocal wrap nonumber norelativenumber
         augroup END
     endif
 endif
