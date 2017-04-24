@@ -159,6 +159,10 @@
     url = https://github.com/reedes/vim-colors-pencil.git
     ignore = dirty
 ; }}}
+[submodule "seabird"] ; opt {{{
+    path = pack/_colors-seabird/opt/seabird
+    url = https://github.com/nightsense/seabird.git
+; }}}
 [submodule "soda"] ; opt {{{
     path = pack/_colors-soda/opt/soda
     url = https://github.com/daddye/soda.vim.git
