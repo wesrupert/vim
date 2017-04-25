@@ -115,6 +115,16 @@
 ; }}}
 
 ; Colorschemes: {{{
+[submodule "afterglow"] ; opt {{{
+    path = pack/_colors-afterglow/opt/afterglow
+    url = https://github.com/danilo-augusto/vim-afterglow.git
+    ignore = dirty
+; }}}
+[submodule "basic"] ; opt {{{
+    path = pack/_colors-basic/opt/basic
+    url = https://github.com/zcodes/vim-colors-basic.git
+    ignore = dirty
+; }}}
 [submodule "deepspace"] ; opt {{{
     path = pack/_colors-deepspace/opt/deepspace
     url = https://github.com/tyrannicaltoucan/vim-deep-space.git
@@ -153,6 +163,7 @@
 [submodule "papercolor"] ; opt {{{
     path = pack/_colors-papercolor/opt/papercolor
     url = https://github.com/NLKNguyen/papercolor-theme.git
+    ignore = dirty
 ; }}}
 [submodule "pencil"] ; opt {{{
     path = pack/_colors-pencil/opt/pencil
@@ -162,6 +173,7 @@
 [submodule "seabird"] ; opt {{{
     path = pack/_colors-seabird/opt/seabird
     url = https://github.com/nightsense/seabird.git
+    ignore = dirty
 ; }}}
 [submodule "soda"] ; opt {{{
     path = pack/_colors-soda/opt/soda
