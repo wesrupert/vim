@@ -267,10 +267,10 @@ endfunction "}}}
 
 function! ToggleIdeMode() " {{{
     if (g:idemode == 0)
-        set guioptions+=mr
+        set guioptions+=emr
         let g:idemode = 1
     else
-        set guioptions-=mr
+        set guioptions-=emr
         let g:idemode = 0
     endif
 endfunction " }}}
@@ -367,8 +367,8 @@ inoremap <silent> <c-a>      <esc>ggVG
  noremap <silent> <leader>i  :set foldmethod=indent<cr>
  noremap <silent> <leader>l  :setlocal list!<cr>:setlocal list?<cr>
     "map          <leader>m  {TAKEN: Toggle GUI menu}
- noremap <silent> <leader>n  :call HoverHlForward()<cr>
- noremap <silent> <leader>N  :call HoverHlBackward()<cr>
+    "map          <leader>n  {TAKEN: HoverHl search forward}
+    "map          <leader>N  {TAKEN: HoverHl search backward}
  noremap <silent> <leader>o  :call SetRenderOptions(2)<cr>
  noremap <silent> <leader>rc :WCenter<cr>
  noremap <silent> <leader>rd :call ResizeWindow('d')<cr>
@@ -378,7 +378,6 @@ inoremap <silent> <c-a>      <esc>ggVG
  noremap <silent> <leader>rr :call ResizeWindow('r')<cr>
  noremap <silent> <leader>rs :call ResizeWindow('s')<cr>
     "map          <leader>t  {TAKEN: TaskList}
- noremap <silent> <leader>u  :UndotreeToggle<cr>
  noremap <silent> <leader>va :tabnew<bar>args $MYVIMRC.after<cr>
  noremap <silent> <leader>vb :tabnew<bar>args $MYVIMRC.before<cr>
  noremap <silent> <leader>vr :tabnew<bar>args $MYVIMRC<cr>
@@ -392,6 +391,7 @@ inoremap <silent> <c-a>      <esc>ggVG
  noremap <silent> <leader>?  :nohlsearch<cr>:call HoverHlDisable()<cr>
  noremap <silent> <leader>=  :call ToggleAlpha()<cr>
  noremap <silent> cd         :execute 'cd '.expand('%:p:h')<cr>
+ noremap <silent> go         <c-]>
  noremap <silent> gV         `[v`]
      map          g/         <Plug>(incsearch-stay)
  noremap <silent> j          gj
@@ -646,7 +646,7 @@ if has('gui_running')
     " GVim window style.
     set guitablabel=%{GuiTabLabel()}
     set guitabtooltip=%{GuiTabToolTip()}
-    set guioptions=egt
+    set guioptions=gt
     set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
     set selectmode=
     set guicursor+=n-v-c:blinkon0
