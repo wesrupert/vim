@@ -24,6 +24,9 @@ function! TermTabLabel() " {{{
 
         " The label is made by MyTabLabel()
         let label .= ' %{MyTabLabel('.(i+1).')} '
+
+        " Add divider
+        let label .= '%#TabLine#|'
     endfor
 
     " After the last tab fill with TabLineFill and reset tab page nr
@@ -47,6 +50,10 @@ function! MyTabLabel(lnum) " {{{
     let bufnr = tabpagewinnr(a:lnum) - 1
     let name = bufname(bufnrlist[bufnr])
     let modified = getbufvar(bufnrlist[bufnr], '&modified')
+    let readonly = getbufvar(bufnrlist[bufnr], '&readonly')
+    let readonly = readonly || !getbufvar(bufnrlist[bufnr], '&modifiable')
+
+
     if (name != '' && name !~ 'NERD_tree')
         " Get the name of the first real buffer
         let name = fnamemodify(name, ':t')
@@ -58,10 +65,13 @@ function! MyTabLabel(lnum) " {{{
             let modified = getbufvar(bufnrlist[bufnr], '&modified')
         endwhile
         if (name == '')
-            let name = '[Scratch]'
             if (&buftype == 'quickfix')
-                let name = '[Quickfix List]'
+                " Don't show other marks
                 let modified = 0
+                let readonly = 0
+                let name = '[Quickfix]'
+            else
+                let name = '[No Name]'
             endif
         else
             " Get the name of the first real buffer
@@ -69,24 +79,31 @@ function! MyTabLabel(lnum) " {{{
         endif
     endif
     if (getbufvar(bufnrlist[bufnr], '&buftype') == 'help')
-        let name = '[h] '.fnamemodify(name, ':r')
+        " Don't show other marks
         let modified = 0
+        let readonly = 0
+        let name = '[H] '.fnamemodify(name, ':r')
     endif
-    let label = name
+    let label = a:lnum.': '.name
 
     " The number of windows in the tab page
     let uncounted = 0
     for bufnr in bufnrlist
         let tmpname = bufname(bufnr)
         if tmpname == '' || tmpname =~ 'NERD_tree' || getbufvar(bufnr, '&buftype') == 'help'
-            let uncounted += 1
+            " We don't care about auxiliary buffer count, so if it's not in
+            " focus, don't count it
+            if bufnr != bufnrlist[tabpagewinnr(a:lnum) - 1]
+                let uncounted += 1
+            endif
         endif
     endfor
     let wincount = tabpagewinnr(a:lnum, '$') - uncounted
     if (wincount > 1)
         let label .= ' (..'.wincount
 
-        " Add '[+]' if one of the buffers in the tab page is modified
+        " Add '[+]' inside the others section if one of the other buffers in
+        " the tab page is modified
         for bufnr in bufnrlist
             if (modified == 0 && getbufvar(bufnr, '&modified'))
                 let label .= ' [+]'
@@ -97,9 +114,19 @@ function! MyTabLabel(lnum) " {{{
         let label .= ')'
     endif
 
-    " Add '[+]' if one of the buffers in the tab page is modified
-    if (modified == 1)
-        let label .= ' [+]'
+    " Add '[+]' at the end if this buffer is modified, and '[-]' if it is readonly
+    if (modified == 1 || readonly == 1)
+        let label .= ' ['
+        if modified == 1
+            let label .= '+'
+            if readonly == 1
+                let label .= '/'
+            endif
+        endif
+        if readonly == 1
+            let label .= '-'
+        endif
+        let label .= ']'
     endif
 
     return label
@@ -138,7 +165,7 @@ function! GuiTabToolTip() " {{{
         if getbufvar(bufnr, '&modified')
             let tooltip .= ' [+]'
         endif
-        if getbufvar(bufnr, '&modifiable')==0
+        if getbufvar(bufnr, '&modifiable') == 0 || getbufvar(bufnr, '&readonly') == 1
             let tooltip .= ' [-]'
         endif
     endfor
@@ -292,6 +319,7 @@ endfunction" }}}
 " }}}
 
 " Preferences and Settings {{{
+" General settings
 syntax on
 filetype plugin indent on
 set mouse=a
@@ -345,9 +373,11 @@ set modeline modelines=1
 
 " Keybindings and Commands {{{
      map <silent> <f11>      :WToggleFullscreen<cr>
+ noremap <silent> <a-p>      :CtrlP<cr>
     imap <silent> <c-space>  <tab>
  noremap <silent> <c-a>      <esc>ggVG
 inoremap <silent> <c-a>      <esc>ggVG
+ noremap <silent> <c-b>      :CtrlPBuffer<cr>
     "map          <c-e>      {TAKEN: Open file explorer}
  noremap <silent> <c-h>      <c-w>h
  noremap <silent> <c-j>      <c-w>j
@@ -387,8 +417,7 @@ inoremap <silent> <c-a>      <esc>ggVG
  noremap <silent> <leader>-  :e .<cr>
  noremap <silent> <leader>'  :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
  noremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
- noremap <silent> <leader>/  :nohlsearch<cr>:call HoverHlEnable()<cr>
- noremap <silent> <leader>?  :nohlsearch<cr>:call HoverHlDisable()<cr>
+ noremap <silent> <leader>/  :nohlsearch<cr>
  noremap <silent> <leader>=  :call ToggleAlpha()<cr>
  noremap <silent> cd         :execute 'cd '.expand('%:p:h')<cr>
  noremap <silent> go         <c-]>
@@ -511,6 +540,7 @@ let g:airline#extensions#whitespace#mixed_indent_file_format = 'mf[%s]'
 " }}}
 
 " Ctrlp configuration {{{
+let g:ctrlp_cmd = 'CtrlPMRU'
 let g:ctrlp_clear_cache_on_exit = 0
 " Disable ctrlp checking for source control, it
 " makes it unusable on large repositories
@@ -518,7 +548,7 @@ let g:ctrlp_working_path_mode = 'a'
 " }}}
 
 " HoverHl configuration {{{
-let g:hoverHlEnabledFiletypes = [ 'cs', 'cpp', 'c', 'typescript', 'javascript', 'sh', 'dosbatch', 'vim' ]
+let g:hoverHlEnabledFiletypes = [ 'cs', 'cpp', 'c', 'ps1', 'typescript', 'javascript', 'json', 'sh', 'dosbatch', 'vim' ]
 " }}}
 
 " NERDTree configuration {{{
@@ -581,7 +611,7 @@ function! UpdateGitGutter() " {{{
             if expand('%:p') =~? l:path
                 if g:gitgutter_enabled == 1
                     redraw
-                    echo '[gitgutter disabled]'
+                    echom '[gitgutter disabled]'
                 endif
                 call gitgutter#disable()
                 return
@@ -590,7 +620,7 @@ function! UpdateGitGutter() " {{{
         call gitgutter#enable()
         if g:gitgutter_enabled == 0
             redraw
-            echo '[gitgutter enabled]'
+            echom '[gitgutter enabled]'
         endif
     endif
 endfunction " }}}
@@ -606,18 +636,7 @@ if has('autocmd')
     augroup Filetypes
         autocmd!
         autocmd FileType cs setlocal foldmethod=indent
-        autocmd FileType c,cpp,cs,js,ps1,ts call HoverHlEnable() |
-                    \ noremap <buffer> <silent> ( 0?;<cr>0^:noh<cr>|
-                    \ noremap <buffer> <silent> ) $/;<cr>0^:noh<cr>|
-                    \ if &filetype == 'cs' |
-                    \     noremap <buffer> <silent> [[ 0?{[^}]*$<cr>0^:noh<cr>|
-                    \     noremap <buffer> <silent> ]] $/{[^}]*$<cr>0^:noh<cr>|
-                    \ else |
-                    \     noremap <buffer> <silent> { 0?{[^}]*$<cr>0^:noh<cr>|
-                    \     noremap <buffer> <silent> } $/{[^}]*$<cr>0^:noh<cr>|
-                    \ endif
-        autocmd FileType json call HoverHlEnable() |
-                    \ noremap <buffer> <silent> { 0?[\[{]\s*$<cr>0^:noh<cr>|
+        autocmd FileType json noremap <buffer> <silent> { 0?[\[{]\s*$<cr>0^:noh<cr>|
                     \ noremap <buffer> <silent> } $/[\[{]\s*$<cr>0^:noh<cr>
         autocmd BufNew,BufReadPre *.xaml,*.targets setf xml
         autocmd BufNew,BufReadPre *.xml,*.html let b:match_words = '<.\{-}[^/]>:</[^>]*>'
