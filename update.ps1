@@ -39,13 +39,18 @@ for ($i = 0; $i -lt $paths.Count; $i++) {
     $new = $news[$i]
     if ($old -eq $new) { continue }
 
-    pushd $paths[$i]
-    $path = $(pwd).Path
-    echo "Updated {$($path.Substring($path.LastIndexOf('\') + 1))}. Changes:"
+    $path = $paths[$i]
+
+    pushd $path
+    $pwd = $(pwd).Path
+    $name = $pwd.Substring($pwd.LastIndexOf('\') + 1)
+    echo "Updated {$name}. Changes:"
     git log $old~1..$new --pretty=format:" - %s"
 
-    if ($(Test-Path 'start') -or $(Test-Path 'opt')) {
-        Write-Host "WARNING: $($_.Name) has updated to the new package model!" -ForegroundColor 'Yellow'
+    # If the plugin is up to date, we will only have two directories: 'pack/{name}'.
+    $isUpdated = ([Regex]::Matches($path, '/')).Count -eq 1
+    if ((-not $isUpdated) -and ($(Test-Path 'start') -or $(Test-Path 'opt'))) {
+        Write-Host "WARNING: $name has updated to the new package model!" -ForegroundColor 'Yellow'
     }
 
     echo ''
