@@ -1,8 +1,9 @@
 set nocompatible
+let g:vimrc = expand(has('win32') ? '$HOME/vimfiles/vimrc' : '~/.vim/vimrc')
 
 " Load vimrc.before {{{
-if filereadable($MYVIMRC.'.before')
-    source $MYVIMRC.before
+if filereadable(g:vimrc.'.before')
+    exe 'source '.g:vimrc.'.before'
 endif
 " }}}
 
@@ -82,9 +83,9 @@ function! MyTabLabel(lnum) " {{{
         " Don't show other marks
         let modified = 0
         let readonly = 0
-        let name = '[H] '.fnamemodify(name, ':r')
+        let name = 'H['.fnamemodify(name, ':r').']'
     endif
-    let label = a:lnum.': '.name
+    let label = a:lnum.' '.name
 
     " The number of windows in the tab page
     let uncounted = 0
@@ -172,6 +173,10 @@ function! GuiTabToolTip() " {{{
     return tooltip
 endfunction " }}}
 " }}}
+
+function! IsGui() " {{{
+    return has('gui_running') || (has('nvim') && get(g:, 'GuiLoaded', 0) == 1)
+endfunction " }}}
 
 function! GrowToContents(maxlines, maxcolumns) " {{{
     let totallines = line('$') + 3
@@ -326,11 +331,13 @@ set mouse=a
 set encoding=utf-8
 set spelllang=en_us
 set formatoptions=
+set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
 
 " Visual aesthetics
 set noerrorbells visualbell t_vb=
 set number norelativenumber
 set laststatus=2 showcmd ruler noshowmode
+set cursorline
 set tabline=%!TermTabLabel()
 set scrolloff=3 sidescrolloff=8 sidescroll=1
 set wildmenu
@@ -389,6 +396,7 @@ inoremap <silent> <c-a>      <esc>ggVG
     "map  <leader><leader>   {TAKEN: Easymotion}
  noremap <silent> <leader>b  :call ToggleIdeMode()<cr>
     "map          <leader>c  {TAKEN: NERDCommenter}
+ noremap <silent> <leader>cd :execute 'cd '.expand('%:p:h')<cr>
  noremap          <leader>co :colorscheme <c-d>
  noremap <silent> <leader>d  <c-x>
  noremap <silent> <leader>f  <c-a>
@@ -408,18 +416,17 @@ inoremap <silent> <c-a>      <esc>ggVG
  noremap <silent> <leader>rr :call ResizeWindow('r')<cr>
  noremap <silent> <leader>rs :call ResizeWindow('s')<cr>
     "map          <leader>t  {TAKEN: TaskList}
- noremap <silent> <leader>va :tabnew<bar>args $MYVIMRC.after<cr>
- noremap <silent> <leader>vb :tabnew<bar>args $MYVIMRC.before<cr>
- noremap <silent> <leader>vr :tabnew<bar>args $MYVIMRC<cr>
- noremap <silent> <leader>vv :tabnew<bar>args $MYVIMRC*<bar>all<bar>wincmd J<bar>wincmd t<cr>
- noremap <silent> <leader>vz :source $MYVIMRC<cr>
+ noremap <silent> <leader>va :execute 'tabnew<bar>args '.g:vimrc.'.after'<cr>
+ noremap <silent> <leader>vb :execute 'tabnew<bar>args '.g:vimrc.'.before'<cr>
+ noremap <silent> <leader>vr :execute 'tabnew<bar>args '.g:vimrc<cr>
+ noremap <silent> <leader>vv :execute 'tabnew<bar>args '.g:vimrc.'*<bar>all<bar>wincmd J<bar>wincmd t'<cr>
+ noremap <silent> <leader>vz :execute 'source '.g:vimrc<cr>
  noremap <silent> <leader>w  :execute 'resize '.line('$')<cr>
  noremap <silent> <leader>-  :e .<cr>
  noremap <silent> <leader>'  :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
  noremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
  noremap <silent> <leader>/  :nohlsearch<cr>
  noremap <silent> <leader>=  :call ToggleAlpha()<cr>
- noremap <silent> cd         :execute 'cd '.expand('%:p:h')<cr>
  noremap <silent> go         <c-]>
  noremap <silent> gV         `[v`]
      map          g/         <Plug>(incsearch-stay)
@@ -521,18 +528,26 @@ endif
 
 " Plugin Settings {{{
 
-" Builtin plugins {{{
-packadd! matchit
+" Update packpath {{{
+let s:packpath = fnamemodify(g:vimrc, ':p:h')
+if match(&packpath, substitute(s:packpath, '[\\/]', '[\\\\/]', 'g')) == -1
+    let &packpath .= ','.s:packpath
+endif
+" }}}
+
+" Legacy plugins {{{
+if !has('nvim')
+    packadd! matchit
+endif
 " }}}
 
 " Airline configuration {{{
 let g:airline_left_sep=''
 let g:airline_right_sep=''
-let g:airline_inactive_collapse=1 " Only show file name for inactive buffers
+let g:airline_inactive_collapse=1 " Show only file name for inactive buffers
 let g:airline#extensions#branch#format = 2 " Truncate branch name from long/section/name/branch to l/s/n/branch
 
-" Show whitespace, with more compact messages
-let g:airline#extensions#whitespace#enabled=1
+" When showing whitespace, use more compact messages
 let g:airline#extensions#whitespace#trailing_format = 't[%s]'
 let g:airline#extensions#whitespace#mixed_indent_format = 'm[%s]'
 let g:airline#extensions#whitespace#long_format = 'l[%s]'
@@ -548,7 +563,7 @@ let g:ctrlp_working_path_mode = 'a'
 " }}}
 
 " HoverHl configuration {{{
-let g:hoverHlEnabledFiletypes = [ 'cs', 'cpp', 'c', 'ps1', 'typescript', 'javascript', 'json', 'sh', 'dosbatch', 'vim' ]
+let g:hoverhl#enabled_filetypes = [ 'cs', 'cpp', 'c', 'ps1', 'typescript', 'javascript', 'json', 'sh', 'dosbatch', 'vim' ]
 " }}}
 
 " NERDTree configuration {{{
@@ -636,6 +651,7 @@ if has('autocmd')
     augroup Filetypes
         autocmd!
         autocmd FileType cs setlocal foldmethod=indent
+            autocmd BufRead *.md setlocal wrap nonumber norelativenumber
         autocmd FileType json noremap <buffer> <silent> { 0?[\[{]\s*$<cr>0^:noh<cr>|
                     \ noremap <buffer> <silent> } $/[\[{]\s*$<cr>0^:noh<cr>
         autocmd BufNew,BufReadPre *.xaml,*.targets setf xml
@@ -661,15 +677,12 @@ endif
 " }}}
 
 " GUI Settings {{{
-if has('gui_running')
+if IsGui()
     " GVim window style.
     set guitablabel=%{GuiTabLabel()}
     set guitabtooltip=%{GuiTabToolTip()}
     set guioptions=gt
-    set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
-    set selectmode=
     set guicursor+=n-v-c:blinkon0
-    set cursorline
     colorscheme github
 
     " Custom keybindings
@@ -684,7 +697,7 @@ if has('gui_running')
         let g:auto_resized = 0
         augroup GuiResize
             autocmd!
-            autocmd BufReadPost * if has('gui_running') && g:auto_resized == 0 |
+            autocmd BufReadPost * if IsGui() && g:auto_resized == 0 |
                         \     if &filetype == 'markdown' |
                         \         call ResizeWindow('n') |
                         \     else |
@@ -693,7 +706,6 @@ if has('gui_running')
                         \     let g:auto_resized = 1 |
                         \ endif
             autocmd VimResized let g:auto_resized = 1
-            autocmd BufRead *.md setlocal wrap nonumber norelativenumber
         augroup END
     endif
 endif
@@ -751,6 +763,8 @@ let g:diff_width = g:width_proportion
 
 if &diff
     set diffopt=filler,context:3
+    let g:airline_left_sep=''
+    let g:airline_right_sep=''
     if has('autocmd')
         augroup DiffLayout
             autocmd VimEnter * call SetDiffLayout()
@@ -758,7 +772,7 @@ if &diff
         augroup END
         augroup RememberCursor | autocmd! | augroup END " Clear cursor jump command
         augroup GuiResize      | autocmd! | augroup END " Clear autoresize command
-    elseif has('gui_running')
+    elseif IsGui()
         call ResizeWindow('d')
     endif
 endif
@@ -778,8 +792,8 @@ endfu
 " }}}
 
 " Load vimrc.after {{{
-if filereadable($MYVIMRC.'.after')
-    source $MYVIMRC.after
+if filereadable(g:vimrc.'.after')
+    execute 'source '.g:vimrc.'.after'
 endif
 " }}}
 

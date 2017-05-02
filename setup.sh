@@ -7,7 +7,7 @@ git submodule update --init
 
 echo Updating auxiliary files...
 ln -f ~/.vim/vimrc ~/.vimrc
-ln -f ~/.vim/vimrc ~/init.vim
+ln -f ~/.vim/init.vim ~/init.vim
 
 echo Setup done! Plugins up to date.
 echo Note that the following are disabled by default:

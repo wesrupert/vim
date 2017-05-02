@@ -10,6 +10,7 @@ vimrc.custom
 !.gitignore
 !README.md
 !vimrc
+!init.vim
 !vsvimrc
 !setup.sh
 !setup.cmd

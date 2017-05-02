@@ -2,7 +2,7 @@
 
 pushd %UserProfile%\vimfiles
 
-mklink /H %UserProfile%\AppData\Local\nvim\init.vim vimrc >nul
+mklink /H %UserProfile%\AppData\Local\nvim\init.vim init.vim >nul
 
 echo Updating plugins...
 git submodule update --init
