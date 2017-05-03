@@ -580,10 +580,6 @@ let g:ctrlp_working_path_mode = 'a'
 let g:hoverhl#enabled_filetypes = [ 'cs', 'cpp', 'c', 'ps1', 'typescript', 'javascript', 'json', 'sh', 'dosbatch', 'vim' ]
 " }}}
 
-" NERDTree configuration {{{
-let NERDTreeShowHidden = 1
-" }}}
-
 " Omnisharp configuration {{{
 if has('python')
     packadd omnisharp

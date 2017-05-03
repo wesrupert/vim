@@ -9,19 +9,9 @@
     url = https://github.com/vim-airline/vim-airline-themes.git
     ignore = dirty
 ; }}}
-[submodule "autoclose"] ; {{{
-    path = pack/autoclose/start/autoclose
-    url = https://github.com/Townk/vim-autoclose.git
-    ignore = dirty
-; }}}
 [submodule "ctrlp"] ; {{{
     path = pack/ctrlp/start/ctrlp
     url = https://github.com/ctrlpvim/ctrlp.vim.git
-    ignore = dirty
-; }}}
-[submodule "diff-enhanced"] ; {{{
-    path = pack/diff-enhanced/start/diff-enhanced
-    url = https://github.com/chrisbra/vim-diff-enhanced.git
     ignore = dirty
 ; }}}
 [submodule "dispatch"] ; {{{
@@ -47,11 +37,6 @@
 [submodule "nerdcommenter"] ; {{{
     path = pack/nerdcommenter/start/nerdcommenter
     url = https://github.com/scrooloose/nerdcommenter.git
-    ignore = dirty
-; }}}
-[submodule "nerdtree"] ; {{{
-    path = pack/nerdtree/start/nerdtree
-    url = https://github.com/scrooloose/nerdtree.git
     ignore = dirty
 ; }}}
 [submodule "omnisharp"] ; {{{
@@ -115,11 +100,6 @@
 ; }}}
 
 ; Colorschemes: {{{
-[submodule "afterglow"] ; opt {{{
-    path = pack/_colors-afterglow/opt/afterglow
-    url = https://github.com/danilo-augusto/vim-afterglow.git
-    ignore = dirty
-; }}}
 [submodule "basic"] ; opt {{{
     path = pack/_colors-basic/opt/basic
     url = https://github.com/zcodes/vim-colors-basic.git
@@ -155,11 +135,6 @@
     url = https://github.com/rakr/vim-one.git
     ignore = dirty
 ; }}}
-[submodule "orbital"] ; opt {{{
-    path = pack/_colors-orbital/opt/orbital
-    url = https://github.com/fcpg/vim-orbital.git
-    ignore = dirty
-; }}}
 [submodule "papercolor"] ; opt {{{
     path = pack/_colors-papercolor/opt/papercolor
     url = https://github.com/NLKNguyen/papercolor-theme.git
@@ -173,11 +148,6 @@
 [submodule "seabird"] ; opt {{{
     path = pack/_colors-seabird/opt/seabird
     url = https://github.com/nightsense/seabird.git
-    ignore = dirty
-; }}}
-[submodule "soda"] ; opt {{{
-    path = pack/_colors-soda/opt/soda
-    url = https://github.com/daddye/soda.vim.git
     ignore = dirty
 ; }}}
 [submodule "solarized"] ; opt {{{
