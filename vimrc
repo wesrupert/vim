@@ -324,7 +324,8 @@ endfunction" }}}
 " }}}
 
 " Preferences and Settings {{{
-" General settings
+
+" General settings {{{
 syntax on
 filetype plugin indent on
 set mouse=a
@@ -332,8 +333,15 @@ set encoding=utf-8
 set spelllang=en_us
 set formatoptions=
 set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
+" }}}
 
-" Visual aesthetics
+" Neovim settings {{{
+if has('nvim')
+    set inccommand=split
+endif
+" }}}
+
+" Visual aesthetics {{{
 set noerrorbells visualbell t_vb=
 set number norelativenumber
 set laststatus=2 showcmd ruler noshowmode
@@ -348,27 +356,31 @@ let g:alpha_level = 200
 let g:height_proportion = 75
 let g:width_proportion = 66
 let g:help_threshold = 80
+" }}}
 
-" Search
+" Search {{{
 set updatetime=500
 set incsearch hlsearch
 set ignorecase smartcase
 set completeopt=longest,menuone,preview
+" }}}
 
-" Whitespace and comments
+" Whitespace and comments {{{
 set tabstop=4 softtabstop=4 shiftwidth=4
 set expandtab smarttab
 set autoindent smartindent
 set formatoptions+=jr
 set list listchars=tab:»\ ,space:·,trail:◌
+" }}}
 
-" Word wrap
+" Word wrap {{{
 set backspace=indent,eol,start
 set nowrap
 set linebreak
 set formatoptions+=cn
+" }}}
 
-" File organization
+" File organization {{{
 set autoread
 set shortmess+=A
 set hidden
@@ -376,6 +388,8 @@ set switchbuf=usetab
 set noautochdir
 set foldmethod=syntax foldenable foldlevelstart=10
 set modeline modelines=1
+" }}}
+
 " }}}
 
 " Keybindings and Commands {{{
