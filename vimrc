@@ -342,7 +342,8 @@ endif
 " }}}
 
 " Visual aesthetics {{{
-set noerrorbells visualbell t_vb=
+set noerrorbells belloff=all visualbell t_vb=
+set termguicolors
 set number norelativenumber
 set laststatus=2 showcmd ruler noshowmode
 set cursorline
