@@ -571,6 +571,7 @@ let g:airline#extensions#whitespace#mixed_indent_file_format = 'mf[%s]'
 
 " Ctrlp configuration {{{
 let g:ctrlp_cmd = 'CtrlPMRU'
+let g:ctrlp_match_window = 'top,order:ttb,max:5'
 let g:ctrlp_clear_cache_on_exit = 0
 " Disable ctrlp checking for source control, it
 " makes it unusable on large repositories
