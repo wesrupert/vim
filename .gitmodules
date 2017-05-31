@@ -24,9 +24,9 @@
     url = https://github.com/tpope/vim-dispatch.git
     ignore = dirty
 ; }}}
-[submodule "gitgutter"] ; {{{
-    path = pack/gitgutter/start/gitgutter
-    url = https://github.com/airblade/vim-gitgutter.git
+[submodule "fzf"] ; {{{
+    path = pack/fzf/start/fzf
+	url = https://github.com/junegunn/fzf.vim.git
     ignore = dirty
 ; }}}
 [submodule "hoverhl"] ; {{{
