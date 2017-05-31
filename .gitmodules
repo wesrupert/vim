@@ -29,6 +29,11 @@
 	url = https://github.com/junegunn/fzf.vim.git
     ignore = dirty
 ; }}}
+[submodule "gitgutter"] ; {{{
+	path = pack/gitgutter/start/gitgutter
+	url = https://github.com/airblade/vim-gitgutter.git
+    ignore = dirty
+; }}}
 [submodule "hoverhl"] ; {{{
     path = pack/hoverhl
     url = https://github.com/wesrupert/vim-hoverhl.git
@@ -52,11 +57,6 @@
 [submodule "repeat"] ; {{{
     path = pack/repeat/start/repeat
     url = https://github.com/tpope/vim-repeat.git
-    ignore = dirty
-; }}}
-[submodule "signify"] ; {{{
-	path = pack\\signify\\start\\signify
-	url = https://github.com/mhinz/vim-signify.git
     ignore = dirty
 ; }}}
 [submodule "supertab"] ; {{{

@@ -418,6 +418,7 @@ inoremap <silent> <c-a>      <esc>ggVG
  noremap          <leader>co :colorscheme <c-d>
  noremap <silent> <leader>d  <c-x>
  noremap <silent> <leader>f  <c-a>
+    "map          <leader>h  {TAKEN: GitGutter previews}
  noremap <silent> <leader>i  :set foldmethod=indent<cr>
  noremap <silent> <leader>l  :setlocal list!<cr>:setlocal list?<cr>
     "map          <leader>m  {TAKEN: Toggle GUI menu}
@@ -620,6 +621,15 @@ augroup END
 
 " Pencil configuration {{{
 let g:pencil_gutter_color = 1
+" }}}
+
+" GitGutter configuration {{{
+let g:gitgutter_sign_added = '>>'
+let g:gitgutter_sign_modified = '<>'
+let g:gitgutter_sign_removed = '__'
+let g:gitgutter_sign_removed_first_line = '¯¯'
+let g:gitgutter_sign_modified_removed = '≤≥'
+
 " }}}
 
 " }}}
