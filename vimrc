@@ -1,10 +1,13 @@
 set nocompatible
 let g:vimrc = expand(has('win32') ? '$HOME/vimfiles/vimrc' : '~/.vim/vimrc')
 
-" Load vimrc.before {{{
-if filereadable(g:vimrc.'.before')
-    exe 'source '.g:vimrc.'.before'
+" Load vimrc pre-file {{{
+if filereadable(g:vimrc.'.leader')
+    let g:vimrc_leader = g:vimrc.'.leader'
+elseif filereadable(g:vimrc.'.before')
+    let g:vimrc_leader = g:vimrc.'.before'
 endif
+if exists('g:vimrc_leader') | exe 'source '.g:vimrc_leader | endif
 " }}}
 
 " Functions {{{
@@ -260,7 +263,7 @@ function! ResizeWindow(class) " {{{
     elseif a:class == 'd' " Diff
         set lines=50 columns=200
     elseif a:class == 'r' " Resized
-        set lines=20 columns=60
+        set lines=4 columns=12
         call GrowToContents(60, 180)
     else
         echoerr 'Unknown size class: '.a:class
@@ -431,8 +434,8 @@ inoremap <silent> <c-a>      <esc>ggVG
  noremap <silent> <leader>rr :call ResizeWindow('r')<cr>
  noremap <silent> <leader>rs :call ResizeWindow('s')<cr>
     "map          <leader>t  {TAKEN: TaskList}
- noremap <silent> <leader>va :execute 'tabnew<bar>args '.g:vimrc.'.after'<cr>
- noremap <silent> <leader>vb :execute 'tabnew<bar>args '.g:vimrc.'.before'<cr>
+ noremap <silent> <leader>va :execute 'tabnew<bar>args '.g:vimrc_custom<cr>
+ noremap <silent> <leader>vb :execute 'tabnew<bar>args '.g:vimrc_leader<cr>
  noremap <silent> <leader>vr :execute 'tabnew<bar>args '.g:vimrc<cr>
  noremap <silent> <leader>vv :execute 'tabnew<bar>args '.g:vimrc.'*<bar>all<bar>wincmd J<bar>wincmd t'<cr>
  noremap <silent> <leader>vz :execute 'source '.g:vimrc<cr>
@@ -505,6 +508,7 @@ if has('win32')
     source $VIMRUNTIME/mswin.vim
     set selectmode=
     noremap <c-a> <c-c>ggVG
+    noremap <c-v> "+gP
     call SetRenderOptions(1)
 
     noremap <silent> <c-e> :execute "silent !explorer ".shellescape(expand('%:p:h'))<cr>
@@ -803,10 +807,13 @@ function! SetDiffLayout()
 endfu
 " }}}
 
-" Load vimrc.after {{{
-if filereadable(g:vimrc.'.after')
-    execute 'source '.g:vimrc.'.after'
+" Load vimrc post-file {{{
+if filereadable(g:vimrc.'.custom')
+    let g:vimrc_custom = g:vimrc.'.custom'
+elseif filereadable(g:vimrc.'.after')
+    let g:vimrc_custom = g:vimrc.'.after'
 endif
+if exists('g:vimrc_custom') | exe 'source '.g:vimrc_custom | endif
 " }}}
 
 " Load help docs {{{

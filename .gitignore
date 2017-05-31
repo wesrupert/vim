@@ -4,8 +4,10 @@
 *.swo
 
 /*
-custom
 vimrc.custom
+vimrc.after
+vimrc.leader
+vimrc.before
 
 !.gitignore
 !README.md
