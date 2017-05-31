@@ -54,6 +54,11 @@
     url = https://github.com/tpope/vim-repeat.git
     ignore = dirty
 ; }}}
+[submodule "signify"] ; {{{
+	path = pack\\signify\\start\\signify
+	url = https://github.com/mhinz/vim-signify.git
+    ignore = dirty
+; }}}
 [submodule "supertab"] ; {{{
     path = pack/supertab/start/supertab
     url = https://github.com/ervandew/supertab.git
