@@ -1,5 +1,204 @@
-source $USERPROFILE\vimfiles\vimrc.before
-source $USERPROFILE\vimfiles\vimrc
-source $USERPROFILE\vimfiles\vimrc.after
-unmap /
-iunmap <tab>
+" General settings {{{
+let g:mapleader = ','
+set nocompatible
+syntax on
+filetype plugin indent on
+set mouse=a
+set encoding=utf-8
+set spelllang=en_us
+set formatoptions=
+" }}}
+
+" Visual aesthetics {{{
+set noerrorbells belloff=all visualbell t_vb=
+set termguicolors
+set number norelativenumber
+set laststatus=2 showcmd ruler noshowmode
+set cursorline
+set scrolloff=3 sidescrolloff=8 sidescroll=1
+set wildmenu
+set lazyredraw
+set conceallevel=2
+" }}}
+
+" Search {{{
+set incsearch hlsearch
+set ignorecase smartcase
+" }}}
+
+" Whitespace and comments {{{
+set tabstop=4 softtabstop=4 shiftwidth=4
+set expandtab smarttab
+set autoindent smartindent
+set formatoptions+=jr
+" }}}
+
+" Word wrap {{{
+set backspace=indent,eol,start
+set nowrap
+set linebreak
+set formatoptions+=cn
+" }}}
+
+" File organization {{{
+set autoread
+set shortmess+=A
+set hidden
+set switchbuf=usetab
+set noautochdir
+set foldmethod=syntax foldenable foldlevelstart=10
+set modeline modelines=1
+" }}}
+
+" Keybindings and Commands {{{
+    imap <silent> <c-space>  <tab>
+ noremap <silent> <c-a>      <esc>ggVG
+inoremap <silent> <c-a>      <esc>ggVG
+ noremap <silent> <c-h>      <c-w>h
+ noremap <silent> <c-j>      <c-w>j
+ noremap <silent> <c-k>      <c-w>k
+ noremap <silent> <c-l>      <c-w>l
+ noremap          <c-q>      Q
+ noremap <silent> <c-t>      :tabnew<cr>
+ noremap <silent> <leader>cd :execute 'cd '.expand('%:p:h')<cr>
+ noremap          <leader>co :colorscheme <c-d>
+ noremap <silent> <leader>d  <c-x>
+ noremap <silent> <leader>f  <c-a>
+ noremap <silent> <leader>i  :set foldmethod=indent<cr>
+ noremap <silent> <leader>l  :setlocal list!<cr>:setlocal list?<cr>
+ noremap <silent> <leader>va :execute 'tabnew<bar>args '.g:vimrc_custom<cr>
+ noremap <silent> <leader>vb :execute 'tabnew<bar>args '.g:vimrc_leader<cr>
+ noremap <silent> <leader>vr :execute 'tabnew<bar>args '.g:vimrc<cr>
+ noremap <silent> <leader>vv :execute 'tabnew<bar>args '.g:vimrc.'*<bar>all<bar>wincmd J<bar>wincmd t'<cr>
+ noremap <silent> <leader>vz :execute 'source '.g:vimrc<cr>
+ noremap <silent> <leader>w  :execute 'resize '.line('$')<cr>
+ noremap <silent> <leader>-  :e .<cr>
+ noremap <silent> <leader>'  :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
+ noremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
+ noremap <silent> <leader>/  :nohlsearch<cr>
+ noremap <silent> go         <c-]>
+ noremap <silent> gV         `[v`]
+ noremap <silent> j          gj
+ noremap <silent> gj         j
+inoremap          jk         <esc>
+ noremap <silent> k          gk
+ noremap <silent> gk         k
+inoremap          kj         <esc>
+ noremap          Q          :q
+ noremap          TQ         :tabclose<cr>
+ noremap          Y          y$
+ noremap          zj         jzz
+ noremap          zJ         Hzz
+ noremap          zk         kzz
+ noremap          zK         Lzz
+ noremap          <tab>      %
+ noremap          <space>    za
+ noremap          ;          :
+ noremap          :          ;
+ noremap          '          "
+ noremap          "          '
+ noremap          -          _
+ noremap          _          -
+ noremap <silent> [[         ^
+ noremap <silent> ]]         $
+
+" }}}
+
+set selectmode=
+noremap <c-a> <c-c>ggVG
+noremap <c-v> "+gP
+
+" Backup and Undo {{{
+set backup writebackup
+let s:backupdir = expand(g:temp.g:slash.'backups')
+let &directory = s:backupdir.g:slash.g:slash
+if has('autocmd')
+    augroup Backups
+        autocmd BufRead * let &l:backupdir = s:backupdir.g:slash.expand("%:p:h:t") |
+                    \ call TryCreateDir(&l:backupdir)
+    augroup END
+endif
+call TryCreateDir(s:backupdir)
+if has('persistent_undo')
+    call TryCreateDir(g:temp.g:slash.'undo')
+    set undofile
+    let &undodir = expand(g:temp.g:slash.'undo')
+endif
+" }}}
+
+" Filetype Settings {{{
+let g:markdown_fenced_languages = ['cs', 'cpp', 'c', 'typescript', 'javascript', 'sh', 'dosbatch', 'vim']
+
+if has('autocmd')
+    augroup Filetypes
+        autocmd!
+        autocmd FileType cs setlocal foldmethod=indent
+            autocmd BufRead *.md setlocal wrap nonumber norelativenumber
+        autocmd FileType json noremap <buffer> <silent> { 0?[\[{]\s*$<cr>0^:noh<cr>|
+                    \ noremap <buffer> <silent> } $/[\[{]\s*$<cr>0^:noh<cr>
+        autocmd BufNew,BufReadPre *.xaml,*.targets setf xml
+        autocmd BufNew,BufReadPre *.xml,*.html let b:match_words = '<.\{-}[^/]>:</[^>]*>'
+        autocmd FileType xml,html setlocal matchpairs+=<:> nospell
+        autocmd FileType gitcommit call setpos('.', [0, 1, 1, 0]) |
+                    \ setlocal textwidth=72 formatoptions+=t colorcolumn=50,+0 |
+                    \ setlocal scrolloff=0 sidescrolloff=0 sidescroll=1 |
+                    \ set columns=80 lines=20 |
+                    \ call GrowToContents(50, 80)
+    augroup END
+
+    augroup HelpFiles
+        autocmd!
+        autocmd BufWinEnter * if (&buftype == 'help') |
+                        \     setlocal winwidth=80 sidescrolloff=0 |
+                        \     vertical resize 80 |
+                        \     noremap <buffer> q <c-w>c |
+                        \ endif
+        autocmd BufWinEnter * if (&buftype == 'quickfix' || &previewwindow) | noremap <buffer> q <c-w>c | endif
+    augroup END
+endif
+" }}}
+
+" Auto Commands {{{
+if has('autocmd')
+    augroup RememberCursor
+        autocmd!
+        " Jump to line cursor was on when last closed, if available
+        autocmd BufReadPost * if line("'\'") > 0 && line("'\'") <= line('$') |
+                       \    exe "normal g`\"" |
+                       \ endif
+    augroup END
+
+    augroup Spelling
+        autocmd!
+        autocmd ColorScheme * hi clear SpellRare | hi clear SpellLocal
+        autocmd FileType markdown,txt setlocal spell
+        autocmd BufReadPost * if &l:modifiable == 0 | setlocal nospell | endif
+    augroup END
+
+    augroup AutoChDir
+        autocmd!
+        autocmd BufEnter * silent! lcd %:p:h
+        autocmd BufEnter * if IsEmptyFile() | set ft=markdown | end
+    augroup END
+
+    highlight link MixedWhitespace Underlined
+    highlight link BadBraces Error
+    augroup MixedWhitespace
+        autocmd!
+        autocmd InsertEnter * highlight! link BadBraces NONE
+        autocmd InsertLeave * highlight! link BadBraces Error
+        autocmd BufEnter * match MixedWhitespace /\s*\(\( \t\)\|\(\t \)\)\s*/
+        autocmd BufEnter *.c,*.cpp,*.cs,*.js,*.ps1,*.ts 2match BadBraces /[^}]\s*\n\s*\n\s*\zs{\ze\|\s*\n\s*\n\s*\zs}\ze\|\zs}\ze\s*\n\s*\(else\>\|catch\>\|finally\>\|while\>\|}\|\s\|\n\)\@!\|\zs{\ze\s*\n\s*\n/
+    augroup END
+
+    augroup WinHeight
+        autocmd!
+        autocmd VimResized * if (&buftype != 'help') |
+                      \     let &l:winheight = (&lines * g:height_proportion) / 100 |
+                      \     let &l:winwidth = (&columns * g:width_proportion) / 100 |
+                      \ endif
+    augroup END
+endif
+" }}}
+
+" vim: foldmethod=marker foldlevel=0

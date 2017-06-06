@@ -41,7 +41,7 @@ function! TermTabLabel() " {{{
         let label .= '%=%#TabLine#%999XX'
     endif
 
-    return l:label
+    return label
 endfunction " }}}
 
 function! GuiTabLabel() " {{{
@@ -209,9 +209,9 @@ function! OpenHelp(topic) " {{{
         if &columns > 80 + g:help_threshold
             let position = 'vert'
             if exists('g:open_help_on_right') && g:open_help_on_right != 0
-                let position = l:position.' rightbelow'
+                let position = position.' rightbelow'
             endif
-            exe l:position.' help '.a:topic
+            exe position.' help '.a:topic
         else
             exe 'tab help '.a:topic
         endif
@@ -286,7 +286,7 @@ function! SetRenderOptions(mode) "{{{
 
     if a:mode > 1
         redraw
-        echo '[render system set to: '.l:system.']'
+        echo '[render system set to: '.system.']'
     endif
 endfunction "}}}
 
@@ -418,7 +418,9 @@ inoremap <silent> <c-a>      <esc>ggVG
  noremap          <leader>co :colorscheme <c-d>
  noremap <silent> <leader>d  <c-x>
  noremap <silent> <leader>f  <c-a>
-    "map          <leader>h  {TAKEN: GitGutter previews}
+    "map          <leader>hs {TAKEN: GitGutter stage hunk}
+    "map          <leader>hu {TAKEN: GitGutter undo hunk}
+    "map          <leader>hp {TAKEN: GitGutter preview hunk}
  noremap <silent> <leader>i  :set foldmethod=indent<cr>
  noremap <silent> <leader>l  :setlocal list!<cr>:setlocal list?<cr>
     "map          <leader>m  {TAKEN: Toggle GUI menu}
@@ -470,6 +472,8 @@ inoremap          kj         <esc>
  noremap          "          '
  noremap          -          _
  noremap          _          -
+    "map          [c         {TAKEN: GitGutter prev change}
+    "map          ]c         {TAKEN: GitGutter next change}
  noremap <silent> [[         ^
  noremap <silent> ]]         $
      map          /          <Plug>(incsearch-forward)
