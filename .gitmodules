@@ -24,6 +24,11 @@
     url = https://github.com/tpope/vim-dispatch.git
     ignore = dirty
 ; }}}
+[submodule "editorconfig"] ; {{{
+    path = pack/editorconfig/start/editorconfig
+    url = https://github.com/editorconfig/editorconfig-vim.git
+    ignore = dirty
+; }}}
 [submodule "fzf"] ; {{{
     path = pack/fzf/start/fzf
 	url = https://github.com/junegunn/fzf.vim.git
