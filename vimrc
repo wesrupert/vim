@@ -355,6 +355,7 @@ set scrolloff=3 sidescrolloff=8 sidescroll=1
 set wildmenu
 set lazyredraw
 set conceallevel=2
+set synmaxcol=300
 let g:idemode = 0
 let g:alpha_level = 200
 let g:height_proportion = 75
@@ -365,7 +366,7 @@ let g:help_threshold = 80
 " Search {{{
 set updatetime=500
 set incsearch hlsearch
-set ignorecase smartcase
+set ignorecase smartcase infercase
 set completeopt=longest,menuone,preview
 " }}}
 
@@ -381,6 +382,7 @@ set list listchars=tab:»\ ,space:·,trail:◌
 set backspace=indent,eol,start
 set nowrap
 set linebreak
+set breakindent
 set formatoptions+=cn
 " }}}
 
@@ -449,10 +451,10 @@ inoremap <silent> <c-a>      <esc>ggVG
  noremap <silent> go         <c-]>
  noremap <silent> gV         `[v`]
      map          g/         <Plug>(incsearch-stay)
- noremap <silent> j          gj
+ noremap <silent> <expr> j   v:count ? (v:count > 5 ? "m'" . v:count : '') . 'j' : 'gj'
  noremap <silent> gj         j
 inoremap          jk         <esc>
- noremap <silent> k          gk
+ noremap <silent> <expr> k   v:count ? (v:count > 5 ? "m'" . v:count : '') . 'k' : 'gk'
  noremap <silent> gk         k
  noremap <silent> K          :Help <c-r><c-w><cr>
 inoremap          kj         <esc>
@@ -757,6 +759,7 @@ let g:diff_width = g:width_proportion
 
 if &diff
     set diffopt=filler,context:3
+    let g:ale_enabled = 0
     let g:airline_left_sep=''
     let g:airline_right_sep=''
     if has('autocmd')
