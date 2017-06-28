@@ -587,6 +587,12 @@ let g:ctrlp_clear_cache_on_exit = 0
 let g:ctrlp_working_path_mode = 'a'
 " }}}
 
+" EditorConfig configuration {{{
+" Don't load over ssh or net share
+let g:EditorConfig_exclude_patterns = ['scp://.*', '//.*']
+" }}}
+
+
 " HoverHl configuration {{{
 let g:hoverhl#enabled_filetypes = [ 'cs', 'cpp', 'c', 'ps1', 'typescript', 'javascript', 'json', 'sh', 'dosbatch', 'vim' ]
 " }}}
