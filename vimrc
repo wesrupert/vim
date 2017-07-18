@@ -290,6 +290,13 @@ function! SetRenderOptions(mode) "{{{
     endif
 endfunction "}}}
 
+function! SynStack() "{{{
+  if !exists('*synstack')
+    return
+  endif
+  echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+endfunction "}}}
+
 function! ToggleAlpha() "{{{
     if exists('s:alpha')
         execute 'WSetAlpha 256'
