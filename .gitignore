@@ -4,7 +4,10 @@
 *.swo
 
 /*
+/plug
+/plug/*
 vimrc.custom
+vimrc.plugins.custom
 vimrc.after
 vimrc.leader
 vimrc.before
@@ -12,6 +15,7 @@ vimrc.before
 !.gitignore
 !README.md
 !vimrc
+!vimrc.plugins
 !init.vim
 !vsvimrc
 !setup.sh

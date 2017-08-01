@@ -446,6 +446,7 @@ inoremap <silent> <c-a>      <esc>ggVG
     "map          <leader>t  {TAKEN: TaskList}
  noremap <silent> <leader>va :execute 'tabnew<bar>args '.g:vimrc_custom<cr>
  noremap <silent> <leader>vb :execute 'tabnew<bar>args '.g:vimrc_leader<cr>
+ noremap <silent> <leader>vp :execute 'tabnew<bar>args '.g:vimrc.'.plugins*<bar>all<bar>wincmd J<bar>wincmd t'<cr>
  noremap <silent> <leader>vr :execute 'tabnew<bar>args '.g:vimrc<cr>
  noremap <silent> <leader>vv :execute 'tabnew<bar>args '.g:vimrc.'*<bar>all<bar>wincmd J<bar>wincmd t'<cr>
  noremap <silent> <leader>vz :execute 'source '.g:vimrc<cr>
@@ -574,6 +575,20 @@ if !has('nvim')
 endif
 " }}}
 
+" Modern Plugins {{{
+call plug#begin('~/.vim/plug')
+
+if filereadable(g:vimrc.'.plugins')
+    exe 'source '.g:vimrc.'.plugins'
+endif
+
+if filereadable(g:vimrc.'.plugins.custom')
+    exe 'source '.g:vimrc.'.plugins.custom'
+endif
+
+call plug#end()
+" }}}
+
 " Airline configuration {{{
 let g:airline_left_sep=''
 let g:airline_right_sep=''
@@ -607,12 +622,9 @@ let g:hoverhl#enabled_filetypes = [ 'cs', 'cpp', 'c', 'ps1', 'typescript', 'java
 " }}}
 
 " Omnisharp configuration {{{
-if has('python')
-    packadd omnisharp
-    let g:OmniSharp_selector_ui = 'ctrlp'
-    let g:omnicomplete_fetch_documentation = 1
-    let g:syntastic_cs_checkers = ['syntax', 'semantic', 'issues']
-endif
+let g:OmniSharp_selector_ui = 'ctrlp'
+let g:omnicomplete_fetch_documentation = 1
+let g:syntastic_cs_checkers = ['syntax', 'semantic', 'issues']
 
 augroup Omnisharp
     autocmd!
