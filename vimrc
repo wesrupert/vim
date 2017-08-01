@@ -252,17 +252,17 @@ function! GetMaxColumn() " {{{
 endfunction " }}}
 
 function! ResizeWindow(class) " {{{
-    if a:class == 's' " Small
+    if     a:class ==? 's' " Small
         set lines=20 columns=60
-    elseif a:class == 'm' " Medium
+    elseif a:class ==? 'm' " Medium
         set lines=40 columns=120
-    elseif a:class == 'l' " Large
+    elseif a:class ==? 'l' " Large
         set lines=60 columns=180
-    elseif a:class == 'n' " Narrow
-        set lines=40 columns=60
-    elseif a:class == 'd' " Diff
+    elseif a:class ==? 'n' " Narrow
+        set lines=60 columns=60
+    elseif a:class ==? 'd' " Diff
         set lines=50 columns=200
-    elseif a:class == 'r' " Resized
+    elseif a:class ==? 'r' " Resized
         set lines=4 columns=12
         call GrowToContents(60, 180)
     else
@@ -485,6 +485,8 @@ inoremap          kj         <esc>
     "map          ]c         {TAKEN: GitGutter next change}
  noremap <silent> [[         ^
  noremap <silent> ]]         $
+ noremap <silent> []         /;<cr>:noh<cr>
+ noremap <silent> ][         ?;<cr>:noh<cr>
      map          /          <Plug>(incsearch-forward)
      map          ?          <Plug>(incsearch-backward)
     "map          (          {TAKEN: Prev code line}
@@ -703,18 +705,16 @@ if IsGui()
             autocmd GUIEnter * set visualbell t_vb= | call ResizeWindow('s')
         augroup END
 
-        let g:auto_resized = 0
         augroup GuiResize
             autocmd!
-            autocmd BufReadPost * if IsGui() && g:auto_resized == 0 |
+            autocmd BufReadPost * if IsGui() && get(g:, 'auto_resized', 0) == 0 |
                         \     if &filetype == 'markdown' |
                         \         call ResizeWindow('n') |
                         \     else |
                         \         call ResizeWindow('r') |
                         \     endif |
-                        \     let g:auto_resized = 1 |
                         \ endif
-            autocmd VimResized let g:auto_resized = 1
+            autocmd VimResized * let g:auto_resized = 1
         augroup END
     endif
 endif
@@ -733,7 +733,7 @@ if has('autocmd')
     augroup Spelling
         autocmd!
         autocmd ColorScheme * hi clear SpellRare | hi clear SpellLocal
-        autocmd FileType markdown,txt setlocal spell
+        autocmd FileType markdown,txt setlocal spell nocursorline norelativenumber wrap
         autocmd BufReadPost * if &l:modifiable == 0 | setlocal nospell | endif
     augroup END
 

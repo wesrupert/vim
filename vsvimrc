@@ -101,6 +101,8 @@ inoremap          kj         <esc>
  noremap          _          -
  noremap <silent> [[         ^
  noremap <silent> ]]         $
+ noremap <silent> []         /;<cr>:noh<cr>
+ noremap <silent> ][         ?;<cr>:noh<cr>
 
 " }}}
 
