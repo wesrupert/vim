@@ -222,13 +222,13 @@ endfunction " }}}
 
 function! IsEmptyFile() " {{{
     if @% != ''
-        " No filename for current buffer
+        " Filename exists for current buffer
         return 0
     elseif filereadable(@%) != 0
-        " File doesn't exist yet
+        " File exists on disk
         return 0
     elseif line('$') != 1 || col('$') != 1
-        " File is empty
+        " File has contents
         return 0
     endif
     return 1
@@ -268,7 +268,9 @@ function! ResizeWindow(class) " {{{
     else
         echoerr 'Unknown size class: '.a:class
     endif
-    silent call wimproved#set_monitor_center()
+    if has('win32') && !has('nvim')
+        silent call wimproved#set_monitor_center()
+    endif
 endfunction " }}}
 
 function! SetRenderOptions(mode) "{{{
@@ -295,6 +297,14 @@ function! SynStack() "{{{
     return
   endif
   echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+endfunction "}}}
+
+function! TabOrComplete() "{{{
+    if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
+        return "\<C-N>"
+    else
+        return "\<Tab>"
+    endif
 endfunction "}}}
 
 function! ToggleAlpha() "{{{
@@ -345,12 +355,6 @@ set formatoptions=
 set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
 " }}}
 
-" Neovim settings {{{
-if has('nvim')
-    set inccommand=split
-endif
-" }}}
-
 " Visual aesthetics {{{
 set noerrorbells belloff=all visualbell t_vb=
 set termguicolors
@@ -367,6 +371,8 @@ let g:idemode = 0
 let g:alpha_level = 200
 let g:height_proportion = 75
 let g:width_proportion = 66
+let g:height_buffer = 3
+let g:width_buffer = 3
 let g:help_threshold = 80
 " }}}
 
@@ -407,7 +413,9 @@ set modeline modelines=1
 
 " Keybindings and Commands {{{
      map <silent> <f11>      :WToggleFullscreen<cr>
- noremap <silent> <a-p>      :CtrlP<cr>
+ noremap <silent> <a-p>      :CtrlPMRUFiles<cr>
+ noremap <silent> <a-o>      <c-i>
+ noremap <silent> <c-a-p>    :CtrlP<cr>
     imap <silent> <c-space>  <tab>
  noremap <silent> <c-a>      <esc>ggVG
 inoremap <silent> <c-a>      <esc>ggVG
@@ -421,6 +429,7 @@ inoremap <silent> <c-a>      <esc>ggVG
  noremap          <c-q>      Q
  noremap <silent> <c-t>      :tabnew<cr>
     "map  <leader><leader>   {TAKEN: Easymotion}
+inoremap          <tab>      <c-r>=TabOrComplete()<cr>
  noremap <silent> <leader>b  :call ToggleIdeMode()<cr>
     "map          <leader>c  {TAKEN: NERDCommenter}
  noremap <silent> <leader>cd :execute 'cd '.expand('%:p:h')<cr>
@@ -456,16 +465,20 @@ inoremap <silent> <c-a>      <esc>ggVG
  noremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
  noremap <silent> <leader>/  :nohlsearch<cr>
  noremap <silent> <leader>=  :call ToggleAlpha()<cr>
- noremap <silent> go         <c-]>
+xmap          ga         <Plug>(EasyAlign)
+ map          ga         <Plug>(EasyAlign)
+ noremap <silent> go         m'o<esc><c-o>
+ noremap <silent> gO         m'O<esc><c-o>
  noremap <silent> gV         `[v`]
      map          g/         <Plug>(incsearch-stay)
  noremap <silent> <expr> j   v:count ? (v:count > 5 ? "m'" . v:count : '') . 'j' : 'gj'
  noremap <silent> gj         j
-inoremap          jk         <esc>
  noremap <silent> <expr> k   v:count ? (v:count > 5 ? "m'" . v:count : '') . 'k' : 'gk'
  noremap <silent> gk         k
  noremap <silent> K          :Help <c-r><c-w><cr>
+inoremap          jk         <esc>
 inoremap          kj         <esc>
+ noremap          GT         gT
  noremap          Q          :q
  noremap          TQ         :tabclose<cr>
  noremap          Y          y$
@@ -473,6 +486,7 @@ inoremap          kj         <esc>
  noremap          zJ         Hzz
  noremap          zk         kzz
  noremap          zK         Lzz
+ noremap          zz         m'15jzz<c-o>
    "imap          <tab>      {TAKEN: Supertab}
  noremap          <tab>      %
  noremap          <space>    za
@@ -589,82 +603,6 @@ endif
 call plug#end()
 " }}}
 
-" Airline configuration {{{
-let g:airline_left_sep=''
-let g:airline_right_sep=''
-let g:airline_inactive_collapse=1 " Show only file name for inactive buffers
-let g:airline#extensions#branch#format = 2 " Truncate branch name from long/section/name/branch to l/s/n/branch
-
-" When showing whitespace, use more compact messages
-let g:airline#extensions#whitespace#trailing_format = 't[%s]'
-let g:airline#extensions#whitespace#mixed_indent_format = 'm[%s]'
-let g:airline#extensions#whitespace#long_format = 'l[%s]'
-let g:airline#extensions#whitespace#mixed_indent_file_format = 'mf[%s]'
-" }}}
-
-" Ctrlp configuration {{{
-let g:ctrlp_cmd = 'CtrlPMRU'
-let g:ctrlp_match_window = 'top,order:ttb,max:5'
-let g:ctrlp_clear_cache_on_exit = 0
-" Disable ctrlp checking for source control, it
-" makes it unusable on large repositories
-let g:ctrlp_working_path_mode = 'a'
-" }}}
-
-" EditorConfig configuration {{{
-" Don't load over ssh or net share
-let g:EditorConfig_exclude_patterns = ['scp://.*', '//.*']
-" }}}
-
-
-" HoverHl configuration {{{
-let g:hoverhl#enabled_filetypes = [ 'cs', 'cpp', 'c', 'ps1', 'typescript', 'javascript', 'json', 'sh', 'dosbatch', 'vim' ]
-" }}}
-
-" Omnisharp configuration {{{
-let g:OmniSharp_selector_ui = 'ctrlp'
-let g:omnicomplete_fetch_documentation = 1
-let g:syntastic_cs_checkers = ['syntax', 'semantic', 'issues']
-
-augroup Omnisharp
-    autocmd!
-
-    "Set autocomplete function to OmniSharp (if not using YouCompleteMe completion plugin)
-    autocmd FileType cs setlocal omnifunc=OmniSharp#Complete |
-                      \ let b:SuperTabDefaultCompletionType = '<c-x><c-o>'
-
-    "show type information automatically when the cursor stops moving
-    autocmd CursorHold *.cs call OmniSharp#TypeLookupWithoutDocumentation()
-
-    "The following commands are contextual, based on the current cursor position.
-
-    autocmd FileType cs noremap <buffer> gd :OmniSharpGotoDefinition<cr>
-    autocmd FileType cs noremap <buffer> gc :OmniSharpFindUsages<cr>
-
-    " cursor can be anywhere on the line containing an issue
-    autocmd FileType cs noremap <buffer> <c-.>  :OmniSharpFixIssue<cr>
-    autocmd FileType cs noremap <buffer> <leader>fx :OmniSharpFixUsings<cr>
-    autocmd FileType cs noremap <buffer> <leader>gd :OmniSharpDocumentation<cr>
-
-    "navigate up by method/property/field
-    autocmd FileType cs noremap <buffer> { :OmniSharpNavigateUp<cr>
-    autocmd FileType cs noremap <buffer> } :OmniSharpNavigateDown<cr>
-augroup END
-" }}}
-
-" Pencil configuration {{{
-let g:pencil_gutter_color = 1
-" }}}
-
-" GitGutter configuration {{{
-let g:gitgutter_sign_added = '>>'
-let g:gitgutter_sign_modified = '<>'
-let g:gitgutter_sign_removed = '__'
-let g:gitgutter_sign_removed_first_line = '¯¯'
-let g:gitgutter_sign_modified_removed = '≤≥'
-
-" }}}
-
 " }}}
 
 " Filetype Settings {{{
@@ -732,6 +670,16 @@ if IsGui()
 endif
 " }}}
 
+" Neovim settings {{{
+if has('nvim')
+    set termguicolors
+    set inccommand=split
+    let g:markdown_preview_auto = 1
+    set tabline= guitablabel= guitabtooltip=
+    set laststatus=0
+endif
+" }}}
+
 " Auto Commands {{{
 if has('autocmd')
     augroup RememberCursor
@@ -755,6 +703,13 @@ if has('autocmd')
         autocmd BufEnter * if IsEmptyFile() | set ft=markdown | end
     augroup END
 
+    augroup AutoCreateDir
+          autocmd!
+          autocmd BufWritePre * if !isdirectory(expand('<afile>:p:h')) |
+                      \ call mkdir(expand('<afile>:p:h'), 'p') |
+                      \ endif
+    augroup END
+
     highlight link MixedWhitespace Underlined
     highlight link BadBraces Error
     augroup MixedWhitespace
@@ -768,8 +723,8 @@ if has('autocmd')
     augroup WinHeight
         autocmd!
         autocmd VimResized * if (&buftype != 'help') |
-                      \     let &l:winheight = (&lines * g:height_proportion) / 100 |
-                      \     let &l:winwidth = (&columns * g:width_proportion) / 100 |
+                      \     let &l:winheight = ((&lines * g:height_proportion) / 100) - g:height_buffer |
+                      \     let &l:winwidth = ((&columns * g:width_proportion) / 100) - g:width_buffer |
                       \ endif
     augroup END
 endif

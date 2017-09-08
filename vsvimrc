@@ -91,6 +91,7 @@ inoremap          kj         <esc>
  noremap          zJ         Hzz
  noremap          zk         kzz
  noremap          zK         Lzz
+ noremap          zz         15jzz15k
  noremap          <tab>      %
  noremap          <space>    za
  noremap          ;          :
