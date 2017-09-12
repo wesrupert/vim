@@ -329,7 +329,7 @@ endfunction " }}}
 
 function! TryCreateDir(path) " {{{
     if !filereadable(a:path) && filewritable(a:path) != 2
-        call mkdir(a:path)
+        call mkdir(a:path, 'p')
     endif
 endfunction " }}}
 
@@ -453,6 +453,7 @@ inoremap          <tab>      <c-r>=TabOrComplete()<cr>
  noremap <silent> <leader>rr :call ResizeWindow('r')<cr>
  noremap <silent> <leader>rs :call ResizeWindow('s')<cr>
     "map          <leader>t  {TAKEN: TaskList}
+ noremap <silent> <leader>u  :UndotreeToggle<cr>:UndotreeFocus<cr>
  noremap <silent> <leader>va :execute 'tabnew<bar>args '.g:vimrc_custom<cr>
  noremap <silent> <leader>vb :execute 'tabnew<bar>args '.g:vimrc_leader<cr>
  noremap <silent> <leader>vp :execute 'tabnew<bar>args '.g:vimrc.'.plugins*<bar>all<bar>wincmd J<bar>wincmd t'<cr>
@@ -538,6 +539,7 @@ if has('win32')
     set selectmode=
     noremap <c-a> <c-c>ggVG
     noremap <c-v> "+gP
+    noremap <silent> <c-h> <c-w>h
     call SetRenderOptions(1)
 
     noremap <silent> <c-e> :execute "silent !explorer ".shellescape(expand('%:p:h'))<cr>

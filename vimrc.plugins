@@ -97,6 +97,7 @@ endif
 Plug 'scrooloose/nerdcommenter'
 Plug 'tpope/vim-surround'
 Plug 'w0rp/ale'
+Plug 'mbbill/undotree'
 
 Plug 'junegunn/vim-easy-align'
 
