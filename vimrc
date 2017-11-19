@@ -13,25 +13,6 @@ function! s:IsGui() " {{{
     return has('gui_running') || (has('nvim') && get(g:, 'GuiLoaded', 0) == 1)
 endfunction " }}}
 
-function! s:SetRenderOptions(mode) "{{{
-    if !has('directx')
-        return
-    endif
-
-    if (a:mode == 1) || (a:mode != 0 && &renderoptions == '')
-        set renderoptions=type:directx
-        let system = 'DirectX'
-    else
-        set renderoptions=
-        let system = 'default'
-    endif
-
-    if a:mode > 1
-        redraw
-        echo '[render system set to: '.system.']'
-    endif
-endfunction "}}}
-
 function! s:TryCreateDir(path) " {{{
     if !filereadable(a:path) && filewritable(a:path) != 2
         call mkdir(a:path, 'p')
@@ -51,6 +32,7 @@ endfunction " }}}
 " }}} }}}
 
 let g:vimrc = expand(has('win32') ? '$HOME/vimfiles/vimrc' : '~/.vim/vimrc')
+let g:vimplug = expand(has('win32') ? '$HOME/vimfiles/plug' : '~/.vim/plug')
 call s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before', 'g:vimrc_leader')
 
 " Preferences and Settings {{{
@@ -58,146 +40,138 @@ call s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before', 'g:vimrc_leader')
 " Application settings
 syntax on
 filetype plugin indent on
-set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
-set tabline=%!TermTabLabel()
-set noerrorbells belloff=all visualbell t_vb=
-set mouse=a
-set updatetime=500
+set autoread noautochdir hidden
+set diffopt=filler,context:3
 set encoding=utf-8 spelllang=en_us
-set termguicolors
+set guioptions=gt guicursor+=n-v-c:blinkon0 mouse=a
 set lazyredraw synmaxcol=300
+set modeline modelines=1
+set noerrorbells belloff=all visualbell t_vb=
 set number norelativenumber
 set scrolloff=3 sidescrolloff=8 sidescroll=1
-set splitbelow splitright
-set noautochdir
-set autoread
-set hidden
 set shortmess+=A
+set splitbelow splitright
 set switchbuf=usetab
-set modeline modelines=1
+set tabline=%!TermTabLabel() guitablabel=%{GuiTabLabel()} guitabtooltip=%{GuiTabToolTip()}
+set termguicolors
+set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
+set updatetime=500
 
 " Command bar
-set laststatus=2 showcmd ruler noshowmode
-set wildmenu completeopt=longest,menuone,preview
+set gdefault
 set ignorecase smartcase infercase
 set incsearch hlsearch
-set gdefault
+set laststatus=2 showcmd ruler noshowmode
+set wildmenu completeopt=longest,menuone,preview
+if executable('rg')
+    set grepprg=rg\ --vimgrep
+endif
 
 " Text options
+set autoindent smartindent
 set backspace=indent,eol,start
+set conceallevel=2
+set cursorline
+set expandtab smarttab
 set foldmethod=syntax foldenable foldlevelstart=10
 set formatoptions=cjnr
-set nowrap
-set cursorline
-set conceallevel=2
-set tabstop=4 softtabstop=4 shiftwidth=4
-set expandtab smarttab
-set autoindent smartindent
 set linebreak breakindent
 set list listchars=tab:»\ ,space:·,trail:-
+set nowrap
+set tabstop=4 softtabstop=4 shiftwidth=4
 
 " Custom settings
-let g:idemode = 0
-let g:height_proportion = 75
-let g:width_proportion = 66
 let g:diff_width = 50
 let g:height_buffer = 3
-let g:width_buffer = 3
-let g:opensplit_threshold = 60
+let g:height_proportion = 75
+let g:idemode = 0
 let g:opensplit_on_right = 0
+let g:opensplit_threshold = 60
+let g:width_buffer = 3
+let g:width_proportion = 66
 
 " }}}
 
 " Keybindings and Commands {{{
 
 " Sort via :sort /.*\%18v/
- noremap          "          '
- noremap          '          "
-    "map          (          {TAKEN: Prev code line}
-    "map          )          {TAKEN: Next code line}
- noremap          -          _
-     map          /          <Plug>(incsearch-forward)
- noremap          :          ;
- noremap          ;          :
- noremap <silent> <a-o>      <c-i>
- noremap <silent> <a-p>      :CtrlPMRUFiles<cr>
- noremap <silent> <c-a>      <esc>ggVG
-inoremap <silent> <c-a>      <esc>ggVG
- noremap <silent> <c-b>      :CtrlPBuffer<cr>
-    "map          <c-e>      {TAKEN: Open file explorer}
- noremap <silent> <c-f>      :CtrlPLine<cr>
- noremap <silent> <c-h>      <c-w>h
- noremap <silent> <c-j>      <c-w>j
- noremap <silent> <c-k>      <c-w>k
- noremap <silent> <c-l>      <c-w>l
- noremap          <c-q>      Q
-    imap <silent> <c-space>  <tab>
- noremap <silent> <c-t>      :tabnew<cr>
- noremap <silent> <expr> j   v:count ? (v:count > 5 ? "m'" . v:count : '') . 'j' : 'gj'
- noremap <silent> <expr> k   v:count ? (v:count > 5 ? "m'" . v:count : '') . 'k' : 'gk'
-     map <silent> <f11>      :WToggleFullscreen<cr>
- noremap <silent> <leader>'  :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
- noremap <silent> <leader>-  :e .<cr>
- noremap <silent> <leader>/  :nohlsearch<cr>
- noremap <silent> <leader>[  :setlocal wrap!<cr>:setlocal wrap?<cr>
- noremap <silent> <leader>b  :call ToggleIdeMode()<cr>
- noremap <silent> <leader>cd :execute 'cd '.expand('%:p:h')<cr>
- noremap          <leader>co :colorscheme <c-d>
- noremap <silent> <leader>d  <c-x>
- noremap <silent> <leader>f  <c-a>
- noremap <silent> <leader>i  :set foldmethod=indent<cr>
- noremap <silent> <leader>l  :setlocal list!<cr>:setlocal list?<cr>
- noremap <silent> <leader>o  :call s:SetRenderOptions(2)<cr>
- noremap <silent> <leader>rd :call ResizeWindow('d')<cr>
- noremap <silent> <leader>rl :call ResizeWindow('l')<cr>
- noremap <silent> <leader>rm :call ResizeWindow('m')<cr>
- noremap <silent> <leader>rn :call ResizeWindow('n')<cr>
- noremap <silent> <leader>ro :set winheight=1 winwidth=1<cr>
- noremap <silent> <leader>rr :call ResizeWindow('r')<cr>
- noremap <silent> <leader>rs :call ResizeWindow('s')<cr>
- noremap          <leader>s  :%s/\<<c-r><c-w>\>/
- noremap <silent> <leader>u  :UndotreeToggle<cr>:UndotreeFocus<cr>
- noremap <silent> <leader>va :call OpenSplit(g:vimrc_custom, 80, 0)<cr>
- noremap <silent> <leader>vb :call OpenSplit(g:vimrc_leader, 80, 0)<cr>
- noremap <silent> <leader>vp :call OpenSplit(g:vimrc.'.plugins', 80, 0)<cr>
- noremap <silent> <leader>vc :call OpenSplit(g:vimrc.'.plugins.custom', 80, 0)<cr>
- noremap <silent> <leader>vr :call OpenSplit(g:vimrc, 80, 0)<cr>
- noremap <silent> <leader>vz :execute 'source '.g:vimrc<cr>
- noremap <silent> <leader>w  :execute 'resize '.line('$')<cr>
- noremap          <space>    za
- noremap          <tab>      %
-inoremap          <tab>      <c-r>=TabOrComplete()<cr>
-     map          ?          <Plug>(incsearch-backward)
- noremap          GG         G
- noremap          GT         gT
- noremap <silent> K          :Help <c-r><c-w><cr>
- noremap          Q          :q
- noremap          TQ         :tabclose<cr>
- noremap          Y          y$
- noremap          [[         ^
- noremap <silent> []         /;<cr>:noh<cr>
- noremap <silent> ][         ?;<cr>:noh<cr>
- noremap          ]]         $
- noremap          _          -
-     map          g/         <Plug>(incsearch-stay)
- noremap <silent> gO         m'O<esc>cc<esc><c-o>
- noremap <silent> gV         `[v`]
-xmap              ga         <Plug>(EasyAlign)
- map              ga         <Plug>(EasyAlign)
- noremap <silent> gj         j
- noremap <silent> gk         k
- noremap <silent> go         m'o<esc>cc<esc><c-o>
- noremap          gs         :Scratch<cr>
-inoremap          jk         <esc>
-inoremap          kj         <esc>
- noremap          zJ         Hzz
- noremap          zK         Lzz
- noremap          zj         jzz
- noremap          zk         kzz
- noremap          zz         m'15jzz<c-o>
-    "map          {          {TAKEN: Prev code block}
-    "map          }          {TAKEN: Next code block}
-if (exists('g:mapleader')) | exe 'noremap \ '.g:mapleader | endif
+ noremap          "             '
+ noremap          '             "
+ noremap          -             _
+     map          /             <Plug>(incsearch-forward)
+ noremap          :             ;
+ noremap          ;             :
+inoremap          <c-backspace> <c-w>
+inoremap          <c-,>         <c-d>
+inoremap          <c-.>         <c-t>
+ noremap <silent> <a-o>         <c-i>
+ noremap <silent> <a-p>         :History<cr>
+ noremap <silent> <c-a>         <esc>ggVG
+inoremap <silent> <c-a>         <esc>ggVG
+ noremap <silent> <c-p>         :Files<cr>
+ noremap <silent> <c-b>         :Buffers<cr>
+    "map          <c-e>         {TAKEN: Open file explorer}
+ noremap <silent> <c-f>         :Lines<cr>
+ noremap <silent> <c-h>         <c-w>h
+ noremap <silent> <c-j>         <c-w>j
+ noremap <silent> <c-k>         <c-w>k
+ noremap <silent> <c-l>         <c-w>l
+ noremap          <c-q>         Q
+ noremap          <c-w><c-w>    :tabclose<cr>
+    imap <silent> <c-space>     <tab>
+ noremap <silent> <c-t>         :tabnew<cr>
+ noremap <silent> <expr> j      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'j' : 'gj'
+ noremap <silent> <expr> k      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'k' : 'gk'
+ noremap <silent> <leader>'     :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
+ noremap <silent> <leader>-     :execute 'Lexplore '.expand('%:p:h')<cr>
+ noremap <silent> <leader>/     :nohlsearch<cr>
+ noremap <silent> <leader>[     :setlocal wrap!<cr>:setlocal wrap?<cr>
+ noremap <silent> <leader>c,    :cd ..<cr>:echo ':cd '.getcwd()<cr>
+ noremap <silent> <leader>cd    :execute 'cd '.expand('%:p:h')<cr>:echo ':cd '.getcwd()<cr>
+ noremap          <leader>co    :Colors<cr>
+ noremap <silent> <leader>d     <c-x>
+ noremap <silent> <leader>f     <c-a>
+ noremap <silent> <leader>i     :set foldmethod=indent<cr>
+    "map          <leader>j     {TAKEN: Json tool}
+ noremap <silent> <leader>l     :setlocal list!<cr>:setlocal list?<cr>
+ noremap <silent> <leader>ro    :set winheight=1 winwidth=1<cr>
+ noremap          <leader>s     :%s/\<<c-r><c-w>\>/
+ noremap <silent> <leader>u     :UndotreeToggle<cr>:UndotreeFocus<cr>
+ noremap <silent> <leader>va    :call OpenSplit(g:vimrc_custom, 50, 0)<cr>
+ noremap <silent> <leader>vb    :call OpenSplit(g:vimrc_leader, 50, 0)<cr>
+ noremap <silent> <leader>vp    :call OpenSplit(g:vimrc.'.plugins', 50, 0)<cr>
+ noremap <silent> <leader>vc    :call OpenSplit(g:vimrc.'.plugins.custom', 50, 0)<cr>
+ noremap <silent> <leader>vr    :call OpenSplit(g:vimrc, 50, 0)<cr>
+ noremap <silent> <leader>vz    :execute 'source '.g:vimrc<cr>
+ noremap <silent> <leader>w     :execute 'resize '.line('$')<cr>
+nnoremap          <space>       za
+nnoremap          <tab>         gt
+ noremap <silent> <s-tab>       gT
+vnoremap          <tab>         %
+inoremap          <tab>         <c-r>=TabOrComplete()<cr>
+     map          ?             <Plug>(incsearch-backward)
+ noremap <silent> K             :Help <c-r><c-w><cr>
+ noremap          Q             :q<cr>
+ noremap          Y             y$
+ noremap          [[            ^
+ noremap <silent> []            /;<cr>:noh<cr>
+ noremap <silent> ][            ?;<cr>:noh<cr>
+ noremap          ]]            $
+ noremap          _             -
+     map          g/            <Plug>(incsearch-stay)
+ noremap <silent> gO            m'O<esc>cc<esc><c-o>
+ noremap <silent> gV            `[v`]
+xnoremap          ga            <Plug>(EasyAlign)
+ noremap          ga            <Plug>(EasyAlign)
+ noremap <silent> go            m'o<esc>cc<esc><c-o>
+ noremap          gs            :Scratch<cr>
+ noremap <silent> gw            :silent !explorer <cWORD><cr>
+inoremap          kj            <esc>
+ noremap          ss            s
+ noremap          zj            jzz
+ noremap          zk            kzz
+if has('python') | noremap <leader>j :%!python -m json.tool<cr>| endif
+if (exists('g:mapleader')) |    exe 'noremap \ '.g:mapleader | endif
 
 command! -nargs=0                Light   set background=light
 command! -nargs=0                Dark    set background=dark
@@ -228,7 +202,6 @@ if has('win32')
     noremap <c-a> <c-c>ggVG
     noremap <c-v> "+gP
     noremap <silent> <c-h> <c-w>h
-    call s:SetRenderOptions(1)
 
     noremap <silent> <c-e> :execute "silent !explorer ".shellescape(expand('%:p:h'))<cr>
 else
@@ -281,29 +254,41 @@ if !has('nvim')
 endif
 
 " Modern Plugins
-call plug#begin('~/.vim/plug')
-call s:TrySourceFile(g:vimrc.'.plugins', '', '')
-call s:TrySourceFile(g:vimrc.'.plugins.custom', '', '')
-call plug#end()
+try
+    call plug#begin(g:vimplug)
+    call s:TrySourceFile(g:vimrc.'.plugins', '', '')
+    call s:TrySourceFile(g:vimrc.'.plugins.custom', '', '')
+    call plug#end()
+catch
+    echohl ErrorMsg
+    echom 'Vim plug not found. Please install to '.$VIMRUNTIME.g:slash.'autoload.'
+    echohl None
+endtry
 
-" }}} }}}
+" Post-plugin configuration
+let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes) + [
+      \   {'buns': ['{ ', ' }'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['{']},
+      \   {'buns': ['[ ', ' ]'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['[']},
+      \   {'buns': ['( ', ' )'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['(']},
+      \   {'buns': ['{\s*', '\s*}'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['{']},
+      \   {'buns': ['\[\s*', '\s*\]'], 'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['[']},
+      \   {'buns': ['(\s*', '\s*)'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['(']},
+      \ ]
 
 " Filetype Settings {{{ {{{
 if has('autocmd')
     augroup Filetypes
         autocmd!
+        autocmd FileType c,cpp,cs,h,js,ts onoremap <buffer> ip i{| onoremap <buffer> ap a{|
+                    \ vnoremap <buffer> ip i{| vnoremap <buffer> ap a{|
         autocmd FileType cs setlocal foldmethod=indent
             autocmd BufRead *.md setlocal wrap nonumber norelativenumber
-        autocmd FileType json noremap <buffer> <silent> { 0?[\[{]\s*$<cr>0^:noh<cr>|
-                    \ noremap <buffer> <silent> } $/[\[{]\s*$<cr>0^:noh<cr>
         autocmd BufNew,BufReadPre *.xaml,*.targets setf xml
         autocmd BufNew,BufReadPre *.xml,*.html let b:match_words = '<.\{-}[^/]>:</[^>]*>'
         autocmd FileType xml,html setlocal matchpairs+=<:> nospell
         autocmd FileType gitcommit call setpos('.', [0, 1, 1, 0]) |
                     \ setlocal textwidth=72 formatoptions+=t colorcolumn=50,+0 |
-                    \ setlocal scrolloff=0 sidescrolloff=0 sidescroll=1 |
-                    \ set columns=80 lines=20 |
-                    \ call GrowToContents(50, 80)
+                    \ setlocal scrolloff=0 sidescrolloff=0 sidescroll=1
     augroup END
 
     augroup HelpFiles
@@ -318,48 +303,11 @@ if has('autocmd')
 endif
 " }}} }}}
 
-" GUI Settings {{{ {{{
-if s:IsGui()
-    " GVim window style.
-    set guitablabel=%{GuiTabLabel()}
-    set guitabtooltip=%{GuiTabToolTip()}
-    set guioptions=gt
-    set guicursor+=n-v-c:blinkon0
-    colorscheme github
-
-    " Custom keybindings
-    noremap  <silent> <leader>m :if &go=~#'m'<bar>set go-=m<bar>else<bar>set go+=m<bar>endif<cr>
-
-    if has('autocmd')
-        augroup GuiStartup
-            autocmd!
-            autocmd GUIEnter * set visualbell t_vb= | call ResizeWindow('s')
-        augroup END
-
-        augroup GuiResize
-            autocmd!
-            autocmd BufReadPost * if s:IsGui() && get(g:, 'auto_resized', 0) == 0 |
-                        \     if &filetype == 'markdown' |
-                        \         call ResizeWindow('n') |
-                        \     else |
-                        \         call ResizeWindow('r') |
-                        \     endif |
-                        \ endif
-            autocmd VimResized * let g:auto_resized = 1
-        augroup END
-    endif
-endif
-" }}} }}}
-
 " Auto Commands {{{ {{{
-
 if has('autocmd')
     augroup RememberCursor
         autocmd!
-        " Jump to line cursor was on when last closed, if available
-        autocmd BufReadPost * if line("'\'") > 0 && line("'\'") <= line('$') |
-                       \    exe "normal g`\"" |
-                       \ endif
+        autocmd BufReadPost * if line("'\'") > 0 && line("'\'") <= line('$') | exe "normal g`\"" | endif
     augroup END
 
     augroup Spelling
@@ -373,17 +321,13 @@ if has('autocmd')
         autocmd!
         autocmd BufEnter * silent! lcd %:p:h
         autocmd BufEnter * if s:IsEmptyFile() | set ft=markdown | end
-    augroup END
-
-    augroup AutoCreateDir
-          autocmd!
-          autocmd BufWritePre * if !isdirectory(expand('<afile>:p:h')) |
-                      \ call mkdir(expand('<afile>:p:h'), 'p') |
-                      \ endif
+        autocmd BufWritePre * if !isdirectory(expand('<afile>:p:h')) |
+                    \ call mkdir(expand('<afile>:p:h'), 'p') |
+                    \ endif
     augroup END
 
     highlight link MixedWhitespace Underlined
-    highlight link BadBraces Error
+    highlight link BadBraces NONE
     augroup MixedWhitespace
         autocmd!
         autocmd InsertEnter * highlight! link BadBraces Error
@@ -400,44 +344,32 @@ if has('autocmd')
                       \ endif
     augroup END
 endif
-
 " }}} }}}
 
-" Diff Settings {{{ {{{
-" NOTE: Group must be last, as it clears some augroups!
+" Diff Settings (NOTE: must be last group, as it clears some augroups!) {{{ {{{
+augroup DiffLayout
+    autocmd VimEnter * if &diff | call s:SetDiffLayout() | endif
+augroup END
 
-if &diff
-    set diffopt=filler,context:3
-    let g:ale_enabled = 0
+function! s:SetDiffLayout() " {{{
+    if has('autocmd')
+        augroup RememberCursor | autocmd! | augroup END " Clear cursor jump command
+    endif
+
+    " Set split and start at the top of the new file
+    execute 'vertical resize '.((&columns * g:diff_width) / 100)
+    wincmd l | call setpos('.', [0, 1, 1, 0])
+
+    let g:ale_enabled = 0 " Don't lint a readonly diff
     let g:airline_left_sep=''
     let g:airline_right_sep=''
-    if has('autocmd')
-        augroup DiffLayout
-            autocmd VimEnter * call SetDiffLayout()
-            autocmd GUIEnter * simalt ~x
-        augroup END
-        augroup RememberCursor | autocmd! | augroup END " Clear cursor jump command
-        augroup GuiResize      | autocmd! | augroup END " Clear autoresize command
-    elseif s:IsGui()
-        call ResizeWindow('d')
-    endif
-endif
-
-function! SetDiffLayout() " {{{
-    " Allow for a different diff ui, as many configurations that
-    " look nice in edit mode don't look nice in diff mode.
-    execute 'vertical resize '.((&columns * g:diff_width) / 100)
-
-    call setpos('.', [0, 1, 1, 0]) " Start at the top of the diff
-    set guioptions-=m              " Maximize screen space during diff
-    set guioptions+=lr             " Show both scroll bars
-    noremap <buffer> q :qa<cr>
+    set nohidden bufhidden=delete
+    set guioptions+=lr
+    noremap q :qa<cr>
 endfunction " }}}
-
 " }}} }}}
 
 " Load help docs {{{ {{{
-
 " Credit goes to Tim Pope (https://tpo.pe/) for these functions.
 
 function! s:Helptags() abort "| Invoke :helptags on all non-$VIM doc directories in runtimepath. {{{
@@ -461,11 +393,9 @@ function! s:Split(path) abort "| Split a path into a list. {{{
 endfunction " }}}
 
 call s:Helptags()
-
 " }}} }}}
 
 " Functions {{{ {{{
-
 " Tabs {{{
 function! TermTabLabel() " {{{
     let label = ''
@@ -634,34 +564,6 @@ function! GuiTabToolTip() " {{{
 endfunction " }}}
 " }}}
 
-function! GrowToContents(maxlines, maxcolumns) " {{{
-    if has('nvim')
-        " NVim GUIs don't behave well with manually updating lines/columns
-        return
-    endif
-
-    let totallines = line('$') + 3
-    let linenumbers = 0
-    if (&number == 1 || &relativenumber == 1)
-        let linenumbers = len(line('$')) + 1
-    endif
-    let totalcolumns = s:GetMaxColumn() + linenumbers + 1
-    if (totallines > &lines)
-        if (totallines < a:maxlines)
-            let &lines = totallines
-        else
-            let &lines = a:maxlines
-        endif
-    endif
-    if (totalcolumns > &columns)
-        if (totalcolumns < a:maxcolumns)
-            let &columns = totalcolumns
-        else
-            let &columns = a:maxcolumns
-        endif
-    endif
-endfunction " }}}
-
 function! OpenHelp(topic) " {{{
     try
         call OpenSplit('help '.a:topic, 80, 1)
@@ -679,99 +581,42 @@ endfunction " }}}
 
 function! OpenSplit(input, threshold, iscommand) " {{{
     let splitright = get(g:, 'opensplit_on_right', &splitright)
-    let open = &columns >= a:threshold + g:opensplit_threshold ? 
-                \ (a:iscommand ? 'vert' : 'vsplit') :
-                \ (a:iscommand ? 'tab' : 'tabnew')
-    execute l:open.' '.a:input
+    let open = !s:IsEmptyFile() ? &columns >= a:threshold + g:opensplit_threshold ? 
+                \ (a:iscommand ? 'vert ' : 'vsplit ') :
+                \ (a:iscommand ? 'tab '  : 'tabnew ') :
+                \ (a:iscommand ? ''      : 'edit '  )
+    execute l:open.a:input
 
-    let &l:textwidth = a:threshold
     execute 'wincmd '.(l:splitright ? 'L' : 'H')
     execute 'vertical resize '.a:threshold
-endfunction " }}}
-
-function! ResizeWindow(class) " {{{
-    if has('nvim')
-        " NVim GUIs don't behave well with manually updating lines/columns
-        return
-    endif
-
-    if     a:class ==? 's' " Small
-        set lines=20 columns=60
-    elseif a:class ==? 'm' " Medium
-        set lines=40 columns=120
-    elseif a:class ==? 'l' " Large
-        set lines=60 columns=180
-    elseif a:class ==? 'n' " Narrow
-        set lines=60 columns=60
-    elseif a:class ==? 'd' " Diff
-        set lines=50 columns=200
-    elseif a:class ==? 'r' " Resized
-        set lines=4 columns=12
-        call GrowToContents(60, 180)
-    else
-        echoerr 'Unknown size class: '.a:class
-    endif
-    if has('win32') && !has('nvim')
-        silent call wimproved#set_monitor_center()
+    noremap <buffer> <silent> q <c-w>c
+    if l:open =~# 'v\(ert\|split\)'
+        let &l:textwidth = a:threshold
+        setlocal nonumber norelativenumber
+        nmap <buffer> <silent> <esc> q
     endif
 endfunction " }}}
 
 function! SynStack() "{{{
-  if !exists('*synstack')
-    return
-  endif
-  echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+    if exists('*synstack')
+        echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+    endif
 endfunction "}}}
 
-function! ToggleIdeMode() " {{{
-    if (g:idemode == 0)
-        set guioptions+=emr
-        let g:idemode = 1
-    else
-        set guioptions-=emr
-        let g:idemode = 0
-    endif
-endfunction " }}}
-
 function! s:IsEmptyFile() " {{{
-    if @% != ''
-        " Filename exists for current buffer
+    if @% != ''                            " Not-empty filename
         return 0
-    elseif filereadable(@%) != 0
-        " File exists on disk
+    elseif filereadable(@%) != 0           " File exists on disk
         return 0
-    elseif line('$') != 1 || col('$') != 1
-        " File has contents
+    elseif line('$') != 1 || col('$') != 1 " Buffer has contents
         return 0
     endif
     return 1
 endfunction " }}}
 
-function! s:GetMaxColumn() " {{{
-    let maxlength = 0
-    let linenr = 1
-    let curline = line('.')
-    let curcol = col('.')
-    while (linenr <= line('$'))
-        exe ':'.linenr
-        let linelength = col('$')
-        if (linelength > maxlength)
-            let maxlength = linelength
-        endif
-        let linenr = linenr + 1
-    endwhile
-    exe ':norm '.curline.'G'.curcol.'|'
-    return maxlength
-endfunction " }}}
-
 function! TabOrComplete() "{{{
-    if col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w'
-        return "\<C-N>"
-    else
-        return "\<Tab>"
-    endif
+    return col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w' ? "\<c-n>" : "\<tab>"
 endfunction "}}}
-
 " }}} }}}
 
 call s:TrySourceFile(g:vimrc.'.custom', g:vimrc.'.after', 'g:vimrc_custom')

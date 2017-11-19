@@ -1,137 +1,5 @@
-Plug 'haya14busa/incsearch.vim'
-Plug 'tpope/vim-repeat'
-Plug 'tpope/vim-fugitive'
-
-" Airline configuration {{{
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
-let g:airline_left_sep=''
-let g:airline_right_sep=''
-let g:airline_inactive_collapse=1 " Show only file name for inactive buffers
-let g:airline#extensions#branch#format = 2 " Truncate branch name from long/section/name/branch to l/s/n/branch
-let g:airline#extensions#whitespace#trailing_format = 't[%s]'
-let g:airline#extensions#whitespace#mixed_indent_format = 'm[%s]'
-let g:airline#extensions#whitespace#long_format = 'l[%s]'
-let g:airline#extensions#whitespace#mixed_indent_file_format = 'mf[%s]'
-" }}}
-
-if !has('nvim') && has('win32')
-    Plug 'kkoenig/wimproved.vim'
-    Plug 'tpope/vim-dispatch'
-endif
-
-
-" GitGutter configuration {{{
-Plug 'airblade/vim-gitgutter'
-let g:gitgutter_sign_added = '>>'
-let g:gitgutter_sign_modified = '<>'
-let g:gitgutter_sign_removed = '__'
-let g:gitgutter_sign_removed_first_line = '¯¯'
-let g:gitgutter_sign_modified_removed = '≤≥'
-" }}}
-
-" Ctrlp configuration {{{
-Plug 'ctrlpvim/ctrlp.vim'
-let g:ctrlp_match_window = 'top,order:ttb,max:5'
-let g:ctrlp_clear_cache_on_exit = 0
-" Disable ctrlp checking for source control, it
-" makes it unusable on large repositories
-let g:ctrlp_working_path_mode = 'a'
-" }}}
-
-Plug 'conormcd/matchindent.vim'
-
-" HoverHl configuration {{{
-Plug 'wesrupert/vim-hoverhl'
-let g:hoverhl#enabled_filetypes = [ 'cs', 'cpp', 'c', 'ps1', 'typescript', 'javascript', 'json', 'sh', 'dosbatch', 'vim' ]
-" }}}
-
-" EditorConfig configuration {{{
-" TODO: Figure out why this isn't working on nvim
-if !has('nvim')
-    Plug 'editorconfig/editorconfig-vim'
-    " Don't load over ssh or net share
-    let g:EditorConfig_exclude_patterns = ['scp://.*', '//.*']
-endif
-" }}}
-
-Plug 'elzr/vim-json'
-Plug 'leafgarland/typescript-vim'
-Plug 'octol/vim-cpp-enhanced-highlight'
-Plug 'oranget/vim-csharp'
-Plug 'plasticboy/vim-markdown'
-let g:markdown_fenced_languages = ['cs', 'cpp', 'c', 'typescript', 'javascript', 'sh', 'dosbatch', 'vim']
-
-Plug 'pprovost/vim-ps1'
-if has('python')
-    " Omnisharp configuration {{{
-    Plug 'omnisharp/omnisharp-vim', { 'do': has('win32') ? 'cd server && msbuild' : 'cd server && xbuild' }
-    let g:OmniSharp_selector_ui = 'ctrlp'
-    let g:omnicomplete_fetch_documentation = 1
-    let g:syntastic_cs_checkers = ['syntax', 'semantic', 'issues']
-
-    augroup Omnisharp
-        autocmd!
-
-        "Set autocomplete function to OmniSharp (if not using YouCompleteMe completion plugin)
-        autocmd FileType cs setlocal omnifunc=OmniSharp#Complete |
-                    \ let b:SuperTabDefaultCompletionType = '<c-x><c-o>'
-
-        "show type information automatically when the cursor stops moving
-        autocmd CursorHold *.cs call OmniSharp#TypeLookupWithoutDocumentation()
-
-        "The following commands are contextual, based on the current cursor position.
-
-        autocmd FileType cs noremap <buffer> gd :OmniSharpGotoDefinition<cr>
-        autocmd FileType cs noremap <buffer> gc :OmniSharpFindUsages<cr>
-
-        " cursor can be anywhere on the line containing an issue
-        autocmd FileType cs noremap <buffer> <c-.>  :OmniSharpFixIssue<cr>
-        autocmd FileType cs noremap <buffer> <leader>fx :OmniSharpFixUsings<cr>
-        autocmd FileType cs noremap <buffer> <leader>gd :OmniSharpDocumentation<cr>
-
-        "navigate up by method/property/field
-        autocmd FileType cs noremap <buffer> { :OmniSharpNavigateUp<cr>
-        autocmd FileType cs noremap <buffer> } :OmniSharpNavigateDown<cr>
-    augroup END
-    " }}}
-endif
-
-Plug 'scrooloose/nerdcommenter'
-Plug 'tpope/vim-surround'
-Plug 'w0rp/ale'
-Plug 'mbbill/undotree'
-
-Plug 'junegunn/vim-easy-align'
-
-if has('nvim')
-    Plug 'equalsraf/neovim-gui-shim'
-
-    Plug 'rhysd/nyaovim-markdown-preview'
-    Plug 'rhysd/nyaovim-tree-view'
-
-    if has('python3')
-        Plug 'konfekt/fastfold'
-        Plug 'mhartington/deoplete-typescript'
-        Plug 'robzz/deoplete-omnisharp'
-        Plug 'shougo/context_filetype.vim'
-        Plug 'shougo/neco-vim'
-        Plug 'shougo/neoinclude.vim'
-        Plug 'shougo/neopairs.vim'
-        Plug 'shougo/neosnippet.vim'
-        Plug 'zchee/deoplete-clang'
-        Plug 'shougo/neosnippet-snippets'
-        Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-        let g:deoplete#enable_at_startup = 1
-    else
-        Plug 'ervandew/supertab'
-    endif
-else
-    Plug 'ervandew/supertab'
-endif
-
 " Colorschemes {{{
-Plug 'beigebrucewayne/skull-vim'
+
 Plug 'cesardeazevedo/Fx-ColorScheme'
 Plug 'chriskempson/vim-tomorrow-theme'
 Plug 'endel/vim-github-colorscheme'
@@ -142,14 +10,113 @@ Plug 'lifepillar/vim-wwdc16-theme'
 Plug 'lifepillar/vim-wwdc17-theme'
 Plug 'mkarmona/materialbox'
 Plug 'nightsense/carbonized'
+Plug 'nightsense/office'
 Plug 'nightsense/seabird'
+Plug 'nightsense/simplifysimplify'
 Plug 'nlknguyen/papercolor-theme'
 Plug 'rakr/vim-one'
-Plug 'reedes/vim-colors-pencil'
 Plug 'tyrannicaltoucan/vim-deep-space'
 Plug 'zcodes/vim-colors-basic'
 
+Plug 'Badacadabra/vim-archery'
+Plug 'nightsense/forgotten'
+
+Plug 'reedes/vim-colors-pencil'
 let g:pencil_gutter_color = 1
+
 " }}}
 
-" vim: foldmethod=marker foldlevel=0
+" Plugins {{{
+
+" Architecture plugins {{{
+
+Plug 'conormcd/matchindent.vim'
+Plug 'haya14busa/incsearch.vim'
+Plug 'tpope/vim-repeat'
+
+Plug 'editorconfig/editorconfig-vim'
+let g:EditorConfig_exclude_patterns = ['scp://.*', '//.*'] " Don't load over ssh or net share
+
+if has('nvim')
+    Plug 'equalsraf/neovim-gui-shim'
+else
+    Plug 'tpope/vim-dispatch'
+endif
+
+" }}}
+
+" UI plugins {{{
+
+Plug 'airblade/vim-gitgutter'
+Plug 'mbbill/undotree'
+Plug 'w0rp/ale'
+
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+let g:airline_left_sep=''
+let g:airline_right_sep=''
+let g:airline_inactive_collapse=1 " Show only file name for inactive buffers
+let g:airline#extensions#branch#format = 2 " long/section/name/branch -> l/s/n/branch
+let g:airline#extensions#whitespace#trailing_format = 't[%s]'
+let g:airline#extensions#whitespace#mixed_indent_format = 'm[%s]'
+let g:airline#extensions#whitespace#long_format = 'l[%s]'
+let g:airline#extensions#whitespace#mixed_indent_file_format = 'mf[%s]'
+
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
+let g:fzf_layout = { 'up': '~30%' }
+
+Plug 'wesrupert/vim-hoverhl'
+let g:hoverhl#enabled_filetypes = [ 'cs', 'cpp', 'c', 'ps1', 'typescript', 'javascript', 'json', 'sh', 'dosbatch', 'vim' ]
+
+if has('python3')
+    if has('nvim')
+        Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+    else
+        Plug 'Shougo/deoplete.nvim'
+        Plug 'roxma/nvim-yarp'
+        Plug 'roxma/vim-hug-neovim-rpc'
+    endif
+    let g:deoplete#enable_at_startup = 1
+
+    Plug 'autozimu/LanguageClient-neovim'
+    Plug 'mhartington/deoplete-typescript'
+    Plug 'robzz/deoplete-omnisharp'
+    Plug 'shougo/context_filetype.vim'
+    Plug 'shougo/echodoc.vim'
+    Plug 'shougo/neco-vim'
+    Plug 'shougo/neoinclude.vim'
+    Plug 'shougo/neopairs.vim'
+    Plug 'shougo/neosnippet-snippets'
+    Plug 'shougo/neosnippet.vim'
+else
+    Plug 'ervandew/supertab'
+endif
+
+" }}}
+
+" Command plugins {{{
+
+Plug 'junegunn/vim-easy-align'
+Plug 'machakann/vim-sandwich'
+Plug 'scrooloose/nerdcommenter'
+Plug 'tpope/vim-abolish'
+
+" }}}
+
+" Filetype plugins {{{
+
+Plug 'elzr/vim-json'
+Plug 'leafgarland/typescript-vim'
+Plug 'octol/vim-cpp-enhanced-highlight'
+Plug 'oranget/vim-csharp'
+Plug 'pprovost/vim-ps1'
+
+Plug 'plasticboy/vim-markdown'
+let g:markdown_fenced_languages = ['cs', 'cpp', 'c', 'typescript', 'javascript', 'sh', 'dosbatch', 'vim']
+
+" }}}
+
+" }}}
+
+" vim: foldmethod=marker foldlevel=1
