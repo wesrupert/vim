@@ -2,25 +2,13 @@
 
 Plug 'cesardeazevedo/Fx-ColorScheme'
 Plug 'chriskempson/vim-tomorrow-theme'
-Plug 'endel/vim-github-colorscheme'
 Plug 'ericbn/vim-solarized'
-Plug 'hzchirs/vim-material'
 Plug 'jonathanfilip/vim-lucius'
-Plug 'lifepillar/vim-wwdc16-theme'
-Plug 'lifepillar/vim-wwdc17-theme'
-Plug 'mkarmona/materialbox'
-Plug 'nightsense/carbonized'
-Plug 'nightsense/office'
-Plug 'nightsense/seabird'
-Plug 'nightsense/simplifysimplify'
+Plug 'nightsense/forgotten'
 Plug 'nlknguyen/papercolor-theme'
 Plug 'rakr/vim-one'
 Plug 'tyrannicaltoucan/vim-deep-space'
 Plug 'zcodes/vim-colors-basic'
-
-Plug 'Badacadabra/vim-archery'
-Plug 'nightsense/forgotten'
-
 Plug 'reedes/vim-colors-pencil'
 let g:pencil_gutter_color = 1
 
@@ -34,9 +22,6 @@ Plug 'conormcd/matchindent.vim'
 Plug 'haya14busa/incsearch.vim'
 Plug 'tpope/vim-repeat'
 
-Plug 'editorconfig/editorconfig-vim'
-let g:EditorConfig_exclude_patterns = ['scp://.*', '//.*'] " Don't load over ssh or net share
-
 if has('nvim')
     Plug 'equalsraf/neovim-gui-shim'
 else
@@ -47,20 +32,31 @@ endif
 
 " UI plugins {{{
 
+Plug 'tpope/vim-fugitive'
 Plug 'airblade/vim-gitgutter'
 Plug 'mbbill/undotree'
 Plug 'w0rp/ale'
 
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-let g:airline_left_sep=''
-let g:airline_right_sep=''
+let g:airline_left_sep=''
+let g:airline_right_sep=''
 let g:airline_inactive_collapse=1 " Show only file name for inactive buffers
+
 let g:airline#extensions#branch#format = 2 " long/section/name/branch -> l/s/n/branch
-let g:airline#extensions#whitespace#trailing_format = 't[%s]'
-let g:airline#extensions#whitespace#mixed_indent_format = 'm[%s]'
-let g:airline#extensions#whitespace#long_format = 'l[%s]'
+let g:airline#extensions#hunks#enabled = 1
+
+let g:airline#extensions#whitespace#enabled = 0
+let g:airline#extensions#whitespace#trailing_format = 'tr[%s]'
+let g:airline#extensions#whitespace#mixed_indent_format = 'mi[%s]'
+let g:airline#extensions#whitespace#long_format = 'lo[%s]'
 let g:airline#extensions#whitespace#mixed_indent_file_format = 'mf[%s]'
+
+let g:airline_section_c = '%F'
+let g:airline_section_y = '%{&fileformat}'
+let g:airline_section_z = '%p%%'
+let g:airline_section_error = ''
+let g:airline_section_warning = ''
 
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
@@ -68,6 +64,9 @@ let g:fzf_layout = { 'up': '~30%' }
 
 Plug 'wesrupert/vim-hoverhl'
 let g:hoverhl#enabled_filetypes = [ 'cs', 'cpp', 'c', 'ps1', 'typescript', 'javascript', 'json', 'sh', 'dosbatch', 'vim' ]
+
+Plug 'yggdroot/indentline'
+let g:indentline_char = '│'
 
 if has('python3')
     if has('nvim')

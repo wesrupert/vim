@@ -1,8 +1,9 @@
 " Script functions {{{ {{{
 
-function! s:GenerateCAbbrev(orig, new) " {{{
+function! s:GenerateCAbbrev(orig, complStart, new) " {{{
     let l = len(a:orig)
-    while l > 0
+    if a:complStart > l | let a:complStart = l | endif
+    while l >= a:complStart
         let s = strpart(a:orig, 0, l)
         execute "cabbrev ".s." <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? '".a:new."' : '".s."')<CR>"
         let l = l - 1
@@ -48,7 +49,7 @@ set lazyredraw synmaxcol=300
 set modeline modelines=1
 set noerrorbells belloff=all visualbell t_vb=
 set number norelativenumber
-set scrolloff=3 sidescrolloff=8 sidescroll=1
+set scrolloff=3 sidescrolloff=1 sidescroll=1
 set shortmess+=A
 set splitbelow splitright
 set switchbuf=usetab
@@ -64,7 +65,7 @@ set incsearch hlsearch
 set laststatus=2 showcmd ruler noshowmode
 set wildmenu completeopt=longest,menuone,preview
 if executable('rg')
-    set grepprg=rg\ --vimgrep
+    set grepprg=rg\ -i\ --vimgrep
 endif
 
 " Text options
@@ -76,7 +77,7 @@ set expandtab smarttab
 set foldmethod=syntax foldenable foldlevelstart=10
 set formatoptions=cjnr
 set linebreak breakindent
-set list listchars=tab:»\ ,space:·,trail:-
+set list listchars=tab:»\ ,space:·,trail:-,precedes:…,extends:…
 set nowrap
 set tabstop=4 softtabstop=4 shiftwidth=4
 
@@ -89,6 +90,101 @@ let g:opensplit_on_right = 0
 let g:opensplit_threshold = 60
 let g:width_buffer = 3
 let g:width_proportion = 66
+
+" }}}
+
+" Statusline {{{
+
+let g:modemap={
+            \ 'n'  : 'Norm',
+            \ 'no' : 'OpPd',
+            \ 'v'  : ' Vis',
+            \ 'V'  : 'VLin',
+            \ '^V' : 'VBlk',
+            \ 's'  : 'Slct',
+            \ 'S'  : 'SlLn',
+            \ '^S' : 'SBlk',
+            \ 'i'  : ' Ins',
+            \ 'R'  : 'Rplc',
+            \ 'Rv' : 'VRpl',
+            \ 'c'  : ' Cmd',
+            \ 'cv' : 'VmEx',
+            \ 'ce' : ' Ex ',
+            \ 'r'  : 'Prmt',
+            \ 'rm' : 'More',
+            \ 'r?' : 'Cnfm',
+            \ '!'  : 'Shll',
+            \ 't'  : 'Term'}
+function! s:StatusLine()
+    set statusline=%#StatusLine#                                       " Sub color
+   " set statusline+=\ %n                                              " Buffer number
+    set statusline+=\ %{SL_ModeCurrent()}\                             " Abbreviated current mode
+    set statusline+=%#StatusLineNC#                                    " Main color
+   " set statusline+=\ %{SL_FilePath(20)}                              " File full path with truncation
+    set statusline+=%#PMenu#\ %t\ %#StatusLineNC#                      " Filename
+    set statusline+=%(\ \[%{SL_FileType()}\]%)                         " Filetype if it doesn't match extension
+    set statusline+=%(\ [%R%M]%)%w%q                                   " Buffer flags
+    set statusline+=%=                                                 " Move to right side
+    set statusline+=%{&fileencoding?&fileencoding:&encoding}           " Buffer encoding
+    set statusline+=\[%{&fileformat}\]                                 " Buffer format
+    set statusline+=\ %#PMenu#%(\ %{SL_GitBranch()}\ %)%#StatusLineNC# " Git branch
+    set statusline+=%#StatusLine#                                      " Sub color
+    set statusline+=\ %p%%\ [%l:%c]\                                   " Cursor location
+endfunction
+call s:StatusLine()
+
+function! SL_ModeCurrent() abort
+    let l:currentmode = mode()
+    " use get() -> fails safely, since ^V doesn't seem to register
+    " 3rd arg is used when return of mode() == 0, which is case with ^V
+    " thus, ^V fails -> returns 0 -> replaced with 'V Block'
+    let l:modelist = toupper(get(g:modemap, l:currentmode, 'VBlk'))
+    let l:current_status_mode = l:modelist
+    return l:current_status_mode
+endfunction
+
+function! SL_FilePath(len)
+    let dirs = split(expand('%:p:h'), g:slash)
+    let path = ''
+    for dir in dirs
+        if (strpart(dir, 1, 1) == ':')
+            let path .= dir.g:slash
+        else
+            let path .= strpart(dir, 0, 1).g:slash
+        endif
+    endfor
+    return strpart(path, 0, len(path)-1)
+endfunction
+
+function! SL_FileType()
+    return expand('%:e') == &filetype ? '' : &filetype
+endfunction
+
+function! SL_GitBranch()
+    return matchstr(fugitive#statusline(), '(\zs.*\ze)')
+endfunction
+
+function! SL_FileSize() abort
+    let l:bytes = getfsize(expand('%p'))
+    if (l:bytes >= 1024)
+        let l:kbytes = l:bytes / 1025
+    endif
+    if (exists('kbytes') && l:kbytes >= 1000)
+        let l:mbytes = l:kbytes / 1000
+    endif
+ 
+    if l:bytes <= 0
+        return '0'
+    endif
+  
+    if (exists('mbytes'))
+        return l:mbytes . 'MB '
+    elseif (exists('kbytes'))
+        return l:kbytes . 'KB '
+    else
+        return l:bytes . 'B '
+    endif
+endfunction
 
 " }}}
 
@@ -126,6 +222,7 @@ inoremap <silent> <c-a>         <esc>ggVG
  noremap <silent> <leader>-     :execute 'Lexplore '.expand('%:p:h')<cr>
  noremap <silent> <leader>/     :nohlsearch<cr>
  noremap <silent> <leader>[     :setlocal wrap!<cr>:setlocal wrap?<cr>
+ noremap <silent> <leader>]     :setlocal number!<cr>:setlocal number?<cr>
  noremap <silent> <leader>c,    :cd ..<cr>:echo ':cd '.getcwd()<cr>
  noremap <silent> <leader>cd    :execute 'cd '.expand('%:p:h')<cr>:echo ':cd '.getcwd()<cr>
  noremap          <leader>co    :Colors<cr>
@@ -171,14 +268,21 @@ inoremap          kj            <esc>
  noremap          zj            jzz
  noremap          zk            kzz
 if has('python') | noremap <leader>j :%!python -m json.tool<cr>| endif
-if (exists('g:mapleader')) |    exe 'noremap \ '.g:mapleader | endif
+if (exists('g:mapleader')) | execute 'noremap \ '.g:mapleader | endif
 
-command! -nargs=0                Light   set background=light
-command! -nargs=0                Dark    set background=dark
-command! -nargs=0                Scratch call OpenScratch()
-command! -nargs=1 -complete=help Help    call OpenHelp(<f-args>)
+command! -nargs=0 Light   set background=light
+command! -nargs=0 Dark    set background=dark
+command! -nargs=0 Scratch call OpenScratch()
+command! -nargs=1 -complete=help Help call OpenHelp(<f-args>)
+command! -nargs=1 -complete=help THelp tab help <args>
+command! -nargs=+ -complete=file_in_path Grep  execute 'silent grep! <args>' | copen
+command! -nargs=+ -complete=file_in_path LGrep execute 'silent lgrep! <args>' | lopen
 
-call s:GenerateCAbbrev('help', 'Help')
+call s:GenerateCAbbrev('help', 1, 'Help')
+call s:GenerateCAbbrev('thelp', 2, 'THelp')
+call s:GenerateCAbbrev('grep', 2, 'Grep')
+call s:GenerateCAbbrev('rg', 2, 'Grep')
+call s:GenerateCAbbrev('lgrep', 2, 'LGrep')
 
 " }}}
 
@@ -573,7 +677,7 @@ function! OpenHelp(topic) " {{{
 endfunction " }}}
 
 function! OpenScratch() " {{{
-    call OpenSplit(g:temp.g:slash.'Scratch.md', 50, 0)
+    call OpenSplit(expand('$HOME'.g:slash.'Scratch.md'), 50, 0)
     noremap <buffer> <silent> q :update<cr><bar><c-w>c
     autocmd CursorHold <buffer> silent update
     normal ggGG
@@ -598,9 +702,11 @@ function! OpenSplit(input, threshold, iscommand) " {{{
 endfunction " }}}
 
 function! SynStack() "{{{
+    let list = ''
     if exists('*synstack')
-        echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+        let list = join(map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")'), ',')
     endif
+    return '['.l:list.']'
 endfunction "}}}
 
 function! s:IsEmptyFile() " {{{
