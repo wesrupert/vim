@@ -10,6 +10,17 @@ function! s:GenerateCAbbrev(orig, complStart, new) " {{{
     endwhile
 endfunction " }}}
 
+function! s:IsEmptyFile() " {{{
+    if @% != ''                            " Not-empty filename
+        return 0
+    elseif filereadable(@%) != 0           " File exists on disk
+        return 0
+    elseif line('$') != 1 || col('$') != 1 " Buffer has contents
+        return 0
+    endif
+    return 1
+endfunction " }}}
+
 function! s:IsGui() " {{{
     return has('gui_running') || (has('nvim') && get(g:, 'GuiLoaded', 0) == 1)
 endfunction " }}}
@@ -41,27 +52,19 @@ call s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before', 'g:vimrc_leader')
 " Application settings
 syntax on
 filetype plugin indent on
-set autoread noautochdir hidden
-set diffopt=filler,context:3
-set encoding=utf-8 spelllang=en_us
-set guioptions=gt guicursor+=n-v-c:blinkon0 mouse=a
-set lazyredraw synmaxcol=300
-set modeline modelines=1
+set diffopt+=context:3
+set hidden switchbuf=usetab splitbelow splitright
 set noerrorbells belloff=all visualbell t_vb=
-set number norelativenumber
 set scrolloff=3 sidescrolloff=1 sidescroll=1
 set shortmess+=A
-set splitbelow splitright
-set switchbuf=usetab
-set tabline=%!TermTabLabel() guitablabel=%{GuiTabLabel()} guitabtooltip=%{GuiTabToolTip()}
-set termguicolors
+set tabline=%!TermTabLabel() guitablabel=%{MyTabLabel(v:lnum)} guitabtooltip=%{GuiTabToolTip()}
+set termguicolors lazyredraw guioptions=gt guicursor+=n-v-c:blinkon0 mouse=a
 set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
 set updatetime=500
 
 " Command bar
-set gdefault
 set ignorecase smartcase infercase
-set incsearch hlsearch
+set incsearch hlsearch gdefault
 set laststatus=2 showcmd ruler noshowmode
 set wildmenu completeopt=longest,menuone,preview
 if executable('rg')
@@ -69,27 +72,19 @@ if executable('rg')
 endif
 
 " Text options
-set autoindent smartindent
+set autoindent smartindent linebreak breakindent formatoptions=cjnr
 set backspace=indent,eol,start
-set conceallevel=2
-set cursorline
-set expandtab smarttab
+set expandtab smarttab tabstop=4 softtabstop=4 shiftwidth=4
 set foldmethod=syntax foldenable foldlevelstart=10
-set formatoptions=cjnr
-set linebreak breakindent
 set list listchars=tab:»\ ,space:·,trail:-,precedes:…,extends:…
-set nowrap
-set tabstop=4 softtabstop=4 shiftwidth=4
+set nowrap conceallevel=2
+set number cursorline
 
 " Custom settings
 let g:diff_width = 50
-let g:height_buffer = 3
-let g:height_proportion = 75
 let g:idemode = 0
 let g:opensplit_on_right = 0
 let g:opensplit_threshold = 60
-let g:width_buffer = 3
-let g:width_proportion = 66
 
 " }}}
 
@@ -149,19 +144,16 @@ inoremap <silent> <c-a>         <esc>ggVG
  noremap <silent> <leader>vz    :execute 'source '.g:vimrc<cr>
  noremap <silent> <leader>w     :execute 'resize '.line('$')<cr>
 nnoremap          <space>       za
-nnoremap          <tab>         gt
+nnoremap <silent> <tab>         gt
  noremap <silent> <s-tab>       gT
-vnoremap          <tab>         %
 inoremap          <tab>         <c-r>=TabOrComplete()<cr>
      map          ?             <Plug>(incsearch-backward)
  noremap <silent> K             :Help <c-r><c-w><cr>
- noremap          Q             :q<cr>
  noremap          Y             y$
  noremap          [[            ^
- noremap <silent> []            /;<cr>:noh<cr>
- noremap <silent> ][            ?;<cr>:noh<cr>
  noremap          ]]            $
- noremap          _             -
+ noremap          _             +
+ noremap          +             -
      map          g/            <Plug>(incsearch-stay)
  noremap <silent> gO            m'O<esc>cc<esc><c-o>
  noremap <silent> gV            `[v`]
@@ -171,9 +163,8 @@ xnoremap          ga            <Plug>(EasyAlign)
  noremap          gs            :Scratch<cr>
  noremap <silent> gw            :silent !explorer <cWORD><cr>
 inoremap          kj            <esc>
+ noremap          s             <nop>
  noremap          ss            s
- noremap          zj            jzz
- noremap          zk            kzz
 if has('python') | noremap <leader>j :%!python -m json.tool<cr>| endif
 if (exists('g:mapleader')) | execute 'noremap \ '.g:mapleader | endif
 
@@ -234,33 +225,23 @@ endfunction
 call s:StatusLine()
 
 function! SL_ModeCurrent() abort
-    let l:currentmode = mode()
-    " use get() -> fails safely, since ^V doesn't seem to register
-    " 3rd arg is used when return of mode() == 0, which is case with ^V
-    " thus, ^V fails -> returns 0 -> replaced with 'V Block'
-    let l:modelist = toupper(get(g:modemap, l:currentmode, 'VBlk'))
-    let l:current_status_mode = l:modelist
-    return l:current_status_mode
+    return toupper(get(g:modemap, mode(), 'VBlk'))
 endfunction
 
-function! SL_FilePath(len)
+function! SL_FilePath(len) abort
     let dirs = split(expand('%:p:h'), g:slash)
     let path = ''
     for dir in dirs
-        if (strpart(dir, 1, 1) == ':')
-            let path .= dir.g:slash
-        else
-            let path .= strpart(dir, 0, 1).g:slash
-        endif
+        let path .= (strpart(dir, 1, 1) == ':') ? dir.g:slash : strpart(dir, 0, 1).g:slash
     endfor
     return strpart(path, 0, len(path)-1)
 endfunction
 
-function! SL_FileType()
+function! SL_FileType() abort
     return expand('%:e') == &filetype ? '' : &filetype
 endfunction
 
-function! SL_GitBranch()
+function! SL_GitBranch() abort
     return matchstr(fugitive#statusline(), '(\zs.*\ze)')
 endfunction
 
@@ -272,18 +253,11 @@ function! SL_FileSize() abort
     if (exists('kbytes') && l:kbytes >= 1000)
         let l:mbytes = l:kbytes / 1000
     endif
- 
+
     if l:bytes <= 0
-        return '0'
+        return '0B '
     endif
-  
-    if (exists('mbytes'))
-        return l:mbytes . 'MB '
-    elseif (exists('kbytes'))
-        return l:kbytes . 'KB '
-    else
-        return l:bytes . 'B '
-    endif
+    return exists('mbytes') ? l:mbytes.'MB ' : exists('kbytes') ? l:kbytes.'KB ' : l:bytes.'B '
 endfunction
 
 " }}} }}}
@@ -331,12 +305,10 @@ endif
 set backup writebackup
 let s:backupdir = expand(g:temp.g:slash.'backups')
 let &directory = s:backupdir.g:slash.g:slash
-if has('autocmd')
-    augroup Backups
-        autocmd BufRead * let &l:backupdir = s:backupdir.g:slash.expand("%:p:h:t") |
-                    \ call s:TryCreateDir(&l:backupdir)
-    augroup END
-endif
+augroup Backups
+    autocmd BufRead * let &l:backupdir = s:backupdir.g:slash.expand("%:p:h:t") |
+                \ call s:TryCreateDir(&l:backupdir)
+augroup END
 call s:TryCreateDir(s:backupdir)
 if has('persistent_undo')
     call s:TryCreateDir(g:temp.g:slash.'undo')
@@ -361,113 +333,78 @@ if !has('nvim')
     packadd! matchit
 endif
 
-" Modern Plugins
-try
-    call plug#begin(g:vimplug)
+call plug#begin(g:vimplug)
 
-    " Colorschemes
-    Plug 'cesardeazevedo/Fx-ColorScheme'
-    Plug 'chriskempson/vim-tomorrow-theme'
-    Plug 'iCyMind/NeoSolarized'
-    Plug 'jonathanfilip/vim-lucius'
-    Plug 'nightsense/forgotten'
-    Plug 'nightsense/vimspectr'
-    Plug 'nlknguyen/papercolor-theme'
-    Plug 'rakr/vim-one'
-    Plug 'reedes/vim-colors-pencil'
-    Plug 'tyrannicaltoucan/vim-deep-space'
-    Plug 'zcodes/vim-colors-basic'
+" Colorschemes
+Plug 'cesardeazevedo/Fx-ColorScheme'
+Plug 'chriskempson/vim-tomorrow-theme'
+Plug 'iCyMind/NeoSolarized'
+Plug 'jonathanfilip/vim-lucius'
+Plug 'nightsense/forgotten'
+Plug 'nightsense/vimspectr'
+Plug 'nlknguyen/papercolor-theme'
+Plug 'rakr/vim-one'
+Plug 'reedes/vim-colors-pencil'
+Plug 'tyrannicaltoucan/vim-deep-space'
+Plug 'zcodes/vim-colors-basic'
 
+" UI plugins
+Plug 'airblade/vim-gitgutter'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
+Plug 'kshenoy/vim-signature'
+Plug 'mbbill/undotree'
+Plug 'scrooloose/nerdtree'
+Plug 'tpope/vim-fugitive'
+Plug 'w0rp/ale'
+Plug 'wesrupert/vim-hoverhl'
 
-    " UI plugins
-    Plug 'airblade/vim-gitgutter'
-    Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-    Plug 'junegunn/fzf.vim'
-    Plug 'kshenoy/vim-signature'
-    Plug 'mbbill/undotree'
-    Plug 'scrooloose/nerdtree'
-    Plug 'tpope/vim-fugitive'
-    Plug 'vim-airline/vim-airline'
-    Plug 'vim-airline/vim-airline-themes'
-    Plug 'w0rp/ale'
-    Plug 'wesrupert/vim-hoverhl'
+if has('python3')
+    Plug 'shougo/deoplete.nvim', { 'do': ':silent UpdateRemotePlugins' }
+    Plug 'mhartington/deoplete-typescript'
+    Plug 'robzz/deoplete-omnisharp'
+    Plug 'shougo/context_filetype.vim'
+    Plug 'shougo/echodoc.vim'
+    Plug 'shougo/neco-vim'
+    Plug 'shougo/neoinclude.vim'
+    Plug 'shougo/neopairs.vim'
+    Plug 'shougo/neosnippet-snippets'
+    Plug 'shougo/neosnippet.vim'
+else
+    Plug 'ervandew/supertab'
+endif
 
-    if has('python3')
-        Plug 'shougo/deoplete.nvim', { 'do': ':silent UpdateRemotePlugins' }
-        Plug 'mhartington/deoplete-typescript'
-        Plug 'robzz/deoplete-omnisharp'
-        Plug 'shougo/context_filetype.vim'
-        Plug 'shougo/echodoc.vim'
-        Plug 'shougo/neco-vim'
-        Plug 'shougo/neoinclude.vim'
-        Plug 'shougo/neopairs.vim'
-        Plug 'shougo/neosnippet-snippets'
-        Plug 'shougo/neosnippet.vim'
-    else
-        Plug 'ervandew/supertab'
-    endif
+" Command plugins
+Plug 'machakann/vim-sandwich'
+Plug 'scrooloose/nerdcommenter'
 
-    " Command plugins
-    Plug 'junegunn/vim-easy-align'
-    Plug 'machakann/vim-sandwich'
-    Plug 'scrooloose/nerdcommenter'
-    Plug 'tpope/vim-abolish'
+" Filetype plugins
+Plug 'elzr/vim-json'
+Plug 'leafgarland/typescript-vim'
+Plug 'octol/vim-cpp-enhanced-highlight'
+Plug 'oranget/vim-csharp'
+Plug 'plasticboy/vim-markdown'
+Plug 'pprovost/vim-ps1'
 
-    " Filetype plugins
-    Plug 'elzr/vim-json'
-    Plug 'leafgarland/typescript-vim'
-    Plug 'octol/vim-cpp-enhanced-highlight'
-    Plug 'oranget/vim-csharp'
-    Plug 'plasticboy/vim-markdown'
-    Plug 'pprovost/vim-ps1'
+" Architecture plugins
+Plug 'tpope/vim-repeat'
+Plug 'haya14busa/incsearch.vim'
+Plug 'conormcd/matchindent.vim'
+if has('nvim')
+    Plug 'equalsraf/neovim-gui-shim'
+else
+    Plug 'roxma/nvim-yarp'
+    Plug 'roxma/vim-hug-neovim-rpc'
+    Plug 'tpope/vim-dispatch'
+endif
 
-    " Architecture plugins
-    Plug 'tpope/vim-repeat'
-    Plug 'haya14busa/incsearch.vim'
-    Plug 'conormcd/matchindent.vim'
-    if has('nvim')
-        Plug 'equalsraf/neovim-gui-shim'
-    else
-        Plug 'roxma/nvim-yarp'
-        Plug 'roxma/vim-hug-neovim-rpc'
-        Plug 'tpope/vim-dispatch'
-    endif
-
-    call s:TrySourceFile(g:vimrc.'.plugins.custom', '', '')
-    call plug#end()
-catch
-    echohl ErrorMsg
-    echom 'Vim plug not found. Please install to '.$VIMRUNTIME.g:slash.'autoload.'
-    echohl None
-endtry
+call s:TrySourceFile(g:vimrc.'.plugins.custom', '', '')
+call plug#end()
 
 " Configuration
-let g:airline#extensions#branch#format = 2 " long/section/name/branch -> l/s/n/branch
-let g:airline#extensions#hunks#enabled = 1
-let g:airline#extensions#whitespace#enabled = 0
-let g:airline#extensions#whitespace#long_format = 'lo[%s]'
-let g:airline#extensions#whitespace#mixed_indent_file_format = 'mf[%s]'
-let g:airline#extensions#whitespace#mixed_indent_format = 'mi[%s]'
-let g:airline#extensions#whitespace#trailing_format = 'tr[%s]'
-let g:airline_inactive_collapse=1 " Show only file name for inactive buffers
-let g:airline_left_sep=''
-let g:airline_right_sep=''
-let g:airline_section_c = '%f'
-let g:airline_section_error = ''
-let g:airline_section_warning = ''
-let g:airline_section_y = '%{&fileformat}'
-let g:airline_section_z = '%p%%'
-
 let g:deoplete#enable_at_startup = 1
-
-let g:fzf_layout = { 'up': '~30%' }
-
 let g:hoverhl#enabled_filetypes = [ 'cs', 'cpp', 'c', 'ps1', 'typescript', 'javascript', 'json', 'sh', 'dosbatch', 'vim' ]
-
 let g:markdown_fenced_languages = g:hoverhl#enabled_filetypes
-
-let g:pencil_gutter_color = 1
-
 let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes) + [
       \   {'buns': ['{ ', ' }'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['{']},
       \   {'buns': ['[ ', ' ]'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['[']},
@@ -479,83 +416,64 @@ let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes) + [
 
 " }}} }}}
 
-" Filetype Settings {{{ {{{
-if has('autocmd')
-    augroup Filetypes
-        autocmd!
-        autocmd FileType c,cpp,cs,h,js,ts onoremap <buffer> ip i{| onoremap <buffer> ap a{|
-                    \ vnoremap <buffer> ip i{| vnoremap <buffer> ap a{|
-        autocmd FileType cs setlocal foldmethod=indent
-            autocmd BufRead *.md setlocal wrap nonumber norelativenumber
-        autocmd BufNew,BufReadPre *.xaml,*.targets setf xml
-        autocmd BufNew,BufReadPre *.xml,*.html let b:match_words = '<.\{-}[^/]>:</[^>]*>'
-        autocmd FileType xml,html setlocal matchpairs+=<:> nospell
-        autocmd FileType gitcommit call setpos('.', [0, 1, 1, 0]) |
-                    \ setlocal textwidth=72 formatoptions+=t colorcolumn=50,+0 |
-                    \ setlocal scrolloff=0 sidescrolloff=0 sidescroll=1
-    augroup END
-
-    augroup HelpFiles
-        autocmd!
-        autocmd BufWinEnter * if (&buftype == 'help') |
-                        \     setlocal winwidth=80 sidescrolloff=0 |
-                        \     vertical resize 80 |
-                        \     noremap <buffer> q <c-w>c |
-                        \ endif
-        autocmd BufWinEnter * if (&buftype == 'quickfix' || &previewwindow) | noremap <buffer> q <c-w>c | endif
-    augroup END
-endif
-" }}} }}}
-
 " Auto Commands {{{ {{{
-if has('autocmd')
-    augroup RememberCursor
-        autocmd!
-        autocmd BufReadPost * if line("'\'") > 0 && line("'\'") <= line('$') | exe "normal g`\"" | endif
-    augroup END
+augroup RememberCursor | autocmd!
+    autocmd BufReadPost * if line("'\'") > 0 && line("'\'") <= line('$') | exe "normal g`\"" | endif
+augroup END
 
-    augroup Spelling
-        autocmd!
-        autocmd ColorScheme * hi clear SpellRare | hi clear SpellLocal
-        autocmd FileType markdown,txt setlocal spell nocursorline norelativenumber wrap
-        autocmd BufReadPost * if &l:modifiable == 0 | setlocal nospell | endif
-    augroup END
+augroup Filetypes | autocmd!
+    autocmd FileType c,cpp,cs,h,js,ts onoremap <buffer> ip i{| onoremap <buffer> ap a{|
+                \ vnoremap <buffer> ip i{| vnoremap <buffer> ap a{
+    autocmd FileType cs setlocal foldmethod=indent
+    autocmd BufRead *.md setlocal wrap nonumber norelativenumber
+    autocmd BufNew,BufReadPre *.xaml,*.targets setf xml
+    autocmd BufNew,BufReadPre *.xml,*.html let b:match_words = '<.\{-}[^/]>:</[^>]*>'
+    autocmd FileType xml,html setlocal matchpairs+=<:> nospell
+    autocmd FileType gitcommit call setpos('.', [0, 1, 1, 0]) |
+                \ setlocal textwidth=72 formatoptions+=t colorcolumn=50,+0 |
+                \ setlocal scrolloff=0 sidescrolloff=0 sidescroll=1
+augroup END
 
-    augroup AutoChDir
-        autocmd!
-        autocmd BufEnter * silent! lcd %:p:h
-        autocmd BufEnter * if s:IsEmptyFile() | set ft=markdown | end
-        autocmd BufWritePre * if !isdirectory(expand('<afile>:p:h')) |
-                    \ call mkdir(expand('<afile>:p:h'), 'p') |
+augroup HelpFiles | autocmd!
+    autocmd BufWinEnter * if (&buftype == 'help') |
+                    \     setlocal winwidth=80 sidescrolloff=0 |
+                    \     vertical resize 80 |
+                    \     noremap <buffer> q <c-w>c |
                     \ endif
-    augroup END
+    autocmd BufWinEnter * if (&buftype == 'quickfix' || &previewwindow) | noremap <buffer> q <c-w>c | endif
+augroup END
 
-    highlight link MixedWhitespace Underlined
-    highlight link BadBraces NONE
-    augroup MixedWhitespace
-        autocmd!
-        autocmd InsertEnter * highlight! link BadBraces Error
-        autocmd InsertLeave * highlight! link BadBraces NONE
-        autocmd BufEnter * match MixedWhitespace /\s*\(\( \t\)\|\(\t \)\)\s*/
-        autocmd BufEnter *.c,*.cpp,*.cs,*.js,*.ps1,*.ts 2match BadBraces /[^}]\s*\n\s*\n\s*\zs{\ze\|\s*\n\s*\n\s*\zs}\ze\|\zs}\ze\s*\n\s*\(else\>\|catch\>\|finally\>\|while\>\|}\|\s\|\n\)\@!\|\zs{\ze\s*\n\s*\n/
-    augroup END
+augroup Spelling | autocmd!
+    autocmd ColorScheme * hi clear SpellRare | hi clear SpellLocal
+    autocmd FileType markdown,txt setlocal spell nocursorline norelativenumber wrap
+    autocmd BufReadPost * if &l:modifiable == 0 | setlocal nospell | endif
+augroup END
 
-    augroup WinHeight
-        autocmd!
-        autocmd VimResized * if (&buftype != 'help') |
-                      \     let &l:winheight = ((&lines * g:height_proportion) / 100) - g:height_buffer |
-                      \     let &l:winwidth = ((&columns * g:width_proportion) / 100) - g:width_buffer |
-                      \ endif
-    augroup END
-endif
+augroup AutoChDir | autocmd!
+    autocmd BufEnter * silent! lcd %:p:h
+    autocmd BufEnter * if s:IsEmptyFile() | set ft=markdown | end
+    autocmd BufWritePre * if !isdirectory(expand('<afile>:p:h')) |
+                \ call mkdir(expand('<afile>:p:h'), 'p') |
+                \ endif
+augroup END
+
+highlight link MixedWhitespace Underlined
+highlight link BadBraces NONE
+augroup MixedWhitespace | autocmd!
+    autocmd InsertEnter * highlight! link BadBraces Error
+    autocmd InsertLeave * highlight! link BadBraces NONE
+    autocmd BufEnter * match MixedWhitespace /\s*\(\( \t\)\|\(\t \)\)\s*/
+    autocmd BufEnter *.c,*.cpp,*.cs,*.js,*.ps1,*.ts 2match BadBraces /[^}]\s*\n\s*\n\s*\zs{\ze\|\s*\n\s*\n\s*\zs}\ze\|\zs}\ze\s*\n\s*\(else\>\|catch\>\|finally\>\|while\>\|}\|\s\|\n\)\@!\|\zs{\ze\s*\n\s*\n/
+augroup END
+
 " }}} }}}
 
 " Diff Settings (NOTE: must be last group, as it clears some augroups!) {{{ {{{
-augroup DiffLayout
+augroup DiffLayout | autocmd!
     autocmd VimEnter * if &diff | call s:SetDiffLayout() | endif
 augroup END
 
-function! s:SetDiffLayout() " {{{
+function! s:SetDiffLayout()
     if has('autocmd')
         augroup RememberCursor | autocmd! | augroup END " Clear cursor jump command
     endif
@@ -570,13 +488,13 @@ function! s:SetDiffLayout() " {{{
     set nohidden bufhidden=delete
     set guioptions+=lr
     noremap q :qa<cr>
-endfunction " }}}
+endfunction
 " }}} }}}
 
 " Load help docs {{{ {{{
 " Credit goes to Tim Pope (https://tpo.pe/) for these functions.
 
-function! s:Helptags() abort "| Invoke :helptags on all non-$VIM doc directories in runtimepath. {{{
+function! s:Helptags() abort " Invoke :helptags on all non-$VIM doc directories in runtimepath. {{{
     for glob in s:Split(&rtp)
         for dir in map(split(glob(glob), "\n"), 'v:val.g:slash."/doc/".g:slash')
             if (dir)[0 : strlen($VIMRUNTIME)] !=# $VIMRUNTIME.g:slash &&
@@ -597,43 +515,24 @@ function! s:Split(path) abort "| Split a path into a list. {{{
 endfunction " }}}
 
 call s:Helptags()
+
 " }}} }}}
 
 " Functions {{{ {{{
+
 " Tabs {{{
 function! TermTabLabel() " {{{
     let label = ''
     for i in range(tabpagenr('$'))
-        " Select the highlighting
-        if i + 1 == tabpagenr()
-            let label .= '%#TabLineSel#'
-        else
-            let label .= '%#TabLine#'
-        endif
-
-        " Set the tab page number (for mouse clicks)
-        let label .= '%'.(i+1).'T'
-
-        " The label is made by MyTabLabel()
-        let label .= ' %{MyTabLabel('.(i+1).')} '
-
-        " Add divider
-        let label .= '%#TabLine#|'
+        let label .= (i+1 == tabpagenr()) ? '%#TabLineSel#' : '%#TabLine#' " Select the highlighting
+        let label .= '%'.(i+1).'T'                                         " Set the tab page number (for mouse clicks)
+        let label .= ' %{MyTabLabel('.(i+1).')} '                          " The label is made by MyTabLabel()
+        let label .= '%#TabLine#|'                                         " Add divider
     endfor
-
-    " After the last tab fill with TabLineFill and reset tab page nr
-    let label .= '%#TabLineFill#%T'
-
-    " Right-align the label to close the current tab page
-    if tabpagenr('$') > 1
-        let label .= '%=%#TabLine#%999XX'
-    endif
+    let label .= '%#TabLineFill#%T'                                        " Fill with TabLineFill and reset tab page nr
+    if tabpagenr('$') > 1 | let label .= '%=%#TabLine#%999XX' | endif      " Right-align close tab label
 
     return label
-endfunction " }}}
-
-function! GuiTabLabel() " {{{
-    return MyTabLabel(v:lnum)
 endfunction " }}}
 
 function! MyTabLabel(lnum) " {{{
@@ -645,9 +544,7 @@ function! MyTabLabel(lnum) " {{{
     let readonly = getbufvar(bufnrlist[bufnr], '&readonly')
     let readonly = readonly || !getbufvar(bufnrlist[bufnr], '&modifiable')
 
-
     if name != '' && name !~ 'NERD_tree'
-        " Get the name of the first real buffer
         let name = fnamemodify(name, ':t')
     else
         let bufnr = len(bufnrlist)
@@ -808,20 +705,10 @@ function! SynStack() "{{{
     return '['.l:list.']'
 endfunction "}}}
 
-function! s:IsEmptyFile() " {{{
-    if @% != ''                            " Not-empty filename
-        return 0
-    elseif filereadable(@%) != 0           " File exists on disk
-        return 0
-    elseif line('$') != 1 || col('$') != 1 " Buffer has contents
-        return 0
-    endif
-    return 1
-endfunction " }}}
-
 function! TabOrComplete() "{{{
     return col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w' ? "\<c-n>" : "\<tab>"
 endfunction "}}}
+
 " }}} }}}
 
 call s:TrySourceFile(g:vimrc.'.custom', g:vimrc.'.after', 'g:vimrc_custom')
