@@ -11,15 +11,3 @@ vimrc.plugins.custom
 vimrc.after
 vimrc.leader
 vimrc.before
-
-!.gitignore
-!README.md
-!vimrc
-!vimrc.plugins
-!init.vim
-!vsvimrc
-!setup.sh
-!setup.cmd
-!update.ps1
-
-!pack

@@ -65,7 +65,7 @@ set incsearch hlsearch
 set laststatus=2 showcmd ruler noshowmode
 set wildmenu completeopt=longest,menuone,preview
 if executable('rg')
-    set grepprg=rg\ -i\ --vimgrep
+    set grepprg=rg\ --vimgrep
 endif
 
 " Text options
@@ -93,7 +93,107 @@ let g:width_proportion = 66
 
 " }}}
 
-" Statusline {{{
+" Keybindings and Commands {{{
+
+" Sort via :sort /.*\%18v/
+ noremap          "             '
+ noremap          '             "
+ noremap          -             _
+     map          /             <Plug>(incsearch-forward)
+ noremap          :             ;
+ noremap          ;             :
+inoremap          <c-backspace> <c-w>
+inoremap          <c-,>         <c-d>
+inoremap          <c-.>         <c-t>
+ noremap <silent> <a-o>         <c-i>
+ noremap <silent> <a-p>         :History<cr>
+ noremap <silent> <c-a>         <esc>ggVG
+inoremap <silent> <c-a>         <esc>ggVG
+ noremap <silent> <c-p>         :Files<cr>
+ noremap <silent> <c-b>         :Buffers<cr>
+    "map          <c-e>         {TAKEN: Open file explorer}
+ noremap <silent> <c-f>         :Lines<cr>
+ noremap <silent> <c-h>         <c-w>h
+ noremap <silent> <c-j>         <c-w>j
+ noremap <silent> <c-k>         <c-w>k
+ noremap <silent> <c-l>         <c-w>l
+ noremap          <c-q>         Q
+ noremap          <c-w><c-w>    :tabclose<cr>
+    imap <silent> <c-space>     <tab>
+ noremap <silent> <c-t>         :tabnew<cr>
+ noremap <silent> <expr> j      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'j' : 'gj'
+ noremap <silent> <expr> k      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'k' : 'gk'
+ noremap <silent> <leader>'     :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
+ noremap <silent> <leader>-     :execute 'Lexplore '.expand('%:p:h')<cr>
+ noremap <silent> <leader>/     :nohlsearch<cr>
+ noremap <silent> <leader>[     :setlocal wrap!<cr>:setlocal wrap?<cr>
+ noremap <silent> <leader>]     :setlocal number!<cr>:setlocal number?<cr>
+ noremap <silent> <leader>c,    :cd ..<cr>:echo ':cd '.getcwd()<cr>
+ noremap <silent> <leader>cd    :execute 'cd '.expand('%:p:h')<cr>:echo ':cd '.getcwd()<cr>
+ noremap          <leader>co    :Colors<cr>
+ noremap <silent> <leader>d     <c-x>
+ noremap <silent> <leader>f     <c-a>
+ noremap <silent> <leader>i     :set foldmethod=indent<cr>
+    "map          <leader>j     {TAKEN: Json tool}
+ noremap <silent> <leader>l     :setlocal list!<cr>:setlocal list?<cr>
+ noremap <silent> <leader>o     :execute 'NERDTreeToggle '.expand('%:p:h')<cr>
+ noremap <silent> <leader>O     :NERDTreeToggle<cr>
+ noremap <silent> <leader>ro    :set winheight=1 winwidth=1<cr>
+ noremap          <leader>s     :%s/\<<c-r><c-w>\>/
+ noremap <silent> <leader>u     :UndotreeToggle<cr>:UndotreeFocus<cr>
+ noremap <silent> <leader>va    :call OpenSplit(g:vimrc_custom, 50, 0)<cr>
+ noremap <silent> <leader>vb    :call OpenSplit(g:vimrc_leader, 50, 0)<cr>
+ noremap <silent> <leader>vp    :call OpenSplit(g:vimrc.'.plugins', 50, 0)<cr>
+ noremap <silent> <leader>vc    :call OpenSplit(g:vimrc.'.plugins.custom', 50, 0)<cr>
+ noremap <silent> <leader>vr    :call OpenSplit(g:vimrc, 50, 0)<cr>
+ noremap <silent> <leader>vz    :execute 'source '.g:vimrc<cr>
+ noremap <silent> <leader>w     :execute 'resize '.line('$')<cr>
+nnoremap          <space>       za
+nnoremap          <tab>         gt
+ noremap <silent> <s-tab>       gT
+vnoremap          <tab>         %
+inoremap          <tab>         <c-r>=TabOrComplete()<cr>
+     map          ?             <Plug>(incsearch-backward)
+ noremap <silent> K             :Help <c-r><c-w><cr>
+ noremap          Q             :q<cr>
+ noremap          Y             y$
+ noremap          [[            ^
+ noremap <silent> []            /;<cr>:noh<cr>
+ noremap <silent> ][            ?;<cr>:noh<cr>
+ noremap          ]]            $
+ noremap          _             -
+     map          g/            <Plug>(incsearch-stay)
+ noremap <silent> gO            m'O<esc>cc<esc><c-o>
+ noremap <silent> gV            `[v`]
+xnoremap          ga            <Plug>(EasyAlign)
+ noremap          ga            <Plug>(EasyAlign)
+ noremap <silent> go            m'o<esc>cc<esc><c-o>
+ noremap          gs            :Scratch<cr>
+ noremap <silent> gw            :silent !explorer <cWORD><cr>
+inoremap          kj            <esc>
+ noremap          ss            s
+ noremap          zj            jzz
+ noremap          zk            kzz
+if has('python') | noremap <leader>j :%!python -m json.tool<cr>| endif
+if (exists('g:mapleader')) | execute 'noremap \ '.g:mapleader | endif
+
+command! -nargs=0 Light   set background=light
+command! -nargs=0 Dark    set background=dark
+command! -nargs=0 Scratch call OpenScratch()
+command! -nargs=1 -complete=help Help call OpenHelp(<f-args>)
+command! -nargs=1 -complete=help THelp tab help <args>
+command! -nargs=+ -complete=file_in_path Grep  execute 'silent grep! <args>' | copen
+command! -nargs=+ -complete=file_in_path LGrep execute 'silent lgrep! <args>' | lopen
+
+call s:GenerateCAbbrev('help', 1, 'Help')
+call s:GenerateCAbbrev('thelp', 2, 'THelp')
+call s:GenerateCAbbrev('grep', 2, 'Grep')
+call s:GenerateCAbbrev('rg', 2, 'Grep')
+call s:GenerateCAbbrev('lgrep', 2, 'LGrep')
+
+" }}}
+
+" Statusline {{{ {{{
 
 let g:modemap={
             \ 'n'  : 'Norm',
@@ -186,105 +286,7 @@ function! SL_FileSize() abort
     endif
 endfunction
 
-" }}}
-
-" Keybindings and Commands {{{
-
-" Sort via :sort /.*\%18v/
- noremap          "             '
- noremap          '             "
- noremap          -             _
-     map          /             <Plug>(incsearch-forward)
- noremap          :             ;
- noremap          ;             :
-inoremap          <c-backspace> <c-w>
-inoremap          <c-,>         <c-d>
-inoremap          <c-.>         <c-t>
- noremap <silent> <a-o>         <c-i>
- noremap <silent> <a-p>         :History<cr>
- noremap <silent> <c-a>         <esc>ggVG
-inoremap <silent> <c-a>         <esc>ggVG
- noremap <silent> <c-p>         :Files<cr>
- noremap <silent> <c-b>         :Buffers<cr>
-    "map          <c-e>         {TAKEN: Open file explorer}
- noremap <silent> <c-f>         :Lines<cr>
- noremap <silent> <c-h>         <c-w>h
- noremap <silent> <c-j>         <c-w>j
- noremap <silent> <c-k>         <c-w>k
- noremap <silent> <c-l>         <c-w>l
- noremap          <c-q>         Q
- noremap          <c-w><c-w>    :tabclose<cr>
-    imap <silent> <c-space>     <tab>
- noremap <silent> <c-t>         :tabnew<cr>
- noremap <silent> <expr> j      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'j' : 'gj'
- noremap <silent> <expr> k      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'k' : 'gk'
- noremap <silent> <leader>'     :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
- noremap <silent> <leader>-     :execute 'Lexplore '.expand('%:p:h')<cr>
- noremap <silent> <leader>/     :nohlsearch<cr>
- noremap <silent> <leader>[     :setlocal wrap!<cr>:setlocal wrap?<cr>
- noremap <silent> <leader>]     :setlocal number!<cr>:setlocal number?<cr>
- noremap <silent> <leader>c,    :cd ..<cr>:echo ':cd '.getcwd()<cr>
- noremap <silent> <leader>cd    :execute 'cd '.expand('%:p:h')<cr>:echo ':cd '.getcwd()<cr>
- noremap          <leader>co    :Colors<cr>
- noremap <silent> <leader>d     <c-x>
- noremap <silent> <leader>f     <c-a>
- noremap <silent> <leader>i     :set foldmethod=indent<cr>
-    "map          <leader>j     {TAKEN: Json tool}
- noremap <silent> <leader>l     :setlocal list!<cr>:setlocal list?<cr>
- noremap <silent> <leader>ro    :set winheight=1 winwidth=1<cr>
- noremap          <leader>s     :%s/\<<c-r><c-w>\>/
- noremap <silent> <leader>u     :UndotreeToggle<cr>:UndotreeFocus<cr>
- noremap <silent> <leader>va    :call OpenSplit(g:vimrc_custom, 50, 0)<cr>
- noremap <silent> <leader>vb    :call OpenSplit(g:vimrc_leader, 50, 0)<cr>
- noremap <silent> <leader>vp    :call OpenSplit(g:vimrc.'.plugins', 50, 0)<cr>
- noremap <silent> <leader>vc    :call OpenSplit(g:vimrc.'.plugins.custom', 50, 0)<cr>
- noremap <silent> <leader>vr    :call OpenSplit(g:vimrc, 50, 0)<cr>
- noremap <silent> <leader>vz    :execute 'source '.g:vimrc<cr>
- noremap <silent> <leader>w     :execute 'resize '.line('$')<cr>
-nnoremap          <space>       za
-nnoremap          <tab>         gt
- noremap <silent> <s-tab>       gT
-vnoremap          <tab>         %
-inoremap          <tab>         <c-r>=TabOrComplete()<cr>
-     map          ?             <Plug>(incsearch-backward)
- noremap <silent> K             :Help <c-r><c-w><cr>
- noremap          Q             :q<cr>
- noremap          Y             y$
- noremap          [[            ^
- noremap <silent> []            /;<cr>:noh<cr>
- noremap <silent> ][            ?;<cr>:noh<cr>
- noremap          ]]            $
- noremap          _             -
-     map          g/            <Plug>(incsearch-stay)
- noremap <silent> gO            m'O<esc>cc<esc><c-o>
- noremap <silent> gV            `[v`]
-xnoremap          ga            <Plug>(EasyAlign)
- noremap          ga            <Plug>(EasyAlign)
- noremap <silent> go            m'o<esc>cc<esc><c-o>
- noremap          gs            :Scratch<cr>
- noremap <silent> gw            :silent !explorer <cWORD><cr>
-inoremap          kj            <esc>
- noremap          ss            s
- noremap          zj            jzz
- noremap          zk            kzz
-if has('python') | noremap <leader>j :%!python -m json.tool<cr>| endif
-if (exists('g:mapleader')) | execute 'noremap \ '.g:mapleader | endif
-
-command! -nargs=0 Light   set background=light
-command! -nargs=0 Dark    set background=dark
-command! -nargs=0 Scratch call OpenScratch()
-command! -nargs=1 -complete=help Help call OpenHelp(<f-args>)
-command! -nargs=1 -complete=help THelp tab help <args>
-command! -nargs=+ -complete=file_in_path Grep  execute 'silent grep! <args>' | copen
-command! -nargs=+ -complete=file_in_path LGrep execute 'silent lgrep! <args>' | lopen
-
-call s:GenerateCAbbrev('help', 1, 'Help')
-call s:GenerateCAbbrev('thelp', 2, 'THelp')
-call s:GenerateCAbbrev('grep', 2, 'Grep')
-call s:GenerateCAbbrev('rg', 2, 'Grep')
-call s:GenerateCAbbrev('lgrep', 2, 'LGrep')
-
-" }}}
+" }}} }}}
 
 " Platform-Specific Settings {{{ {{{
 
@@ -344,7 +346,9 @@ endif
 
 " }}} }}}
 
-" Load plugins {{{ {{{
+" Plugins {{{ {{{
+
+" Load plugins
 
 " Update packpath
 let s:packpath = fnamemodify(g:vimrc, ':p:h')
@@ -360,7 +364,75 @@ endif
 " Modern Plugins
 try
     call plug#begin(g:vimplug)
-    call s:TrySourceFile(g:vimrc.'.plugins', '', '')
+
+    " Colorschemes
+    Plug 'cesardeazevedo/Fx-ColorScheme'
+    Plug 'chriskempson/vim-tomorrow-theme'
+    Plug 'iCyMind/NeoSolarized'
+    Plug 'jonathanfilip/vim-lucius'
+    Plug 'nightsense/forgotten'
+    Plug 'nightsense/vimspectr'
+    Plug 'nlknguyen/papercolor-theme'
+    Plug 'rakr/vim-one'
+    Plug 'reedes/vim-colors-pencil'
+    Plug 'tyrannicaltoucan/vim-deep-space'
+    Plug 'zcodes/vim-colors-basic'
+
+
+    " UI plugins
+    Plug 'airblade/vim-gitgutter'
+    Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+    Plug 'junegunn/fzf.vim'
+    Plug 'kshenoy/vim-signature'
+    Plug 'mbbill/undotree'
+    Plug 'scrooloose/nerdtree'
+    Plug 'tpope/vim-fugitive'
+    Plug 'vim-airline/vim-airline'
+    Plug 'vim-airline/vim-airline-themes'
+    Plug 'w0rp/ale'
+    Plug 'wesrupert/vim-hoverhl'
+
+    if has('python3')
+        Plug 'shougo/deoplete.nvim', { 'do': ':silent UpdateRemotePlugins' }
+        Plug 'mhartington/deoplete-typescript'
+        Plug 'robzz/deoplete-omnisharp'
+        Plug 'shougo/context_filetype.vim'
+        Plug 'shougo/echodoc.vim'
+        Plug 'shougo/neco-vim'
+        Plug 'shougo/neoinclude.vim'
+        Plug 'shougo/neopairs.vim'
+        Plug 'shougo/neosnippet-snippets'
+        Plug 'shougo/neosnippet.vim'
+    else
+        Plug 'ervandew/supertab'
+    endif
+
+    " Command plugins
+    Plug 'junegunn/vim-easy-align'
+    Plug 'machakann/vim-sandwich'
+    Plug 'scrooloose/nerdcommenter'
+    Plug 'tpope/vim-abolish'
+
+    " Filetype plugins
+    Plug 'elzr/vim-json'
+    Plug 'leafgarland/typescript-vim'
+    Plug 'octol/vim-cpp-enhanced-highlight'
+    Plug 'oranget/vim-csharp'
+    Plug 'plasticboy/vim-markdown'
+    Plug 'pprovost/vim-ps1'
+
+    " Architecture plugins
+    Plug 'tpope/vim-repeat'
+    Plug 'haya14busa/incsearch.vim'
+    Plug 'conormcd/matchindent.vim'
+    if has('nvim')
+        Plug 'equalsraf/neovim-gui-shim'
+    else
+        Plug 'roxma/nvim-yarp'
+        Plug 'roxma/vim-hug-neovim-rpc'
+        Plug 'tpope/vim-dispatch'
+    endif
+
     call s:TrySourceFile(g:vimrc.'.plugins.custom', '', '')
     call plug#end()
 catch
@@ -369,7 +441,33 @@ catch
     echohl None
 endtry
 
-" Post-plugin configuration
+" Configuration
+let g:airline#extensions#branch#format = 2 " long/section/name/branch -> l/s/n/branch
+let g:airline#extensions#hunks#enabled = 1
+let g:airline#extensions#whitespace#enabled = 0
+let g:airline#extensions#whitespace#long_format = 'lo[%s]'
+let g:airline#extensions#whitespace#mixed_indent_file_format = 'mf[%s]'
+let g:airline#extensions#whitespace#mixed_indent_format = 'mi[%s]'
+let g:airline#extensions#whitespace#trailing_format = 'tr[%s]'
+let g:airline_inactive_collapse=1 " Show only file name for inactive buffers
+let g:airline_left_sep=''
+let g:airline_right_sep=''
+let g:airline_section_c = '%f'
+let g:airline_section_error = ''
+let g:airline_section_warning = ''
+let g:airline_section_y = '%{&fileformat}'
+let g:airline_section_z = '%p%%'
+
+let g:deoplete#enable_at_startup = 1
+
+let g:fzf_layout = { 'up': '~30%' }
+
+let g:hoverhl#enabled_filetypes = [ 'cs', 'cpp', 'c', 'ps1', 'typescript', 'javascript', 'json', 'sh', 'dosbatch', 'vim' ]
+
+let g:markdown_fenced_languages = g:hoverhl#enabled_filetypes
+
+let g:pencil_gutter_color = 1
+
 let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes) + [
       \   {'buns': ['{ ', ' }'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['{']},
       \   {'buns': ['[ ', ' ]'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['[']},
@@ -378,6 +476,8 @@ let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes) + [
       \   {'buns': ['\[\s*', '\s*\]'], 'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['[']},
       \   {'buns': ['(\s*', '\s*)'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['(']},
       \ ]
+
+" }}} }}}
 
 " Filetype Settings {{{ {{{
 if has('autocmd')
@@ -678,7 +778,6 @@ endfunction " }}}
 
 function! OpenScratch() " {{{
     call OpenSplit(expand('$HOME'.g:slash.'Scratch.md'), 50, 0)
-    noremap <buffer> <silent> q :update<cr><bar><c-w>c
     autocmd CursorHold <buffer> silent update
     normal ggGG
 endfunction " }}}
@@ -693,7 +792,7 @@ function! OpenSplit(input, threshold, iscommand) " {{{
 
     execute 'wincmd '.(l:splitright ? 'L' : 'H')
     execute 'vertical resize '.a:threshold
-    noremap <buffer> <silent> q <c-w>c
+    noremap <buffer> <silent> q :update<cr><bar><c-w>c
     if l:open =~# 'v\(ert\|split\)'
         let &l:textwidth = a:threshold
         setlocal nonumber norelativenumber
