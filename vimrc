@@ -1,4 +1,4 @@
-" Script functions {{{ {{{
+﻿" Script functions {{{ {{{
 
 function! s:GenerateCAbbrev(orig, complStart, new) " {{{
     let l = len(a:orig)
@@ -26,9 +26,13 @@ function! s:IsGui() " {{{
 endfunction " }}}
 
 function! s:TryCreateDir(path) " {{{
-    if !filereadable(a:path) && filewritable(a:path) != 2
-        call mkdir(a:path, 'p')
+    if !filereadable(a:path) && filewritable(a:path) == 0
+        try
+            call mkdir(a:path, 'p')
+            return 1
+        catch /E739/ | endtry
     endif
+    return 0
 endfunction " }}}
 
 function! s:TrySourceFile(path, backup, assign) " {{{
@@ -52,9 +56,9 @@ call s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before', 'g:vimrc_leader')
 " Application settings
 syntax on
 filetype plugin indent on
-set diffopt+=context:3
 set hidden switchbuf=usetab splitbelow splitright
 set noerrorbells belloff=all visualbell t_vb=
+set nospell diffopt+=context:3
 set scrolloff=3 sidescrolloff=1 sidescroll=1
 set shortmess+=A
 set tabline=%!TermTabLabel() guitablabel=%{MyTabLabel(v:lnum)} guitabtooltip=%{GuiTabToolTip()}
@@ -76,135 +80,113 @@ set autoindent smartindent linebreak breakindent formatoptions=cjnr
 set backspace=indent,eol,start
 set expandtab smarttab tabstop=4 softtabstop=4 shiftwidth=4
 set foldmethod=syntax foldenable foldlevelstart=10
-set list listchars=tab:»\ ,space:·,trail:-,precedes:…,extends:…
-set nowrap conceallevel=2
-set number cursorline
-
-" Custom settings
-let g:diff_width = 50
-let g:idemode = 0
-let g:opensplit_on_right = 0
-let g:opensplit_threshold = 60
+set listchars=tab:»\ ,space:·,trail:-,precedes:…,extends:…
+set number cursorline nowrap conceallevel=2
 
 " }}}
 
 " Keybindings and Commands {{{
-
 " Sort via :sort /.*\%18v/
+
  noremap          "             '
  noremap          '             "
+ noremap          +             -
  noremap          -             _
      map          /             <Plug>(incsearch-forward)
  noremap          :             ;
  noremap          ;             :
-inoremap          <c-backspace> <c-w>
-inoremap          <c-,>         <c-d>
-inoremap          <c-.>         <c-t>
  noremap <silent> <a-o>         <c-i>
  noremap <silent> <a-p>         :History<cr>
  noremap <silent> <c-a>         <esc>ggVG
-inoremap <silent> <c-a>         <esc>ggVG
- noremap <silent> <c-p>         :Files<cr>
  noremap <silent> <c-b>         :Buffers<cr>
-    "map          <c-e>         {TAKEN: Open file explorer}
+"noremap          <c-e>         {TAKEN: Open file explorer}
  noremap <silent> <c-f>         :Lines<cr>
  noremap <silent> <c-h>         <c-w>h
  noremap <silent> <c-j>         <c-w>j
  noremap <silent> <c-k>         <c-w>k
  noremap <silent> <c-l>         <c-w>l
- noremap          <c-q>         Q
- noremap          <c-w><c-w>    :tabclose<cr>
-    imap <silent> <c-space>     <tab>
+ noremap <silent> <c-p>         :Files<cr>
  noremap <silent> <c-t>         :tabnew<cr>
+ noremap          <down>        }
  noremap <silent> <expr> j      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'j' : 'gj'
  noremap <silent> <expr> k      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'k' : 'gk'
- noremap <silent> <leader>'     :if &go=~#'r'<bar>set go-=r<bar>else<bar>set go+=r<bar>endif<cr>
- noremap <silent> <leader>-     :execute 'Lexplore '.expand('%:p:h')<cr>
+ noremap          <leader>-     :execute 'edit '.expand('%:p:h')<cr>
  noremap <silent> <leader>/     :nohlsearch<cr>
+ noremap <silent> <leader>O     :NERDTreeToggle<cr>
  noremap <silent> <leader>[     :setlocal wrap!<cr>:setlocal wrap?<cr>
  noremap <silent> <leader>]     :setlocal number!<cr>:setlocal number?<cr>
- noremap <silent> <leader>c,    :cd ..<cr>:echo ':cd '.getcwd()<cr>
  noremap <silent> <leader>cd    :execute 'cd '.expand('%:p:h')<cr>:echo ':cd '.getcwd()<cr>
- noremap          <leader>co    :Colors<cr>
+ noremap <silent> <leader>c,    :cd ..<cr>:echo ':cd '.getcwd()<cr>
  noremap <silent> <leader>d     <c-x>
  noremap <silent> <leader>f     <c-a>
- noremap <silent> <leader>i     :set foldmethod=indent<cr>
-    "map          <leader>j     {TAKEN: Json tool}
+"noremap          <leader>j     {TAKEN: Json tool}
  noremap <silent> <leader>l     :setlocal list!<cr>:setlocal list?<cr>
  noremap <silent> <leader>o     :execute 'NERDTreeToggle '.expand('%:p:h')<cr>
- noremap <silent> <leader>O     :NERDTreeToggle<cr>
  noremap <silent> <leader>ro    :set winheight=1 winwidth=1<cr>
  noremap          <leader>s     :%s/\<<c-r><c-w>\>/
  noremap <silent> <leader>u     :UndotreeToggle<cr>:UndotreeFocus<cr>
  noremap <silent> <leader>va    :call OpenSplit(g:vimrc_custom, 50, 0)<cr>
- noremap <silent> <leader>vb    :call OpenSplit(g:vimrc_leader, 50, 0)<cr>
- noremap <silent> <leader>vp    :call OpenSplit(g:vimrc.'.plugins', 50, 0)<cr>
- noremap <silent> <leader>vc    :call OpenSplit(g:vimrc.'.plugins.custom', 50, 0)<cr>
- noremap <silent> <leader>vr    :call OpenSplit(g:vimrc, 50, 0)<cr>
+ noremap <silent> <leader>vp    :call OpenSplit(g:vimrc.'.plugins.custom', 50, 0)<cr>
+ noremap <silent> <leader>vr    :call OpenSplit(g:vimrc, 100, 0)<cr>
  noremap <silent> <leader>vz    :execute 'source '.g:vimrc<cr>
- noremap <silent> <leader>w     :execute 'resize '.line('$')<cr>
-nnoremap          <space>       za
-nnoremap <silent> <tab>         gt
+ noremap          <left>        g0
+ noremap          <right>       g$
  noremap <silent> <s-tab>       gT
-inoremap          <tab>         <c-r>=TabOrComplete()<cr>
+ noremap <silent> <tab>         gt
+ noremap          <up>          {
      map          ?             <Plug>(incsearch-backward)
  noremap <silent> K             :Help <c-r><c-w><cr>
+     map          Q             <c-q>
  noremap          Y             y$
- noremap          [[            ^
- noremap          ]]            $
  noremap          _             +
- noremap          +             -
      map          g/            <Plug>(incsearch-stay)
  noremap <silent> gO            m'O<esc>cc<esc><c-o>
  noremap <silent> gV            `[v`]
-xnoremap          ga            <Plug>(EasyAlign)
- noremap          ga            <Plug>(EasyAlign)
  noremap <silent> go            m'o<esc>cc<esc><c-o>
- noremap          gs            :Scratch<cr>
+ noremap <silent> gs            :Scratch<cr>
  noremap <silent> gw            :silent !explorer <cWORD><cr>
-inoremap          kj            <esc>
  noremap          s             <nop>
  noremap          ss            s
+
+inoremap          <c-,>         <c-d>
+inoremap          <c-.>         <c-t>
+inoremap          <c-backspace> <c-w>
+inoremap          <tab>         <c-r>=TabOrComplete()<cr>
+inoremap          kj            <esc>
+inoremap <silent> <c-a>         <esc>ggVG
+inoremap <silent> <c-space>     <tab>
+
 if has('python') | noremap <leader>j :%!python -m json.tool<cr>| endif
 if (exists('g:mapleader')) | execute 'noremap \ '.g:mapleader | endif
 
-command! -nargs=0 Light   set background=light
-command! -nargs=0 Dark    set background=dark
-command! -nargs=0 Scratch call OpenScratch()
-command! -nargs=1 -complete=help Help call OpenHelp(<f-args>)
-command! -nargs=1 -complete=help THelp tab help <args>
-command! -nargs=+ -complete=file_in_path Grep  execute 'silent grep! <args>' | copen
-command! -nargs=+ -complete=file_in_path LGrep execute 'silent lgrep! <args>' | lopen
+command! -nargs=0                        Light   set background=light
+command! -nargs=0                        Dark    set background=dark
+command! -nargs=0                        Scratch call OpenScratch()
+command! -nargs=1 -complete=help         Help    call OpenHelp(<f-args>)
+command! -nargs=1 -complete=help         THelp   tab help <args>
+command! -nargs=+ -complete=file_in_path Grep    silent grep! <args> | copen
+command! -nargs=+ -complete=file_in_path LGrep   silent lgrep! <args> | lopen
 
-call s:GenerateCAbbrev('help', 1, 'Help')
-call s:GenerateCAbbrev('thelp', 2, 'THelp')
-call s:GenerateCAbbrev('grep', 2, 'Grep')
-call s:GenerateCAbbrev('rg', 2, 'Grep')
+call s:GenerateCAbbrev('grep',  2, 'Grep' )
+call s:GenerateCAbbrev('help',  1, 'Help' )
 call s:GenerateCAbbrev('lgrep', 2, 'LGrep')
+call s:GenerateCAbbrev('rg',    2, 'Grep' )
+call s:GenerateCAbbrev('thelp', 2, 'THelp')
 
 " }}}
 
 " Statusline {{{ {{{
 
 let g:modemap={
-            \ 'n'  : 'Norm',
-            \ 'no' : 'OpPd',
-            \ 'v'  : ' Vis',
-            \ 'V'  : 'VLin',
-            \ '^V' : 'VBlk',
-            \ 's'  : 'Slct',
-            \ 'S'  : 'SlLn',
-            \ '^S' : 'SBlk',
-            \ 'i'  : ' Ins',
-            \ 'R'  : 'Rplc',
-            \ 'Rv' : 'VRpl',
-            \ 'c'  : ' Cmd',
-            \ 'cv' : 'VmEx',
-            \ 'ce' : ' Ex ',
-            \ 'r'  : 'Prmt',
-            \ 'rm' : 'More',
-            \ 'r?' : 'Cnfm',
-            \ '!'  : 'Shll',
+            \ 'n'  : 'Normal', 'no' : 'OpPnd',
+            \ 'v'  : 'Visual', 'V'  : 'VLine',
+            \ '^V' : 'VBlock', 's'  : 'Select',
+            \ 'S'  : 'SelLin', '^S' : 'SBlock',
+            \ 'i'  : 'Insert', 'R'  : 'Rplace',
+            \ 'Rv' : 'VRplc',  'c'  : 'Cmd',
+            \ 'cv' : 'VmEx',   'ce' : 'Ex',
+            \ 'r'  : 'Prmt',   'rm' : 'More',
+            \ 'r?' : 'Cnfrm',  '!'  : 'Shell',
             \ 't'  : 'Term'}
 function! s:StatusLine()
     set statusline=%#StatusLine#                                       " Sub color
@@ -242,7 +224,12 @@ function! SL_FileType() abort
 endfunction
 
 function! SL_GitBranch() abort
-    return matchstr(fugitive#statusline(), '(\zs.*\ze)')
+    try | let source = fugitive#statusline() | catch | return '' | endtry
+    if !source | return '' | endif
+    let parts = split(matchstr(source, '(\zs.*\ze)'), '/')
+    let branch = ''
+    for part in parts | let branch .= strpart(part, 0, 1).'/' | endfor
+    return strpart(branch, 0, len(branch)-2).parts[len(parts)-1]
 endfunction
 
 function! SL_FileSize() abort
@@ -307,11 +294,10 @@ let s:backupdir = expand(g:temp.g:slash.'backups')
 let &directory = s:backupdir.g:slash.g:slash
 augroup Backups
     autocmd BufRead * let &l:backupdir = s:backupdir.g:slash.expand("%:p:h:t") |
-                \ call s:TryCreateDir(&l:backupdir)
+                \ silent call s:TryCreateDir(&l:backupdir)
 augroup END
-call s:TryCreateDir(s:backupdir)
-if has('persistent_undo')
-    call s:TryCreateDir(g:temp.g:slash.'undo')
+silent call s:TryCreateDir(s:backupdir)
+if has('persistent_undo') && s:TryCreateDir(g:temp.g:slash.'undo')
     set undofile
     let &undodir = expand(g:temp.g:slash.'undo')
 endif
@@ -402,6 +388,9 @@ call s:TrySourceFile(g:vimrc.'.plugins.custom', '', '')
 call plug#end()
 
 " Configuration
+let g:NERDTreeCaseSensitiveSort = !(has('win32') && (&ignorecase || &smartcase))
+let g:NERDTreeNaturalSort = 1
+let g:NERDTreeShowBookmarks = 1
 let g:deoplete#enable_at_startup = 1
 let g:hoverhl#enabled_filetypes = [ 'cs', 'cpp', 'c', 'ps1', 'typescript', 'javascript', 'json', 'sh', 'dosbatch', 'vim' ]
 let g:markdown_fenced_languages = g:hoverhl#enabled_filetypes
@@ -418,20 +407,16 @@ let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes) + [
 
 " Auto Commands {{{ {{{
 augroup RememberCursor | autocmd!
-    autocmd BufReadPost * if line("'\'") > 0 && line("'\'") <= line('$') | exe "normal g`\"" | endif
+    autocmd BufReadPost * if line("'\"")>0 && line("'\"")<=line('$') | exe "normal g`\"" | endif
 augroup END
 
 augroup Filetypes | autocmd!
-    autocmd FileType c,cpp,cs,h,js,ts onoremap <buffer> ip i{| onoremap <buffer> ap a{|
-                \ vnoremap <buffer> ip i{| vnoremap <buffer> ap a{
-    autocmd FileType cs setlocal foldmethod=indent
-    autocmd BufRead *.md setlocal wrap nonumber norelativenumber
+    autocmd BufEnter *                         if s:IsEmptyFile() | set ft=markdown | end
     autocmd BufNew,BufReadPre *.xaml,*.targets setf xml
-    autocmd BufNew,BufReadPre *.xml,*.html let b:match_words = '<.\{-}[^/]>:</[^>]*>'
-    autocmd FileType xml,html setlocal matchpairs+=<:> nospell
-    autocmd FileType gitcommit call setpos('.', [0, 1, 1, 0]) |
-                \ setlocal textwidth=72 formatoptions+=t colorcolumn=50,+0 |
-                \ setlocal scrolloff=0 sidescrolloff=0 sidescroll=1
+    autocmd BufWritePre *                      silent call s:TryCreateDir(expand('<afile>:p:h'))
+    autocmd FileType c,cpp,cs,h,js,ts          noremap <buffer> ip i{| noremap <buffer> ap a{| " }}
+    autocmd FileType gitcommit                 call setpos('.', [0, 1, 1, 0]) | setlocal tw=72 fo+=t cc=50,+0
+    autocmd FileType markdown,txt              setlocal wrap nonumber norelativenumber nocursorline
 augroup END
 
 augroup HelpFiles | autocmd!
@@ -445,16 +430,11 @@ augroup END
 
 augroup Spelling | autocmd!
     autocmd ColorScheme * hi clear SpellRare | hi clear SpellLocal
-    autocmd FileType markdown,txt setlocal spell nocursorline norelativenumber wrap
-    autocmd BufReadPost * if &l:modifiable == 0 | setlocal nospell | endif
+    autocmd BufRead * if &l:modifiable == 0 | setlocal nospell | endif
 augroup END
 
 augroup AutoChDir | autocmd!
     autocmd BufEnter * silent! lcd %:p:h
-    autocmd BufEnter * if s:IsEmptyFile() | set ft=markdown | end
-    autocmd BufWritePre * if !isdirectory(expand('<afile>:p:h')) |
-                \ call mkdir(expand('<afile>:p:h'), 'p') |
-                \ endif
 augroup END
 
 highlight link MixedWhitespace Underlined
@@ -477,16 +457,11 @@ function! s:SetDiffLayout()
     if has('autocmd')
         augroup RememberCursor | autocmd! | augroup END " Clear cursor jump command
     endif
-
-    " Set split and start at the top of the new file
-    execute 'vertical resize '.((&columns * g:diff_width) / 100)
+    execute 'vertical resize '.((&columns * get(g:, 'diff_width', 50)) / 100)
     wincmd l | call setpos('.', [0, 1, 1, 0])
 
-    let g:ale_enabled = 0 " Don't lint a readonly diff
-    let g:airline_left_sep=''
-    let g:airline_right_sep=''
-    set nohidden bufhidden=delete
-    set guioptions+=lr
+    let g:ale_enabled = 0
+    set nohidden bufhidden=delete guioptions+=lr
     noremap q :qa<cr>
 endfunction
 " }}} }}}
@@ -676,12 +651,13 @@ endfunction " }}}
 function! OpenScratch() " {{{
     call OpenSplit(expand('$HOME'.g:slash.'Scratch.md'), 50, 0)
     autocmd CursorHold <buffer> silent update
+    nmap <buffer> <silent> <esc> q
     normal ggGG
 endfunction " }}}
 
 function! OpenSplit(input, threshold, iscommand) " {{{
     let splitright = get(g:, 'opensplit_on_right', &splitright)
-    let open = !s:IsEmptyFile() ? &columns >= a:threshold + g:opensplit_threshold ? 
+    let open = !s:IsEmptyFile() ? &columns >= a:threshold+get(g:,'opensplit_threshold',50) ? 
                 \ (a:iscommand ? 'vert ' : 'vsplit ') :
                 \ (a:iscommand ? 'tab '  : 'tabnew ') :
                 \ (a:iscommand ? ''      : 'edit '  )
@@ -693,7 +669,6 @@ function! OpenSplit(input, threshold, iscommand) " {{{
     if l:open =~# 'v\(ert\|split\)'
         let &l:textwidth = a:threshold
         setlocal nonumber norelativenumber
-        nmap <buffer> <silent> <esc> q
     endif
 endfunction " }}}
 
