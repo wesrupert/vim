@@ -419,7 +419,7 @@ function! MyTabLabel(lnum) " {{{
             let name = bufname(bufnrlist[bufnr])
             let modified = getbufvar(bufnrlist[bufnr], '&modified')
         endwhile
-        let name = name=='' ? &buftype=='quickfix' ? '[Quickfix]' : '[No Name]' : let name = fnamemodify(name, ':t')
+        let name = name=='' ? &buftype=='quickfix' ? '[Quickfix]' : '[No Name]' : fnamemodify(name, ':t')
     endif
     if name == 'Scratch.md' | let name = '[Scratch]' | endif
     if getbufvar(bufnrlist[bufnr], '&buftype') == 'help'
