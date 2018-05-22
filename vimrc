@@ -50,6 +50,8 @@ endfunction " }}}
 let g:vimhome = expand(has('win32') ? '$HOME/vimfiles' : '~/.vim')
 let g:vimrc = expand(g:vimhome.'/vimrc')
 let g:vimplug = expand(g:vimhome.'/plug')
+
+let g:mapleader = ','
 call s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before', 'g:vimrc_leader')
 
 let g:slash = has('win32') ? '\' : '/'
