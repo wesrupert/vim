@@ -21,7 +21,7 @@ function! s:IsEmptyFile() " {{{
     return 1
 endfunction " }}}
 
-function! s:TryCreateDir(path) " {{{
+function! s:TryMkdir(path) " {{{
     if !filereadable(a:path) && filewritable(a:path) == 0
         try
             call mkdir(a:path, 'p')
@@ -56,7 +56,7 @@ let g:temp = expand(((filewritable($TMP) == 2)     ? expand($TMP) :
             \        (filewritable($TMPDIR) == 2)  ? expand($TEMP) :
             \        (filewritable('C:\TMP') == 2) ? 'C:\TMP\' :
             \        (filewritable('/tmp') == 2)   ? '/tmp/' : g:vimhome).'/vimtemp')
-call s:TryCreateDir(g:temp)
+call s:TryMkdir(g:temp)
 
 " Preferences and Settings {{{
 
@@ -326,13 +326,13 @@ endfunction
 
 set backup writebackup
 let s:backupdir = expand(g:temp.g:slash.'backups')
-silent call s:TryCreateDir(s:backupdir)
+silent call s:TryMkdir(s:backupdir)
 let &directory = s:backupdir.g:slash.g:slash
 augroup Backups | autocmd!
-    autocmd BufRead * let &l:backupdir = s:backupdir.g:slash.expand("%:p:h:t") | silent call s:TryCreateDir(&l:backupdir)
+    autocmd BufRead * let &l:backupdir = s:backupdir.g:slash.expand("%:p:h:t") | silent call s:TryMkdir(&l:backupdir)
 augroup END
 
-if has('persistent_undo') && s:TryCreateDir(g:temp.g:slash.'undo')
+if has('persistent_undo') && s:TryMkdir(g:temp.g:slash.'undo')
     set undofile
     let &undodir = expand(g:temp.g:slash.'undo')
 endif
@@ -344,8 +344,8 @@ augroup RememberCursor | autocmd!
     autocmd BufReadPost * if line("'\"")>0 && line("'\"")<=line('$') | exe "normal g`\"" | endif
 augroup END
 
-augroup CreateDirOnWrite | autocmd!
-    autocmd BufWritePre * silent call s:TryCreateDir(expand('<afile>:p:h'))
+augroup MkdirOnWrite | autocmd!
+    autocmd BufWritePre * silent call s:TryMkdir(expand('<afile>:p:h'))
 augroup END
 
 augroup Filetypes | autocmd!
