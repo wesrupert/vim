@@ -1,24 +1,15 @@
-﻿" Script functions {{{ {{{
+" Script functions {{{ {{{
 
 function! s:GenerateCAbbrev(orig, complStart, new) " {{{
-    let l = len(a:orig)
-    if a:complStart > l | let a:complStart = l | endif
-    while l >= a:complStart
-        let s = strpart(a:orig, 0, l)
+    let len = len(a:orig) | if a:complStart > len | let a:complStart = len | endif
+    while len >= a:complStart
+        let s = strpart(a:orig, 0, len) | let len = len - 1
         execute "cabbrev ".s." <c-r>=(getcmdtype()==':' && getcmdpos()==1 ? '".a:new."' : '".s."')<CR>"
-        let l = l - 1
     endwhile
 endfunction " }}}
 
 function! s:IsEmptyFile() " {{{
-    if @% != ''                            " Not-empty filename
-        return 0
-    elseif filereadable(@%) != 0           " File exists on disk
-        return 0
-    elseif line('$') != 1 || col('$') != 1 " Buffer has contents
-        return 0
-    endif
-    return 1
+    return !(@%!='' || filereadable(@%)!=0 || line('$')!=1 || col('$')!=1)
 endfunction " }}}
 
 function! s:TryMkdir(path) " {{{
@@ -31,14 +22,10 @@ function! s:TryMkdir(path) " {{{
     return 0
 endfunction " }}}
 
-function! s:TrySourceFile(path, backup, assign) " {{{
+function! s:TrySourceFile(path, backup) " {{{
     let l:path = filereadable(a:path) ? a:path : filereadable(a:backup) ? a:backup : ''
-    if l:path != ''
-        silent execute 'source '.l:path
-        if a:assign != ''
-            silent execute 'let '.a:assign.' = "'escape(l:path, '\').'"'
-        endif
-    endif
+    if l:path != '' | silent execute 'source '.l:path | endif
+    return escape(l:path, '\')
 endfunction " }}}
 
 " }}} }}}
@@ -48,7 +35,7 @@ let g:vimrc = expand(g:vimhome.'/vimrc')
 let g:vimplug = expand(g:vimhome.'/plug')
 
 let g:mapleader = ','
-call s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before', 'g:vimrc_leader')
+let g:vimrc_leader = s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before')
 
 let g:slash = has('win32') ? '\' : '/'
 let g:temp = expand(((filewritable($TMP) == 2)     ? expand($TMP) :
@@ -63,20 +50,15 @@ call s:TryMkdir(g:temp)
 " Application settings
 syntax on
 filetype plugin indent on
-set hidden switchbuf=usetab splitbelow splitright
+set shortmess+=A hidden switchbuf=usetab splitbelow splitright
 set noerrorbells belloff=all visualbell t_vb=
-set nospell diffopt+=context:3
-set scrolloff=3 sidescrolloff=1 sidescroll=1
-set shortmess+=A
+set scrolloff=3 sidescroll=1
 set tabline=%!TermTabLabel() guitablabel=%{MyTabLabel(v:lnum)} guitabtooltip=%{GuiTabToolTip()}
-set termguicolors lazyredraw guioptions=gt guicursor+=n-v-c:blinkon0 mouse=a
-set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:p:h\")})%)%(\ %a%)\ -\ %{v:servername}
+set termguicolors lazyredraw guioptions=!egkt
 set updatetime=500
-let g:opensplit_on_right = 0
 
 " Command bar
-set ignorecase smartcase infercase
-set incsearch hlsearch gdefault
+set ignorecase smartcase infercase incsearch hlsearch gdefault
 set laststatus=2 showcmd ruler noshowmode
 set wildmenu completeopt=longest,menuone,preview
 if executable('rg')
@@ -87,9 +69,8 @@ endif
 set autoindent smartindent linebreak breakindent formatoptions=cjnr
 set backspace=indent,eol,start
 set expandtab smarttab tabstop=4 softtabstop=4 shiftwidth=4
-set foldmethod=syntax foldenable foldlevelstart=10
-set listchars=tab:»\ ,space:·,trail:-,precedes:…,extends:…
-set number cursorline nowrap conceallevel=2
+set number cursorline nowrap conceallevel=2 foldmethod=syntax
+set listchars=tab:�\ ,space:�,trail:-,precedes:>,extends:<
 if has('gui_running')
     set guifont=Hack:h9,Source_Code_Pro:h11,Consolas:h10
     set guicursor+=n-v-c:blinkwait500-blinkon500-blinkoff500
@@ -121,23 +102,14 @@ endif
 call plug#begin(g:vimplug)
 
 " Colorschemes
-Plug 'cesardeazevedo/Fx-ColorScheme'
 Plug 'chriskempson/vim-tomorrow-theme'
 Plug 'iCyMind/NeoSolarized'
-Plug 'jonathanfilip/vim-lucius'
 Plug 'nightsense/forgotten'
 Plug 'nightsense/vimspectr'
 Plug 'nlknguyen/papercolor-theme'
 Plug 'rakr/vim-one'
 Plug 'reedes/vim-colors-pencil'
-Plug 'tyrannicaltoucan/vim-deep-space'
 Plug 'zcodes/vim-colors-basic'
-
-" UI plugins
-Plug 'airblade/vim-gitgutter'
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
-Plug 'wesrupert/vim-hoverhl'
 
 " Command plugins
 Plug 'ervandew/supertab'
@@ -154,10 +126,15 @@ Plug 'plasticboy/vim-markdown'
 Plug 'pprovost/vim-ps1'
 
 " Architecture plugins
+Plug 'airblade/vim-gitgutter'
 Plug 'airblade/vim-rooter'
-Plug 'tpope/vim-repeat'
-Plug 'haya14busa/incsearch.vim'
 Plug 'conormcd/matchindent.vim'
+Plug 'haya14busa/incsearch.vim'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
+Plug 'tpope/vim-repeat'
+Plug 'wesrupert/vim-hoverhl'
+
 if has('nvim')
     Plug 'equalsraf/neovim-gui-shim'
 else
@@ -166,15 +143,20 @@ else
     Plug 'tpope/vim-dispatch'
 endif
 
-call s:TrySourceFile(g:vimrc.'.plugins.custom', '', '')
+call s:TrySourceFile(g:vimrc.'.plugins.custom', '')
 call plug#end()
 
 " Configuration
-let g:gitgutter_sign_added              = '•'
-let g:gitgutter_sign_modified           = '•'
-let g:gitgutter_sign_removed            = '•'
-let g:gitgutter_sign_removed_first_line = '•'
-let g:gitgutter_sign_modified_removed   = '•'
+let g:gitgutter_sign_added              = has('nvim') ? '•' : '*'
+let g:gitgutter_sign_modified           = g:gitgutter_sign_added
+let g:gitgutter_sign_removed            = g:gitgutter_sign_added
+let g:gitgutter_sign_removed_first_line = g:gitgutter_sign_added
+let g:gitgutter_sign_modified_removed   = g:gitgutter_sign_added
+
+augroup Fzf | autocmd!
+    autocmd FileType fzf set laststatus=0 noshowmode noruler |
+                \ autocmd BufLeave <buffer> set laststatus=2 showmode ruler
+augroup END
 
 let g:incsearch#auto_nohlsearch = 1
 let g:hoverhl#enabled_filetypes = [ 'cs', 'cpp', 'c', 'ps1', 'typescript', 'javascript', 'json', 'sh', 'dosbatch', 'vim' ]
@@ -182,7 +164,7 @@ let g:markdown_fenced_languages = g:hoverhl#enabled_filetypes
 
 let g:rooter_silent_chdir = 1
 augroup RooterPost | autocmd!
-    autocmd User RooterChDir silent! cd src
+    autocmd User RooterChDir try | cd src | catch | endtry
 augroup END
 
 let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes) + [
@@ -193,6 +175,8 @@ let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes) + [
       \   {'buns': ['\[\s*', '\s*\]'], 'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['[']},
       \   {'buns': ['(\s*', '\s*)'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['(']},
       \ ]
+
+call s:TrySourceFile(g:vimrc.'.plugins.settings.custom', '')
 
 function! s:Helptags() abort " Invoke :helptags on all non-$VIM doc directories in runtimepath. {{{
     " Credit goes to Tim Pope (https://tpo.pe/) for this function.
@@ -220,7 +204,6 @@ call s:Helptags()
      map          /             <Plug>(incsearch-forward)
  noremap          :             ;
  noremap          ;             :
- noremap <silent> <a-o>         <c-i>
  noremap <silent> <a-p>         :History<cr>
  noremap <silent> <c-a>         <c-c>ggVG
  noremap <silent> <c-b>         :Buffers<cr>
@@ -231,31 +214,29 @@ call s:Helptags()
  noremap <silent> <c-k>         <c-w>k
  noremap <silent> <c-l>         <c-w>l
  noremap <silent> <c-p>         :Files<cr>
- noremap          <c-v>         "+gP
  noremap <silent> <c-t>         :tabnew<cr>
+ noremap          <c-v>         "+gP
  noremap <silent> <expr> j      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'j' : 'gj'
  noremap <silent> <expr> k      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'k' : 'gk'
  noremap          <leader>-     :execute 'edit '.expand('%:p:h')<cr>
  noremap <silent> <leader>/     :nohlsearch<cr>
  noremap <silent> <leader>[     :setlocal wrap!<cr>:setlocal wrap?<cr>
- noremap <silent> <leader>cd    :execute 'cd '.expand('%:p:h')<cr>:echo ':cd '.getcwd()<cr>
  noremap <silent> <leader>c,    :cd ..<cr>:echo ':cd '.getcwd()<cr>
+ noremap <silent> <leader>cd    :execute 'cd '.expand('%:p:h')<cr>:echo ':cd '.getcwd()<cr>
  noremap <silent> <leader>d     <c-x>
  noremap <silent> <leader>f     <c-a>
  noremap <silent> <leader>l     :setlocal list!<cr>:setlocal list?<cr>
  noremap <silent> <leader>o     :execute 'NERDTreeToggle '.expand('%:p:h')<cr>
  noremap <silent> <leader>ro    :set winheight=1 winwidth=1<cr>
  noremap          <leader>s     :%s/\<<c-r><c-w>\>/
- noremap <silent> <leader>u     :UndotreeToggle<cr>:UndotreeFocus<cr>
- noremap <silent> <leader>va    :call OpenSplit(g:vimrc_custom, 50, 0)<cr>
- noremap <silent> <leader>vp    :call OpenSplit(g:vimrc.'.plugins.custom', 50, 0)<cr>
- noremap <silent> <leader>vr    :call OpenSplit(g:vimrc, 100, 0)<cr>
+ noremap <silent> <leader>va    :call OpenAuxFile(g:vimrc_custom, 50, 0)<cr>
+ noremap <silent> <leader>vp    :call OpenAuxFile(g:vimrc.'.plugins.custom', 50, 0)<cr>
+ noremap <silent> <leader>vr    :call OpenAuxFile(g:vimrc, 100, 0)<cr>
  noremap <silent> <leader>vz    :execute 'source '.g:vimrc<cr>
  noremap <silent> <s-tab>       gT
  noremap <silent> <tab>         gt
      map          ?             <Plug>(incsearch-backward)
- noremap <silent> K             :Help <c-r><c-w><cr>
-     map          Q             <c-q>
+ noremap          Q             <c-q>
  noremap          Y             y$
  noremap          _             +
      map          g/            <Plug>(incsearch-stay)
@@ -265,10 +246,7 @@ call s:Helptags()
  noremap          s             <nop>
  noremap          ss            s
 
-inoremap          <c-,>         <c-d>
-inoremap          <c-.>         <c-t>
 inoremap          <c-backspace> <c-w>
-inoremap          kj            <esc>
 inoremap <silent> <c-a>         <esc>ggVG
 
 if (exists('g:mapleader')) | execute 'noremap \ '.g:mapleader | endif
@@ -280,9 +258,9 @@ command! -nargs=+ -complete=file_in_path Grep    silent grep! <args> | copen
 command! -nargs=+ -complete=file_in_path LGrep   silent lgrep! <args> | lopen
 
 call s:GenerateCAbbrev('grep',  2, 'Grep' )
+call s:GenerateCAbbrev('rg',    2, 'Grep' )
 call s:GenerateCAbbrev('help',  1, 'Help' )
 call s:GenerateCAbbrev('lgrep', 2, 'LGrep')
-call s:GenerateCAbbrev('rg',    2, 'Grep' )
 call s:GenerateCAbbrev('thelp', 2, 'THelp')
 
 " }}}
@@ -340,6 +318,7 @@ endif
 " }}} }}}
 
 " Auto Commands {{{ {{{
+
 augroup RememberCursor | autocmd!
     autocmd BufReadPost * if line("'\"")>0 && line("'\"")<=line('$') | exe "normal g`\"" | endif
 augroup END
@@ -376,7 +355,6 @@ augroup END
 " }}} }}}
 
 " Diff Settings {{{ {{{
-" NOTE: must be last group, as it clears augroups!
 
 augroup DiffLayout | autocmd!
     autocmd VimEnter * if &diff | call s:SetDiffLayout() | endif
@@ -395,17 +373,14 @@ endfunction
 " Functions {{{ {{{
 
 " Tabs {{{
+
 function! TermTabLabel() " {{{
     let label = ''
     for i in range(tabpagenr('$'))
         let label .= (i+1 == tabpagenr()) ? '%#TabLineSel#' : '%#TabLine#' " Select the highlighting
-        let label .= '%'.(i+1).'T'                                         " Set the tab page number (for mouse clicks)
-        let label .= ' %{MyTabLabel('.(i+1).')} '                          " The label is made by MyTabLabel()
-        let label .= '%#TabLine#|'                                         " Add divider
+        let label .= '%'.(i+1).'T %{MyTabLabel('.(i+1).')} %#TabLine#|'    " The label is made by MyTabLabel()
     endfor
     let label .= '%#TabLineFill#%T'                                        " Fill with TabLineFill and reset tab page nr
-    if tabpagenr('$') > 1 | let label .= '%=%#TabLine#%999XX' | endif      " Right-align close tab label
-
     return label
 endfunction " }}}
 
@@ -414,8 +389,7 @@ function! MyTabLabel(lnum) " {{{
     let bufnr = tabpagewinnr(a:lnum) - 1
     let name = bufname(bufnrlist[bufnr])
     let modified = getbufvar(bufnrlist[bufnr], '&modified')
-    let readonly = getbufvar(bufnrlist[bufnr], '&readonly')
-    let readonly = readonly || !getbufvar(bufnrlist[bufnr], '&modifiable')
+    let readonly = getbufvar(bufnrlist[bufnr], '&readonly') || !getbufvar(bufnrlist[bufnr], '&modifiable')
 
     if name != '' && name !~ 'NERD_tree'
         let name = fnamemodify(name, ':t')
@@ -484,18 +458,19 @@ function! GuiTabToolTip() " {{{
     endfor
     return tooltip
 endfunction " }}}
+
 " }}}
 
 function! OpenHelp(topic) " {{{
     try
-        call OpenSplit('help '.a:topic, 80, 1)
+        call OpenAuxFile('help '.a:topic, 80, 1)
     catch
         echohl ErrorMsg | echo 'Help:'.split(v:exception, ':')[-1] | echohl None
     endtry
 endfunction " }}}
 
 function! OpenScratch() " {{{
-    call OpenSplit(expand('$HOME'.g:slash.'Scratch.md'), 50, 0)
+    call OpenAuxFile(expand('$HOME'.g:slash.'Scratch.md'), 50, 0)
     autocmd CursorHold <buffer> silent update
     noremap <buffer> <silent> q :update<cr><bar><c-w>c
     nmap <buffer> <silent> <esc> q
@@ -503,9 +478,8 @@ function! OpenScratch() " {{{
     normal ggGG
 endfunction " }}}
 
-function! OpenSplit(input, threshold, iscommand) " {{{
-    let splitright = get(g:, 'opensplit_on_right', &splitright)
-    let canopensplit = &columns >= a:threshold+get(g:,'opensplit_threshold',50)
+function! OpenAuxFile(input, threshold, iscommand) " {{{
+    let canopensplit = &columns >= a:threshold + get(g:, 'opensplit_threshold', 50)
     let open = !s:IsEmptyFile() ? canopensplit ? 
                 \ (a:iscommand ? 'vert ' : 'vsplit ') :
                 \ (a:iscommand ? 'tab '  : 'tabnew ') :
@@ -519,7 +493,7 @@ function! OpenSplit(input, threshold, iscommand) " {{{
         execute l:open.a:input
     endif
 
-    execute 'wincmd '.(l:splitright ? 'L' : 'H')
+    execute 'wincmd '.(get(g:, 'openaux_splitright', !&splitright) ? 'L' : 'H')
     execute 'vertical resize '.a:threshold
     if l:open =~# 'v\(ert\|split\)'
         let &l:textwidth = a:threshold
@@ -537,6 +511,6 @@ endfunction "}}}
 
 " }}} }}}
 
-call s:TrySourceFile(g:vimrc.'.custom', g:vimrc.'.after', 'g:vimrc_custom')
+let g:vimrc_custom = s:TrySourceFile(g:vimrc.'.custom', g:vimrc.'.after')
 
 " vim: foldmethod=marker foldlevel=1
