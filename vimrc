@@ -21,10 +21,6 @@ function! s:IsEmptyFile() " {{{
     return 1
 endfunction " }}}
 
-function! s:IsGui() " {{{
-    return has('gui_running') || (has('nvim') && get(g:, 'GuiLoaded', 0) == 1)
-endfunction " }}}
-
 function! s:TryCreateDir(path) " {{{
     if !filereadable(a:path) && filewritable(a:path) == 0
         try
@@ -94,6 +90,10 @@ set expandtab smarttab tabstop=4 softtabstop=4 shiftwidth=4
 set foldmethod=syntax foldenable foldlevelstart=10
 set listchars=tab:»\ ,space:·,trail:-,precedes:…,extends:…
 set number cursorline nowrap conceallevel=2
+if has('gui_running')
+    set guifont=Hack:h9,Source_Code_Pro:h11,Consolas:h10
+    set guicursor+=n-v-c:blinkwait500-blinkon500-blinkoff500
+endif
 
 " Platform-specific settings
 if has('win32')
@@ -154,6 +154,7 @@ Plug 'plasticboy/vim-markdown'
 Plug 'pprovost/vim-ps1'
 
 " Architecture plugins
+Plug 'airblade/vim-rooter'
 Plug 'tpope/vim-repeat'
 Plug 'haya14busa/incsearch.vim'
 Plug 'conormcd/matchindent.vim'
@@ -178,6 +179,11 @@ let g:gitgutter_sign_modified_removed   = '•'
 let g:incsearch#auto_nohlsearch = 1
 let g:hoverhl#enabled_filetypes = [ 'cs', 'cpp', 'c', 'ps1', 'typescript', 'javascript', 'json', 'sh', 'dosbatch', 'vim' ]
 let g:markdown_fenced_languages = g:hoverhl#enabled_filetypes
+
+let g:rooter_silent_chdir = 1
+augroup RooterPost | autocmd!
+    autocmd User RooterChDir silent! cd src
+augroup END
 
 let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes) + [
       \   {'buns': ['{ ', ' }'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['{']},
@@ -322,7 +328,7 @@ set backup writebackup
 let s:backupdir = expand(g:temp.g:slash.'backups')
 silent call s:TryCreateDir(s:backupdir)
 let &directory = s:backupdir.g:slash.g:slash
-augroup Backups
+augroup Backups | autocmd!
     autocmd BufRead * let &l:backupdir = s:backupdir.g:slash.expand("%:p:h:t") | silent call s:TryCreateDir(&l:backupdir)
 augroup END
 
@@ -338,12 +344,15 @@ augroup RememberCursor | autocmd!
     autocmd BufReadPost * if line("'\"")>0 && line("'\"")<=line('$') | exe "normal g`\"" | endif
 augroup END
 
+augroup CreateDirOnWrite | autocmd!
+    autocmd BufWritePre * silent call s:TryCreateDir(expand('<afile>:p:h'))
+augroup END
+
 augroup Filetypes | autocmd!
-    autocmd BufNew,BufReadPre *.xaml,*.targets setf xml
-    autocmd BufWritePre *                      silent call s:TryCreateDir(expand('<afile>:p:h'))
-    autocmd FileType c,cpp,cs,h,js,ts          noremap <buffer> ip i{| noremap <buffer> ap a{| " }}
-    autocmd FileType gitcommit                 call setpos('.', [0, 1, 1, 0]) | setlocal tw=72 fo+=t cc=50,+0
-    autocmd FileType markdown,txt              setlocal wrap nonumber norelativenumber nocursorline
+    autocmd BufNew,BufReadPre *.xaml,*.targets,*.props  setf xml
+    autocmd FileType  c,cpp,cs,h,js,ts  noremap <buffer> ip i{| noremap <buffer> ap a{| " }}
+    autocmd FileType  gitcommit  call setpos('.', [0, 1, 1, 0]) | setlocal tw=72 fo+=t cc=50,+0
+    autocmd FileType  markdown,txt  setlocal wrap nonumber norelativenumber nocursorline
 augroup END
 
 augroup QuickExit | autocmd!
@@ -353,10 +362,6 @@ augroup END
 augroup Spelling | autocmd!
     autocmd ColorScheme * hi clear SpellRare | hi clear SpellLocal
     autocmd BufRead * if &l:modifiable == 0 | setlocal nospell | endif
-augroup END
-
-augroup AutoChDir | autocmd!
-    autocmd BufEnter * silent! lcd %:p:h
 augroup END
 
 highlight link MixedWhitespace Underlined
