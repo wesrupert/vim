@@ -248,6 +248,7 @@ call s:Helptags()
 
 inoremap          <c-backspace> <c-w>
 inoremap <silent> <c-a>         <esc>ggVG
+inoremap kj                     <esc>
 
 if (exists('g:mapleader')) | execute 'noremap \ '.g:mapleader | endif
 
