@@ -150,6 +150,7 @@ Plug 'octol/vim-cpp-enhanced-highlight'
 Plug 'oranget/vim-csharp'
 Plug 'plasticboy/vim-markdown'
 Plug 'pprovost/vim-ps1'
+Plug 'udalov/kotlin-vim'
 
 " Architecture plugins
 Plug 'tpope/vim-repeat'
