@@ -1,5 +1,16 @@
 " Script functions {{{ {{{
 
+function! Mkdir(path) " {{{
+    let l:path = expand(a:path)
+    if !filereadable(l:path) && filewritable(l:path) != 1
+        try
+            call mkdir(l:path, 'p')
+            return 1
+        catch /E739/ | endtry
+    endif
+    return 0
+endfunction " }}}
+
 function! s:GenerateCAbbrev(orig, complStart, new) " {{{
     let len = len(a:orig) | if a:complStart > len | let a:complStart = len | endif
     while len >= a:complStart
@@ -10,16 +21,6 @@ endfunction " }}}
 
 function! s:IsEmptyFile() " {{{
     return !(@%!='' || filereadable(@%)!=0 || line('$')!=1 || col('$')!=1)
-endfunction " }}}
-
-function! s:TryMkdir(path) " {{{
-    if !filereadable(a:path) && filewritable(a:path) == 0
-        try
-            call mkdir(a:path, 'p')
-            return 1
-        catch /E739/ | endtry
-    endif
-    return 0
 endfunction " }}}
 
 function! s:TrySourceFile(path, backup) " {{{
@@ -40,10 +41,11 @@ let g:vimrc_leader = s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before')
 let g:slash = has('win32') ? '\' : '/'
 let g:temp = expand(((filewritable($TMP) == 2)     ? expand($TMP) :
             \        (filewritable($TEMP) == 2)    ? expand($TEMP) :
-            \        (filewritable($TMPDIR) == 2)  ? expand($TEMP) :
+            \        (filewritable($TMPDIR) == 2)  ? expand($TMPDIR) :
             \        (filewritable('C:\TMP') == 2) ? 'C:\TMP\' :
-            \        (filewritable('/tmp') == 2)   ? '/tmp/' : g:vimhome).'/vimtemp')
-call s:TryMkdir(g:temp)
+            \        (filewritable('/tmp') == 2)   ? '/tmp/' : g:vimhome.g:slash).'/vimtemp/')
+let g:temp = substitute(g:temp, '[\\/]\+', g:slash, 'g')
+call Mkdir(g:temp)
 
 " Preferences and Settings {{{
 
@@ -56,6 +58,7 @@ set scrolloff=3 sidescroll=1
 set tabline=%!TermTabLabel() guitablabel=%{MyTabLabel(v:lnum)} guitabtooltip=%{GuiTabToolTip()}
 set termguicolors lazyredraw guioptions=!egkt
 set updatetime=500
+set mouse=a
 
 " Command bar
 set ignorecase smartcase infercase incsearch hlsearch gdefault
@@ -70,7 +73,9 @@ set autoindent smartindent linebreak breakindent formatoptions=cjnr
 set backspace=indent,eol,start
 set expandtab smarttab tabstop=4 softtabstop=4 shiftwidth=4
 set number cursorline nowrap conceallevel=2 foldmethod=syntax
-set listchars=tab:»\ ,space:·,trail:-,precedes:>,extends:<
+if !has('nvim')
+    set listchars=tab:»\ ,space:·,trail:-,precedes:>,extends:<
+endif
 if has('gui_running')
     set guifont=Hack:h9,Source_Code_Pro:h11,Consolas:h10
     set guicursor+=n-v-c:blinkwait500-blinkon500-blinkoff500
@@ -103,6 +108,7 @@ call plug#begin(g:vimplug)
 
 " Colorschemes
 Plug 'chriskempson/vim-tomorrow-theme'
+Plug 'fenetikm/falcon'
 Plug 'iCyMind/NeoSolarized'
 Plug 'nightsense/forgotten'
 Plug 'nightsense/vimspectr'
@@ -116,6 +122,7 @@ Plug 'ervandew/supertab'
 Plug 'machakann/vim-sandwich'
 Plug 'scrooloose/nerdcommenter'
 Plug 'tpope/vim-unimpaired'
+Plug 'tpope/vim-fugitive'
 
 " Filetype plugins
 Plug 'elzr/vim-json'
@@ -198,14 +205,11 @@ call s:Helptags()
 " Keybindings and Commands {{{
 " Sort via :sort /.*\%18v/
 
- noremap          "             '
- noremap          '             "
  noremap          +             -
  noremap          -             _
      map          /             <Plug>(incsearch-forward)
  noremap          :             ;
  noremap          ;             :
- noremap <silent> <a-p>         :History<cr>
  noremap <silent> <c-a>         <c-c>ggVG
  noremap <silent> <c-b>         :Buffers<cr>
  noremap <silent> <c-e>         :execute 'silent !'.(has('win32')?'explorer':'open').' '.shellescape(expand('%:p:h'))<cr>
@@ -214,7 +218,8 @@ call s:Helptags()
  noremap <silent> <c-j>         <c-w>j
  noremap <silent> <c-k>         <c-w>k
  noremap <silent> <c-l>         <c-w>l
- noremap <silent> <c-p>         :Files<cr>
+ noremap <silent> <c-n>         :Files<cr>
+ noremap <silent> <c-p>         :History<cr>
  noremap <silent> <c-t>         :tabnew<cr>
  noremap          <c-v>         "+gP
  noremap <silent> <expr> j      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'j' : 'gj'
@@ -305,16 +310,16 @@ endfunction
 " Backup and Undo {{{ {{{
 
 set backup writebackup
-let s:backupdir = expand(g:temp.g:slash.'backups')
-silent call s:TryMkdir(s:backupdir)
+let s:backupdir = expand(g:temp.'backups')
+silent call Mkdir(s:backupdir)
 let &directory = s:backupdir.g:slash.g:slash
 augroup Backups | autocmd!
-    autocmd BufRead * let &l:backupdir = s:backupdir.g:slash.expand("%:p:h:t") | silent call s:TryMkdir(&l:backupdir)
+    autocmd BufRead * let &l:backupdir = s:backupdir.g:slash.expand("%:p:h:t") | silent call Mkdir(&l:backupdir)
 augroup END
 
-if has('persistent_undo') && s:TryMkdir(g:temp.g:slash.'undo')
+if has('persistent_undo') && Mkdir(g:temp.'undo')
     set undofile
-    let &undodir = expand(g:temp.g:slash.'undo')
+    let &undodir = expand(g:temp.'undo')
 endif
 
 " }}} }}}
@@ -326,7 +331,7 @@ augroup RememberCursor | autocmd!
 augroup END
 
 augroup MkdirOnWrite | autocmd!
-    autocmd BufWritePre * silent call s:TryMkdir(expand('<afile>:p:h'))
+    autocmd BufWritePre * silent call Mkdir('<afile>:p:h')
 augroup END
 
 augroup Filetypes | autocmd!
@@ -334,6 +339,7 @@ augroup Filetypes | autocmd!
     autocmd FileType  c,cpp,cs,h,js,ts  noremap <buffer> ip i{| noremap <buffer> ap a{| " }}
     autocmd FileType  gitcommit  call setpos('.', [0, 1, 1, 0]) | setlocal tw=72 fo+=t cc=50,+0
     autocmd FileType  markdown,txt  setlocal wrap nonumber norelativenumber nocursorline
+    autocmd FileType  vim  noremap <buffer> K :Help <c-r><c-w><cr>
 augroup END
 
 augroup QuickExit | autocmd!
@@ -404,7 +410,7 @@ function! MyTabLabel(lnum) " {{{
         endwhile
         let name = name=='' ? &buftype=='quickfix' ? '[Quickfix]' : '[No Name]' : fnamemodify(name, ':t')
     endif
-    if name == 'Scratch.md' | let name = '[Scratch]' | endif
+    if name == '.scratch.md' | let name = '[Scratch]' | endif
     if getbufvar(bufnrlist[bufnr], '&buftype') == 'help'
         let modified = 0 | let readonly = 0
         let name = 'H['.fnamemodify(name, ':r').']'
@@ -472,7 +478,7 @@ function! OpenHelp(topic) " {{{
 endfunction " }}}
 
 function! OpenScratch() " {{{
-    call OpenAuxFile(expand('$HOME'.g:slash.'Scratch.md'), 50, 0)
+    call OpenAuxFile(expand('$HOME'.g:slash.'.scratch.md'), 50, 0)
     autocmd CursorHold <buffer> silent update
     noremap <buffer> <silent> q :update<cr><bar><c-w>c
     nmap <buffer> <silent> <esc> q

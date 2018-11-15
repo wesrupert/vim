@@ -1,0 +1,32 @@
+ noremap          +             -
+ noremap          -             _
+ noremap          :             ;
+ noremap          ;             :
+ noremap <silent> <c-a>         <c-c>ggVG
+ noremap <silent> <c-h>         <c-w>h
+ noremap <silent> <c-j>         <c-w>j
+ noremap <silent> <c-k>         <c-w>k
+ noremap <silent> <c-l>         <c-w>l
+ noremap <silent> <c-t>         :tabnew<cr>
+ noremap          <c-v>         "+gP
+ noremap <silent> <expr> j      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'j' : 'gj'
+ noremap <silent> <expr> k      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'k' : 'gk'
+ noremap          ,-            :execute 'edit '.expand('%:p:h')<cr>
+ noremap <silent> ,/            :nohlsearch<cr>
+ noremap <silent> ,[            :setlocal wrap!<cr>:setlocal wrap?<cr>
+ noremap <silent> ,c,           :cd ..<cr>:echo ':cd '.getcwd()<cr>
+ noremap <silent> ,cd           :execute 'cd '.expand('%:p:h')<cr>:echo ':cd '.getcwd()<cr>
+ noremap <silent> ,d            <c-x>
+ noremap <silent> ,f            <c-a>
+ noremap <silent> ,l            :setlocal list!<cr>:setlocal list?<cr>
+ noremap          ,s            :%s/\<<c-r><c-w>\>/
+ noremap <silent> <s-tab>       gT
+ noremap <silent> <tab>         gt
+ noremap          Q             <c-q>
+ noremap          Y             y$
+ noremap          _             +
+ noremap <silent> gV            `[v`]
+
+inoremap          <c-backspace> <c-w>
+inoremap <silent> <c-a>         <esc>ggVG
+inoremap kj                     <esc>
