@@ -1,3 +1,6 @@
+let g:mapleader = ','
+let g:slash = has('win32') ? '\' : '/'
+
 " Script functions {{{ {{{
 
 function! Mkdir(path) " {{{
@@ -9,6 +12,19 @@ function! Mkdir(path) " {{{
         catch /E739/ | endtry
     endif
     return 0
+endfunction " }}}
+
+function! NormFile(path) " {{{
+    let expanded = expand(substitute(a:path, '[\\/]\+', g:slash, 'g'))
+    return expanded
+endfunction " }}}
+
+function! NormPath(path) " {{{
+    let expanded = NormFile(a:path)
+    if expanded[len(expanded)-1] != g:slash
+        let expanded .= g:slash
+    endif
+    return expanded
 endfunction " }}}
 
 function! s:GenerateCAbbrev(orig, complStart, new) " {{{
@@ -31,21 +47,14 @@ endfunction " }}}
 
 " }}} }}}
 
-let g:vimhome = expand(has('win32') ? '$HOME/vimfiles' : '~/.vim')
-let g:vimrc = expand(g:vimhome.'/vimrc')
-let g:vimplug = expand(g:vimhome.'/plug')
+let g:vimhome = NormPath('$HOME/'.(has('win32') ? 'vimfiles' : '.vim'))
 
-let g:mapleader = ','
+let g:vimrc   = NormFile(g:vimhome.'/vimrc')
 let g:vimrc_leader = s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before')
 
-let g:slash = has('win32') ? '\' : '/'
-let g:temp = expand(((filewritable($TMP) == 2)     ? expand($TMP) :
-            \        (filewritable($TEMP) == 2)    ? expand($TEMP) :
-            \        (filewritable($TMPDIR) == 2)  ? expand($TMPDIR) :
-            \        (filewritable('C:\TMP') == 2) ? 'C:\TMP\' :
-            \        (filewritable('/tmp') == 2)   ? '/tmp/' : g:vimhome.g:slash).'/vimtemp/')
-let g:temp = substitute(g:temp, '[\\/]\+', g:slash, 'g')
+let g:temp    = NormPath(g:vimhome.'/tmp')
 call Mkdir(g:temp)
+
 
 " Preferences and Settings {{{
 
@@ -56,9 +65,12 @@ set shortmess+=A hidden switchbuf=usetab splitbelow splitright
 set noerrorbells belloff=all visualbell t_vb=
 set scrolloff=3 sidescroll=1
 set tabline=%!TermTabLabel() guitablabel=%{MyTabLabel(v:lnum)} guitabtooltip=%{GuiTabToolTip()}
-set termguicolors lazyredraw guioptions=!egkt
+set lazyredraw guioptions=!egkt
 set updatetime=500
 set mouse=a
+if exists('&termguicolors')
+    set termguicolors
+endif
 
 " Command bar
 set ignorecase smartcase infercase incsearch hlsearch gdefault
@@ -94,17 +106,19 @@ endif
 " Load plugins
 
 " Update packpath
-let s:packpath = fnamemodify(g:vimrc, ':p:h')
-if match(&packpath, substitute(s:packpath, '[\\/]', '[\\\\/]', 'g')) == -1
-    let &packpath .= ','.s:packpath
+if exists('&packpath')
+    let s:packpath = fnamemodify(g:vimrc, ':p:h')
+    if match(&packpath, substitute(s:packpath, '[\\/]', '[\\\\/]', 'g')) == -1
+        let &packpath .= ','.s:packpath
+    endif
 endif
 
 " Legacy plugins
-if !has('nvim')
+if !has('nvim') && exists(':packadd')
     packadd! matchit
 endif
 
-call plug#begin(g:vimplug)
+call plug#begin(NormPath(g:vimhome.'/plug'))
 
 " Colorschemes
 Plug 'chriskempson/vim-tomorrow-theme'
@@ -119,6 +133,7 @@ Plug 'zcodes/vim-colors-basic'
 
 " Command plugins
 Plug 'ervandew/supertab'
+Plug 'junegunn/vim-easy-align'
 Plug 'machakann/vim-sandwich'
 Plug 'scrooloose/nerdcommenter'
 Plug 'tpope/vim-unimpaired'
@@ -211,15 +226,11 @@ call s:Helptags()
  noremap          :             ;
  noremap          ;             :
  noremap <silent> <c-a>         <c-c>ggVG
- noremap <silent> <c-b>         :Buffers<cr>
  noremap <silent> <c-e>         :execute 'silent !'.(has('win32')?'explorer':'open').' '.shellescape(expand('%:p:h'))<cr>
- noremap <silent> <c-f>         :Lines<cr>
  noremap <silent> <c-h>         <c-w>h
  noremap <silent> <c-j>         <c-w>j
  noremap <silent> <c-k>         <c-w>k
  noremap <silent> <c-l>         <c-w>l
- noremap <silent> <c-n>         :Files<cr>
- noremap <silent> <c-p>         :History<cr>
  noremap <silent> <c-t>         :tabnew<cr>
  noremap          <c-v>         "+gP
  noremap <silent> <expr> j      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'j' : 'gj'
@@ -232,6 +243,10 @@ call s:Helptags()
  noremap <silent> <leader>d     <c-x>
  noremap <silent> <leader>f     <c-a>
  noremap <silent> <leader>l     :setlocal list!<cr>:setlocal list?<cr>
+ noremap <silent> <leader>ob    :Buffers<cr>
+ noremap <silent> <leader>of    :Files<cr>
+ noremap <silent> <leader>oh    :History<cr>
+ noremap <silent> <leader>ol    :Lines<cr>
  noremap <silent> <leader>o     :execute 'NERDTreeToggle '.expand('%:p:h')<cr>
  noremap <silent> <leader>ro    :set winheight=1 winwidth=1<cr>
  noremap          <leader>s     :%s/\<<c-r><c-w>\>/
@@ -245,6 +260,7 @@ call s:Helptags()
  noremap          Q             <c-q>
  noremap          Y             y$
  noremap          _             +
+     map          ga            <Plug>(EasyAlign)
      map          g/            <Plug>(incsearch-stay)
  noremap <silent> gV            `[v`]
  noremap <silent> gs            :Scratch<cr>
@@ -310,16 +326,17 @@ endfunction
 " Backup and Undo {{{ {{{
 
 set backup writebackup
-let s:backupdir = expand(g:temp.'backups')
-silent call Mkdir(s:backupdir)
-let &directory = s:backupdir.g:slash.g:slash
+
+let g:backupdir = get(g:, 'backupdir', NormPath(g:temp.'backups'))
+silent call Mkdir(g:backupdir)
+let &directory = g:backupdir.g:slash " Add extra slash to avoid filename collisions
 augroup Backups | autocmd!
-    autocmd BufRead * let &l:backupdir = s:backupdir.g:slash.expand("%:p:h:t") | silent call Mkdir(&l:backupdir)
+    autocmd BufRead * let &l:backupdir = NormPath(g:backupdir.g:slash.expand("%:p:h:t")) | silent call Mkdir(&l:backupdir)
 augroup END
 
 if has('persistent_undo') && Mkdir(g:temp.'undo')
     set undofile
-    let &undodir = expand(g:temp.'undo')
+    let &undodir = expand(g:backupdir.':h').'undo'
 endif
 
 " }}} }}}
