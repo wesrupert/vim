@@ -15,6 +15,8 @@
  noremap <silent> ,/            :nohlsearch<cr>
  noremap <silent> ,[            :setlocal wrap!<cr>:setlocal wrap?<cr>
  noremap <silent> ,c,           :cd ..<cr>:echo ':cd '.getcwd()<cr>
+ noremap <silent> ,cc           :action CommentByLineComment<cr>
+ noremap <silent> ,cs           :action CommentByBlockComment<cr>
  noremap <silent> ,cd           :execute 'cd '.expand('%:p:h')<cr>:echo ':cd '.getcwd()<cr>
  noremap <silent> ,d            <c-x>
  noremap <silent> ,f            <c-a>
