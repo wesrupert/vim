@@ -84,7 +84,7 @@ endif
 set autoindent smartindent linebreak breakindent formatoptions=cjnr
 set backspace=indent,eol,start
 set expandtab smarttab tabstop=4 softtabstop=4 shiftwidth=4
-set number cursorline nowrap conceallevel=2 foldmethod=syntax
+set number cursorline nowrap conceallevel=2 foldmethod=syntax fdc=0
 if !has('nvim')
     set listchars=tab:»\ ,space:·,trail:-,precedes:>,extends:<
 endif
@@ -155,6 +155,8 @@ Plug 'conormcd/matchindent.vim'
 Plug 'haya14busa/incsearch.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
+Plug 'mbbill/undotree'
+Plug 'reedes/vim-lexical'
 Plug 'tpope/vim-repeat'
 Plug 'wesrupert/vim-hoverhl'
 
@@ -183,6 +185,7 @@ augroup END
 
 let g:incsearch#auto_nohlsearch = 1
 let g:hoverhl#enabled_filetypes = [ 'cs', 'cpp', 'c', 'ps1', 'typescript', 'javascript', 'json', 'sh', 'dosbatch', 'vim' ]
+let g:lexical#thesaurus = [ NormPath(g:vimhome.'/moby-thesaurus/words.txt') ]
 let g:markdown_fenced_languages = g:hoverhl#enabled_filetypes
 
 let g:rooter_silent_chdir = 1
