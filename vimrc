@@ -45,10 +45,23 @@ function! s:TrySourceFile(path, backup) " {{{
     return escape(l:path, '\')
 endfunction " }}}
 
+function! s:OpenSplash() " {{{
+    if !argc() && (line2byte('$') == -1) && (v:progname =~? '^[-gmnq]\=vim\=x\=\%[\.exe]$')
+        call OpenScratch()
+        let b:showmode = &showmode
+        let b:laststatus = &laststatus
+        set noshowmode laststatus=0
+        augroup ScratchSplash | autocmd!
+            autocmd BufLeave <buffer> let &showmode = b:showmode |
+                        \ let &laststatus = b:laststatus |
+                        \ autocmd! ScratchSplash BufLeave
+        augroup END
+    endif
+endfunction " }}}
+
 " }}} }}}
 
 let g:vimhome = NormPath('$HOME/'.(has('win32') ? 'vimfiles' : '.vim'))
-
 let g:vimrc   = NormFile(g:vimhome.'/vimrc')
 let g:vimrc_leader = s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before')
 
@@ -346,6 +359,10 @@ endif
 
 " Auto Commands {{{ {{{
 
+augroup Splash | autocmd!
+    autocmd VimEnter * nested call s:OpenSplash()
+augroup END
+
 augroup RememberCursor | autocmd!
     autocmd BufReadPost * if line("'\"")>0 && line("'\"")<=line('$') | exe "normal g`\"" | endif
 augroup END
@@ -499,7 +516,9 @@ endfunction " }}}
 
 function! OpenScratch() " {{{
     call OpenAuxFile(expand('$HOME'.g:slash.'.scratch.md'), 50, 0)
-    autocmd CursorHold <buffer> silent update
+    augroup Scratch | autocmd!
+        autocmd CursorHold <buffer> silent update
+    augroup END
     noremap <buffer> <silent> q :update<cr><bar><c-w>c
     nmap <buffer> <silent> <esc> q
     nnoremap Q q
