@@ -50,6 +50,7 @@ endfunction " }}}
 let g:vimhome = NormPath('$HOME/'.(has('win32') ? 'vimfiles' : '.vim'))
 let g:vimrc   = NormFile(g:vimhome.'/vimrc')
 let g:vimrc_leader = s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before')
+let g:scratch= expand('$HOME'.g:slash.'.scratch.md')
 
 let g:temp    = NormPath(g:vimhome.'/tmp')
 call Mkdir(g:temp)
@@ -66,7 +67,7 @@ set noerrorbells belloff=all visualbell t_vb=
 set display+=lastline
 set scrolloff=3 sidescroll=1
 set tabline=%!TermTabLabel() guitablabel=%{MyTabLabel(v:lnum)} guitabtooltip=%{GuiTabToolTip()}
-set lazyredraw guioptions=!egkt
+set lazyredraw noequalalways guioptions=!egkt
 set updatetime=500
 set mouse=a
 if exists('&termguicolors')
@@ -107,6 +108,10 @@ if has('win32')
     set selectmode=
 endif
 
+" Languages for other settings
+let g:programming_languages = [ 'c', 'cfg', 'conf', 'cpp', 'cs', 'dosbatch', 'go', 'java',
+            \ 'javascript', 'json', 'jsp', 'objc', 'ruby', 'sh', 'typescript', 'vim', 'zsh', ]
+
 " }}}
 
 " Plugins {{{
@@ -138,6 +143,7 @@ Plug 'nlknguyen/papercolor-theme'
 Plug 'rakr/vim-one'
 Plug 'reedes/vim-colors-pencil'
 Plug 'zcodes/vim-colors-basic'
+Plug 'cormacrelf/vim-colors-github'
 
 " Command plugins
 Plug 'junegunn/vim-easy-align'
@@ -145,6 +151,7 @@ Plug 'machakann/vim-sandwich'
 Plug 'scrooloose/nerdcommenter'
 Plug 'tpope/vim-unimpaired'
 Plug 'tpope/vim-fugitive'
+Plug 'nelstrom/vim-visual-star-search'
 
 " Filetype plugins
 Plug 'elzr/vim-json'
@@ -165,8 +172,7 @@ else
 endif
 Plug 'honza/vim-snippets'
 Plug 'sirver/ultisnips'
-"Plug 'shougo/neosnippet.vim'
-"Plug 'shougo/neosnippet-snippets'
+Plug 'rstacruz/vim-closer'
 
 " Architecture plugins
 Plug 'airblade/vim-gitgutter'
@@ -179,6 +185,7 @@ Plug 'mbbill/undotree'
 Plug 'reedes/vim-lexical'
 Plug 'tpope/vim-repeat'
 Plug 'wesrupert/vim-hoverhl'
+Plug 'chaoren/vim-wordmotion'
 
 if has('nvim')
     Plug 'equalsraf/neovim-gui-shim'
@@ -195,8 +202,10 @@ call plug#end()
 
 let g:deoplete#enable_at_startup = 1
 let g:deoplete#enable_smart_case = 1
-call deoplete#custom#source('_', 'sorters', ['sorter_word'])
-call deoplete#custom#source('ultisnips', 'rank', 9999)
+if exists('*deoplete#custom#source')
+    call deoplete#custom#source('_', 'sorters', ['sorter_word'])
+    call deoplete#custom#source('ultisnips', 'rank', 9999)
+endif
 
 let g:gitgutter_sign_added              = has('nvim') ? '•' : '*'
 let g:gitgutter_sign_modified           = g:gitgutter_sign_added
@@ -214,15 +223,19 @@ let g:incsearch#auto_nohlsearch = 1
 let g:hoverhl#match_group = 'Pmenu'
 let g:hoverhl#custom_guidc = ''
 let g:hoverhl#case_sensitive = 1
-let g:hoverhl#enabled_filetypes = [ 'c', 'cfg', 'conf', 'cpp', 'cs', 'dosbatch',
-            \ 'go', 'java', 'javascript', 'json', 'jsp', 'objc', 'ruby', 'sh',
-            \ 'typescript', 'vim', 'zsh', ]
-let g:markdown_fenced_languages = g:hoverhl#enabled_filetypes
+let g:hoverhl#enabled_filetypes = g:programming_languages
 
 let g:lexical#thesaurus = [ NormFile(g:vimhome.'/moby-thesaurus/words.txt') ]
 augroup Lexical | autocmd!
     autocmd FileType * call lexical#init()
 augroup END
+
+let g:markdown_fenced_languages = g:programming_languages
+
+let g:netrw_banner = 0
+let g:netrw_browse_split = 2
+let g:netrw_liststyle = 3
+let g:netrw_winsize = 25
 
 let g:rooter_use_lcd = 1
 let g:rooter_silent_chdir = 1
@@ -230,7 +243,7 @@ augroup RooterPost | autocmd!
     autocmd User RooterChDir try | cd src | catch | endtry
 augroup END
 
-let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes) + [
+let g:sandwich#recipes = deepcopy(get(g:, 'sandwich#default_recipes', [])) + [
       \   {'buns': ['{ ', ' }'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['{']},
       \   {'buns': ['[ ', ' ]'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['[']},
       \   {'buns': ['( ', ' )'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['(']},
@@ -287,7 +300,7 @@ call s:Helptags()
      map <silent> <leader>/d    <plug>(hoverhl-disable)
      map <silent> <leader>/e    <plug>(hoverhl-enable)
      map <silent> <leader>/l    <plug>(hoverhl-lock)
- noremap          <leader>;s    :%s/\<<c-r><c-w>\>/
+ noremap          <leader>;/    :%s/\<<c-r><c-w>\>/
      map <silent> <leader>N     <plug>(hoverhl-backward)
  noremap <silent> <leader>[     :setlocal wrap!<cr>:setlocal wrap?<cr>
  noremap <silent> <leader>c,    :cd ..<cr>:echo ':cd '.getcwd()<cr>
@@ -298,8 +311,9 @@ call s:Helptags()
  noremap <silent> <leader>l     :setlocal list!<cr>:setlocal list?<cr>
      map <silent> <leader>n     <plug>(hoverhl-forward)
  noremap <silent> <leader>ro    :set winheight=1 winwidth=1<cr>
- noremap <silent> <leader>va    :call OpenAuxFile(g:vimrc_custom, 50, 0)<cr>
- noremap <silent> <leader>vp    :call OpenAuxFile(g:vimrc.'.plugins.custom', 50, 0)<cr>
+ noremap <silent> <leader>va    :call OpenAuxFile(g:vimrc_custom, 100, 0)<cr>
+ noremap <silent> <leader>vb    :call OpenAuxFile(g:vimrc_leader, 100, 0)<cr>
+ noremap <silent> <leader>vp    :call OpenAuxFile(g:vimrc.'.plugins.custom', 100, 0)<cr>
  noremap <silent> <leader>vr    :call OpenAuxFile(g:vimrc, 100, 0)<cr>
  noremap <silent> <leader>vz    :execute 'source '.g:vimrc<cr>
  noremap <silent> <s-tab>       gT
@@ -311,21 +325,21 @@ call s:Helptags()
      map          g/            <plug>(incsearch-stay)
  noremap <silent> gV            `[v`]
      map          ga            <plug>(EasyAlign)
- noremap <silent> gh'           :Marks<cr>
- noremap <silent> gh/           :History/<cr>
- noremap <silent> gh;           :History:<cr>
- noremap <silent> ghb           :Buffers<cr>
- noremap <silent> ghc           :BCommits<cr>
- noremap <silent> ghd           :Commits<cr>
- noremap <silent> ghf           :Files<cr>
- noremap <silent> ghh           :Helptags<cr>
- noremap <silent> ghh           :History<cr>
- noremap <silent> ghl           :Lines<cr>
- noremap <silent> ghm           :Maps<cr>
- noremap <silent> ghp           :GFiles?<cr>
- noremap <silent> ghr           :Rg<cr>
- noremap <silent> ghs           :Snippets<cr>
- noremap <silent> ght           :Tags<cr>
+ noremap <silent> sf'           :Marks<cr>
+ noremap <silent> sf/           :History/<cr>
+ noremap <silent> sf;           :History:<cr>
+ noremap <silent> sf<space>     :History<cr>
+ noremap <silent> sfb           :Buffers<cr>
+ noremap <silent> sfc           :BCommits<cr>
+ noremap <silent> sfd           :Commits<cr>
+ noremap <silent> sff           :Files<cr>
+ noremap <silent> sfh           :Helptags<cr>
+ noremap <silent> sfl           :Lines<cr>
+ noremap <silent> sfm           :Maps<cr>
+ noremap <silent> sfp           :GFiles?<cr>
+ noremap <silent> sfr           :Rg<cr>
+ noremap <silent> sfs           :Snippets<cr>
+ noremap <silent> sft           :Tags<cr>
 
  noremap <silent> gs            :Scratch<cr>
  noremap <silent> gw            :silent !explorer <cWORD><cr>
@@ -342,13 +356,13 @@ let g:lexical#dictionary_key = '<leader>k'
 let g:lexical#spell_key      = '<leader>s'
 let g:lexical#thesaurus_key  = '<leader>t'
 
-if (exists('g:mapleader')) | execute 'noremap \ '.g:mapleader | endif
+if exists('g:mapleader') | execute 'noremap \ '.g:mapleader | endif
 
-command! -nargs=0                        Scratch call OpenScratch()
-command! -nargs=1 -complete=help         Help    call OpenHelp(<f-args>)
-command! -nargs=1 -complete=help         THelp   tab help <args>
-command! -nargs=+ -complete=file_in_path Grep    silent grep! <args> | copen
-command! -nargs=+ -complete=file_in_path LGrep   silent lgrep! <args> | lopen
+command! -nargs=0 Scratch call OpenAuxFile(g:scratch, 100, 0)
+command! -nargs=1 -complete=help         Help  call OpenHelp(<f-args>)
+command! -nargs=1 -complete=help         THelp tab help <args>
+command! -nargs=+ -complete=file_in_path Grep  silent grep! <args> | copen
+command! -nargs=+ -complete=file_in_path LGrep silent lgrep! <args> | lopen
 
 call s:GenerateCAbbrev('grep',  2, 'Grep' )
 call s:GenerateCAbbrev('rg',    2, 'Grep' )
@@ -426,10 +440,10 @@ augroup END
 
 augroup Filetypes | autocmd!
     autocmd BufNew,BufReadPre *.xaml,*.targets,*.props  setf xml
-    autocmd FileType  c,cpp,cs,h,js,ts  noremap <buffer> ip i{| noremap <buffer> ap a{| " }}
-    autocmd FileType  gitcommit  call setpos('.', [0, 1, 1, 0]) | setlocal tw=72 fo+=t cc=50,+0
-    autocmd FileType  markdown,txt  setlocal wrap nonumber norelativenumber nocursorline
-    autocmd FileType  vim  noremap <buffer> K :Help <c-r><c-w><cr>
+    autocmd FileType c,cpp,cs,h,js,ts  noremap <buffer> ip i{| noremap <buffer> ap a{| " }}
+    autocmd FileType gitcommit  call setpos('.', [0, 1, 1, 0]) | setlocal tw=72 fo+=t cc=50,+0
+    autocmd FileType markdown,txt  setlocal wrap nonumber norelativenumber nocursorline
+    autocmd FileType vim  noremap <buffer> K :Help <c-r><c-w><cr>
 augroup END
 
 augroup QuickExit | autocmd!
@@ -577,25 +591,12 @@ function! GuiTabToolTip() " {{{
     return tooltip
 endfunction " }}}
 
-" }}}
-
 function! OpenHelp(topic) " {{{
     try
         call OpenAuxFile('help '.a:topic, 80, 1)
     catch
         echohl ErrorMsg | echo 'Help:'.split(v:exception, ':')[-1] | echohl None
     endtry
-endfunction " }}}
-
-function! OpenScratch() " {{{
-    call OpenAuxFile(expand('$HOME'.g:slash.'.scratch.md'), 50, 0)
-    augroup Scratch | autocmd!
-        autocmd CursorHold <buffer> silent update
-    augroup END
-    noremap <buffer> <silent> q :update<cr><bar><c-w>c
-    nmap <buffer> <silent> <esc> q
-    nnoremap Q q
-    normal ggGG
 endfunction " }}}
 
 function! OpenAuxFile(input, threshold, iscommand) " {{{
