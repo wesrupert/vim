@@ -1,13 +1,17 @@
 .DS_STORE
-*.~
+.netrwhist
+*~
 *.swp
 *.swo
 
-/*
-/plug
-/plug/*
+vimrc.leader
+vimrc.before
 vimrc.custom
 vimrc.plugins.custom
 vimrc.after
-vimrc.leader
-vimrc.before
+
+autoload/
+moby-thesaurus/
+plug/
+spell/
+tmp/

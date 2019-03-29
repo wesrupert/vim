@@ -27,6 +27,37 @@ function! NormPath(path) " {{{
     return expanded
 endfunction " }}}
 
+function! GotoCompanionFile() " {{{
+    if !executable('find')
+        echom '[GCF] Find not installed'
+        return
+    endif
+
+    let reg_tstsfx = '^\(.*\)[_|-]\?\([Ss]pec\|[Tt]e\?sts\?\)\(\..*\)\?$'
+    let curfile = expand('%:p')
+
+    let matches = matchgroup(l:curfile, '^\(.*[/\\]\)\(src\|sources\?\)\([/\\].*\)$')
+    if len(matches) > 0
+        let findreg = '' " TODO Escape for find command
+
+    else
+        let matches = matchgroup(l:curfile, '^\(.*[/\\]\)\(tst\|tests\?\)\(.*\)\([/\\].*\)$')
+        if len(matches) > 0
+            let findreg = '' " TODO Escape for find command
+
+        else
+            echom '[GCF] No matching file found'
+        endif
+    endif
+endfunction " }}}
+
+function! ShowTodos() " {{{
+    silent execute 'grep!'
+        \ .' "\b(([Tt][Oo][Dd][Oo])\|([Hh][Aa][Cc][Kk])\|([Ff][Ii][Xx][Mm][Ee])\|([Xx][Xx][Xx]))\b:? "'
+        \ .' '.shellescape(get(b:, 'rootDir', getcwd()))
+    copen
+endfunction " }}}
+
 function! s:GenerateCAbbrev(orig, complStart, new) " {{{
     let len = len(a:orig) | if a:complStart > len | let a:complStart = len | endif
     while len >= a:complStart
@@ -45,16 +76,28 @@ function! s:TrySourceFile(path, backup) " {{{
     return escape(l:path, '\')
 endfunction " }}}
 
+function! s:CheckBackspace() abort " {{{
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction " }}}
+
+
+function! s:ShowDoc() " {{{
+  if &filetype == 'vim'
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction " }}}
+
 " }}} }}}
 
-let g:vimhome = NormPath('$HOME/'.(has('win32') ? 'vimfiles' : '.vim'))
-let g:vimrc   = NormFile(g:vimhome.'/vimrc')
+let g:vimhome      = NormPath('$HOME/'.(has('win32') ? 'vimfiles' : '.vim'))
+let g:vimrc        = NormFile(g:vimhome.'/vimrc')
+let g:temp         = NormPath(g:vimhome.'/tmp')
+let g:scratch      = expand('$HOME'.g:slash.'.scratch.md')
 let g:vimrc_leader = s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before')
-let g:scratch= expand('$HOME'.g:slash.'.scratch.md')
-
-let g:temp    = NormPath(g:vimhome.'/tmp')
 call Mkdir(g:temp)
-
 
 " Preferences and Settings {{{
 
@@ -95,7 +138,7 @@ set expandtab smarttab tabstop=4 softtabstop=4 shiftwidth=4
 set number cursorline nowrap conceallevel=2 concealcursor=n
 set foldmethod=syntax fdc=0
 if !has('nvim')
-    set listchars=tab:�\ ,space:�,trail:-,precedes:>,extends:<
+    set listchars=tab:»\ ,space:·,trail:-,precedes:>,extends:<
 endif
 if has('gui_running')
     set guifont=Hack:h9,Source_Code_Pro:h11,Consolas:h10
@@ -110,7 +153,7 @@ endif
 
 " Languages for other settings
 let g:programming_languages = [ 'c', 'cfg', 'conf', 'cpp', 'cs', 'dosbatch', 'go', 'java',
-            \ 'javascript', 'json', 'jsp', 'objc', 'ruby', 'sh', 'typescript', 'vim', 'zsh', ]
+            \ 'javascript', 'json', 'jsp', 'objc', 'ruby', 'sh', 'vim', 'zsh', ]
 
 " }}}
 
@@ -135,6 +178,7 @@ call plug#begin(NormPath(g:vimhome.'/plug'))
 
 " Colorschemes
 Plug 'chriskempson/vim-tomorrow-theme'
+Plug 'cormacrelf/vim-colors-github'
 Plug 'fenetikm/falcon'
 Plug 'iCyMind/NeoSolarized'
 Plug 'nightsense/forgotten'
@@ -142,34 +186,30 @@ Plug 'nightsense/vimspectr'
 Plug 'nlknguyen/papercolor-theme'
 Plug 'rakr/vim-one'
 Plug 'reedes/vim-colors-pencil'
+Plug 'tadaa/vimade'
 Plug 'zcodes/vim-colors-basic'
-Plug 'cormacrelf/vim-colors-github'
 
 " Command plugins
+Plug 'sk1418/join'
 Plug 'junegunn/vim-easy-align'
 Plug 'machakann/vim-sandwich'
+Plug 'nelstrom/vim-visual-star-search'
 Plug 'scrooloose/nerdcommenter'
 Plug 'tpope/vim-unimpaired'
 Plug 'tpope/vim-fugitive'
-Plug 'nelstrom/vim-visual-star-search'
 
 " Filetype plugins
 Plug 'elzr/vim-json'
 Plug 'leafgarland/typescript-vim'
 Plug 'octol/vim-cpp-enhanced-highlight'
 Plug 'oranget/vim-csharp'
+Plug 'shougo/neco-vim'
 Plug 'plasticboy/vim-markdown'
 Plug 'pprovost/vim-ps1'
 Plug 'udalov/kotlin-vim'
 
 " Completion plugins
-if has('nvim')
-  Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-else
-  Plug 'Shougo/deoplete.nvim'
-  Plug 'roxma/nvim-yarp'
-  Plug 'roxma/vim-hug-neovim-rpc'
-endif
+Plug 'neoclide/coc.nvim', {'tag': '*', 'do': { -> coc#util#install() } }
 Plug 'honza/vim-snippets'
 Plug 'sirver/ultisnips'
 Plug 'rstacruz/vim-closer'
@@ -184,6 +224,7 @@ Plug 'junegunn/fzf.vim'
 Plug 'mbbill/undotree'
 Plug 'reedes/vim-lexical'
 Plug 'tpope/vim-repeat'
+Plug 'wesrupert/vim-auto-save'
 Plug 'wesrupert/vim-hoverhl'
 Plug 'chaoren/vim-wordmotion'
 
@@ -200,14 +241,21 @@ call plug#end()
 
 " Configuration
 
-let g:deoplete#enable_at_startup = 1
-let g:deoplete#enable_smart_case = 1
-if exists('*deoplete#custom#source')
-    call deoplete#custom#source('_', 'sorters', ['sorter_word'])
-    call deoplete#custom#source('ultisnips', 'rank', 9999)
-endif
+function! CocInstallDefaults() " {{{
+    execute 'CocInstall'
+                \ .' coc-css'
+                \ .' coc-dictionary'
+                \ .' coc-html'
+                \ .' coc-java'
+                \ .' coc-json'
+                \ .' coc-neosnippet'
+                \ .' coc-pyls'
+                \ .' coc-solargraph'
+                \ .' coc-tsserver'
+                \ .' coc-yaml'
+endfunction " }}}
 
-let g:gitgutter_sign_added              = has('nvim') ? '•' : '*'
+let g:gitgutter_sign_added              = has('nvim') ? '┃' : '|'
 let g:gitgutter_sign_modified           = g:gitgutter_sign_added
 let g:gitgutter_sign_removed            = g:gitgutter_sign_added
 let g:gitgutter_sign_removed_first_line = g:gitgutter_sign_added
@@ -216,7 +264,7 @@ let g:gitgutter_sign_modified_removed   = g:gitgutter_sign_added
 augroup Fzf | autocmd!
     autocmd FileType fzf set laststatus=0 noshowmode noruler |
                 \ autocmd BufLeave <buffer> set laststatus=2 showmode ruler
-augroup END
+augroup end
 
 let g:incsearch#auto_nohlsearch = 1
 
@@ -228,7 +276,7 @@ let g:hoverhl#enabled_filetypes = g:programming_languages
 let g:lexical#thesaurus = [ NormFile(g:vimhome.'/moby-thesaurus/words.txt') ]
 augroup Lexical | autocmd!
     autocmd FileType * call lexical#init()
-augroup END
+augroup end
 
 let g:markdown_fenced_languages = g:programming_languages
 
@@ -237,13 +285,15 @@ let g:netrw_browse_split = 2
 let g:netrw_liststyle = 3
 let g:netrw_winsize = 25
 
+let g:pencil_gutter_color = 1
+
 let g:rooter_use_lcd = 1
 let g:rooter_silent_chdir = 1
 augroup RooterPost | autocmd!
     autocmd User RooterChDir try | cd src | catch | endtry
-augroup END
+augroup end
 
-let g:sandwich#recipes = deepcopy(get(g:, 'sandwich#default_recipes', [])) + [
+let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes) + [
       \   {'buns': ['{ ', ' }'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['{']},
       \   {'buns': ['[ ', ' ]'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['[']},
       \   {'buns': ['( ', ' )'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['(']},
@@ -256,6 +306,8 @@ let g:UltiSnipsSnippetsDir = "~/.config/nvim/snips"
 let g:UltiSnipsSnippetDirectories = ["UltiSnips", "snips"]
 let g:UltiSnipsUsePythonVersion = 3
 let g:UltiSnipsExpandTrigger = '<c-s>'
+
+let g:wordmotion_prefix = 's'
 
 call s:TrySourceFile(g:vimrc.'.plugins.settings.custom', '')
 
@@ -277,15 +329,13 @@ call s:Helptags()
 
 " Keybindings and Commands {{{
 " Sort via :sort /.*\%18v/
-
  noremap          +             -
  noremap          -             _
-     map          /             <plug>(incsearch-forward)
  noremap          :             ;
  noremap          ;             :
  noremap <silent> <c-a>         <c-c>ggVG
  noremap <silent> <c-b>         <c-^>
- noremap <silent> <c-e>         :execute 'silent !'.(has('win32')?'explorer':'open').' '.shellescape(expand('%:p:h'))<cr>
+ noremap <silent> <c-e>         :execute 'silent !'.(has('win32')?'explorer ':'open ').shellescape(expand('%:p:h'))<cr>
  noremap <silent> <c-h>         <c-w>h
  noremap <silent> <c-j>         <c-w>j
  noremap <silent> <c-k>         <c-w>k
@@ -296,69 +346,102 @@ call s:Helptags()
  noremap <silent> <expr> k      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'k' : 'gk'
  noremap          <leader>-     :execute 'edit '.expand('%:p:h')<cr>
  noremap <silent> <leader>/     :nohlsearch<cr>
-     map <silent> <leader>//    <plug>(hoverhl-toggle)
-     map <silent> <leader>/d    <plug>(hoverhl-disable)
-     map <silent> <leader>/e    <plug>(hoverhl-enable)
-     map <silent> <leader>/l    <plug>(hoverhl-lock)
  noremap          <leader>;/    :%s/\<<c-r><c-w>\>/
-     map <silent> <leader>N     <plug>(hoverhl-backward)
  noremap <silent> <leader>[     :setlocal wrap!<cr>:setlocal wrap?<cr>
  noremap <silent> <leader>c,    :cd ..<cr>:echo ':cd '.getcwd()<cr>
  noremap <silent> <leader>cd    :execute 'cd '.expand('%:p:h')<cr>:echo ':cd '.getcwd()<cr>
- noremap <silent> <leader>co    :Colors<cr>
  noremap <silent> <leader>d     <c-x>
  noremap <silent> <leader>f     <c-a>
- noremap <silent> <leader>l     :setlocal list!<cr>:setlocal list?<cr>
-     map <silent> <leader>n     <plug>(hoverhl-forward)
  noremap <silent> <leader>ro    :set winheight=1 winwidth=1<cr>
- noremap <silent> <leader>va    :call OpenAuxFile(g:vimrc_custom, 100, 0)<cr>
- noremap <silent> <leader>vb    :call OpenAuxFile(g:vimrc_leader, 100, 0)<cr>
- noremap <silent> <leader>vp    :call OpenAuxFile(g:vimrc.'.plugins.custom', 100, 0)<cr>
- noremap <silent> <leader>vr    :call OpenAuxFile(g:vimrc, 100, 0)<cr>
+ noremap <silent> <leader>t     :Todos<cr>
+ noremap <silent> <leader>va    :call OpenSidePanel(g:vimrc_custom)<cr>
+ noremap <silent> <leader>vb    :call OpenSidePanel(g:vimrc_leader)<cr>
+ noremap <silent> <leader>vp    :call OpenSidePanel(g:vimrc.'.plugins.custom')<cr>
+ noremap <silent> <leader>vr    :call OpenSidePanel(g:vimrc)<cr>
  noremap <silent> <leader>vz    :execute 'source '.g:vimrc<cr>
- noremap <silent> <s-tab>       gT
- noremap <silent> <tab>         gt
-     map          ?             <plug>(incsearch-backward)
  noremap          Q             <c-q>
  noremap          Y             y$
  noremap          _             +
-     map          g/            <plug>(incsearch-stay)
  noremap <silent> gV            `[v`]
-     map          ga            <plug>(EasyAlign)
- noremap <silent> sf'           :Marks<cr>
- noremap <silent> sf/           :History/<cr>
- noremap <silent> sf;           :History:<cr>
- noremap <silent> sf<space>     :History<cr>
- noremap <silent> sfb           :Buffers<cr>
- noremap <silent> sfc           :BCommits<cr>
- noremap <silent> sfd           :Commits<cr>
- noremap <silent> sff           :Files<cr>
- noremap <silent> sfh           :Helptags<cr>
- noremap <silent> sfl           :Lines<cr>
- noremap <silent> sfm           :Maps<cr>
- noremap <silent> sfp           :GFiles?<cr>
- noremap <silent> sfr           :Rg<cr>
- noremap <silent> sfs           :Snippets<cr>
- noremap <silent> sft           :Tags<cr>
-
+ noremap          gx            :GotoCompanionFile<cr>
+ noremap          gfv           gf
  noremap <silent> gs            :Scratch<cr>
  noremap <silent> gw            :silent !explorer <cWORD><cr>
  noremap          s             <nop>
  noremap          ss            s
 
-inoremap <silent> <expr><tab>   pumvisible() ? "\<c-n>" : "\<tab>"
-inoremap <silent> <expr><s-tab> pumvisible() ? "\<c-p>" : "\<s-tab>"
 inoremap          <c-backspace> <c-w>
 inoremap <silent> <c-a>         <esc>ggVG
 inoremap kj                     <esc>
 
-let g:lexical#dictionary_key = '<leader>k'
-let g:lexical#spell_key      = '<leader>s'
-let g:lexical#thesaurus_key  = '<leader>t'
+" Coc mappings
+nmap     <leader>=  <plug>(coc-format-selected)
+nmap     <leader>a  <plug>(coc-codeaction-selected)
+nmap     <leader>ac <plug>(coc-codeaction)
+nmap     <leader>qf <plug>(coc-fix-current)
+nmap     <leader>rn <plug>(coc-rename)
+nmap     [l         <plug>(coc-diagnostic-prev)
+nmap     ]l         <plug>(coc-diagnostic-next)
+nmap     gd         <plug>(coc-definition)
+nmap     gi         <plug>(coc-implementation)
+nmap     gr         <plug>(coc-references)
+nmap     gy         <plug>(coc-type-definition)
+nnoremap K          :call <SID>ShowDoc()<CR>
+vmap     <leader>=  <plug>(coc-format-selected)
+vmap     <leader>a  <plug>(coc-codeaction-selected)
+
+" EasyAlign mappings
+map ga <plug>(EasyAlign)
+
+" HoverHL mappings
+map <silent> <leader>// <plug>(hoverhl-toggle)
+map <silent> <leader>/d <plug>(hoverhl-disable)
+map <silent> <leader>/e <plug>(hoverhl-enable)
+map <silent> <leader>/l <plug>(hoverhl-lock)
+map <silent> <leader>N  <plug>(hoverhl-backward)
+map <silent> <leader>n  <plug>(hoverhl-forward)
+
+" Incsearch mappings
+map /  <plug>(incsearch-forward)
+map ?  <plug>(incsearch-backward)
+map g/ <plug>(incsearch-stay)
+
+" Join mappings
+noremap JJ J
+noremap JL :<c-u>Join ', '<cr>
+noremap JK :<c-u>Join ': '<cr>
+
+" Lexical mappings
+let g:lexical#dictionary_key = '<leader>ld'
+let g:lexical#spell_key      = '<leader>ls'
+let g:lexical#thesaurus_key  = '<leader>lt'
+
+" Fzf mappings
+noremap <silent> gf'        :Marks<cr>
+noremap <silent> gf/       :History/<cr>
+noremap <silent> gf;        :History:<cr>
+noremap <silent> gf<space>  :History<cr>
+noremap <silent> gfb        :Buffers<cr>
+noremap <silent> gfc        :BCommits<cr>
+noremap <silent> gfd        :Commits<cr>
+noremap <silent> gff        :Files<cr>
+noremap <silent> gfh        :Helptags<cr>
+noremap <silent> gfl        :Lines<cr>
+noremap <silent> gfm        :Maps<cr>
+noremap <silent> gfp        :GFiles?<cr>
+noremap <silent> gfr        :Rg<cr>
+noremap <silent> gfs        :Snippets<cr>
+noremap <silent> gft        :Tags<cr>
+noremap <silent> <leader>co :Colors<cr>
+inoremap <silent><expr> <tab>   pumvisible() ? "\<c-n>" : "\<tab>"
+inoremap <silent><expr> <s-tab> pumvisible() ? "\<c-p>" : "\<s-tab>"
+inoremap <silent><expr> <c-space> coc#refresh()
 
 if exists('g:mapleader') | execute 'noremap \ '.g:mapleader | endif
 
-command! -nargs=0 Scratch call OpenAuxFile(g:scratch, 100, 0)
+command! -nargs=0 Scratch call OpenScratch()
+command! -nargs=0 Todos call ShowTodos()
+command! -nargs=0 GotoCompanionFile call GotoCompanionFile()
 command! -nargs=1 -complete=help         Help  call OpenHelp(<f-args>)
 command! -nargs=1 -complete=help         THelp tab help <args>
 command! -nargs=+ -complete=file_in_path Grep  silent grep! <args> | copen
@@ -380,7 +463,7 @@ function! s:StatusLine()
     set statusline+=%(\ \[%{SL_FileType()}\]%)%(\ [%R%M]%)%w%q         " Filetype if it doesn't match extension + Buffer flags
     set statusline+=%=                                                 " Move to right side
     set statusline+=%{&fileencoding?&fileencoding:&encoding}           " Buffer encoding
-    set statusline+=\[%{&fileformat}\]\ %#PMenu#\ #%n\ %#StatusLine#   " Buffer format + Buffer number
+    set statusline+=\[%{&fileformat}\]\ %#PMenu#\ b%n\ %#StatusLine#   " Buffer format + Buffer number
     set statusline+=\ %p%%\ [%l/%L\ %c]\                               " Cursor location
 endfunction
 call s:StatusLine()
@@ -416,7 +499,7 @@ silent call Mkdir(g:backupdir)
 let &directory = g:backupdir.g:slash " Add extra slash to avoid filename collisions
 augroup Backups | autocmd!
     autocmd BufRead * let &l:backupdir = NormPath(g:backupdir.g:slash.expand("%:p:h:t")) | silent call Mkdir(&l:backupdir)
-augroup END
+augroup end
 
 if has('persistent_undo') && Mkdir(g:temp.'undo')
     set undofile
@@ -432,28 +515,27 @@ silent call Mkdir(g:fzf_history_dir)
 
 augroup RememberCursor | autocmd!
     autocmd BufReadPost * if line("'\"")>0 && line("'\"")<=line('$') | exe "normal g`\"" | endif
-augroup END
+augroup end
 
 augroup MkdirOnWrite | autocmd!
     autocmd BufWritePre * silent call Mkdir('<afile>:p:h')
-augroup END
+augroup end
 
 augroup Filetypes | autocmd!
     autocmd BufNew,BufReadPre *.xaml,*.targets,*.props  setf xml
     autocmd FileType c,cpp,cs,h,js,ts  noremap <buffer> ip i{| noremap <buffer> ap a{| " }}
     autocmd FileType gitcommit  call setpos('.', [0, 1, 1, 0]) | setlocal tw=72 fo+=t cc=50,+0
-    autocmd FileType markdown,txt  setlocal wrap nonumber norelativenumber nocursorline
-    autocmd FileType vim  noremap <buffer> K :Help <c-r><c-w><cr>
-augroup END
+    autocmd FileType markdown,txt  setlocal wrap nonumber norelativenumber nocursorline fo-=t
+augroup end
 
 augroup QuickExit | autocmd!
     autocmd BufWinEnter * if (&buftype =~ 'help\|quickfix' || &previewwindow) | noremap <buffer> q <c-w>c | endif
-augroup END
+augroup end
 
 augroup Spelling | autocmd!
     autocmd ColorScheme * hi clear SpellRare | hi clear SpellLocal
     autocmd BufRead * if &l:modifiable == 0 | setlocal nospell | endif
-augroup END
+augroup end
 
 highlight link MixedWhitespace Underlined
 highlight link BadBraces NONE
@@ -462,7 +544,7 @@ augroup MixedWhitespace | autocmd!
     autocmd InsertLeave * highlight! link BadBraces NONE
     autocmd BufEnter * match MixedWhitespace /\s*\(\( \t\)\|\(\t \)\)\s*/
     autocmd BufEnter *.c,*.cpp,*.cs,*.js,*.ps1,*.ts 2match BadBraces /[^}]\s*\n\s*\n\s*\zs{\ze\|\s*\n\s*\n\s*\zs}\ze\|\zs}\ze\s*\n\s*\(else\>\|catch\>\|finally\>\|while\>\|}\|\s\|\n\)\@!\|\zs{\ze\s*\n\s*\n/
-augroup END
+augroup end
 
 augroup FiletypeMarks | autocmd!
     let g:filetype_mark_map = { 
@@ -482,7 +564,13 @@ augroup FiletypeMarks | autocmd!
         endif
     endfunction
     autocmd BufLeave * call s:SetFtMark()
-augroup END
+augroup end
+
+augroup Coc | autocmd!
+    autocmd CursorHold * silent call CocActionAsync('highlight')
+    autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
+    autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+augroup end
 
 " }}} }}}
 
@@ -490,10 +578,10 @@ augroup END
 
 augroup DiffLayout | autocmd!
     autocmd VimEnter * if &diff | call s:SetDiffLayout() | endif
-augroup END
+augroup end
 
 function! s:SetDiffLayout()
-    augroup RememberCursor | autocmd! | augroup END " Clear cursor jump command
+    augroup RememberCursor | autocmd! | augroup end " Clear cursor jump command
     execute 'vertical resize '.((&columns * get(g:, 'diff_width', 50)) / 100)
     wincmd l | call setpos('.', [0, 1, 1, 0])
     set nohidden bufhidden=delete guioptions+=lr
@@ -593,33 +681,48 @@ endfunction " }}}
 
 function! OpenHelp(topic) " {{{
     try
-        call OpenAuxFile('help '.a:topic, 80, 1)
+        call OpenSidePanel('help '.a:topic, 1)
     catch
         echohl ErrorMsg | echo 'Help:'.split(v:exception, ':')[-1] | echohl None
     endtry
 endfunction " }}}
 
-function! OpenAuxFile(input, threshold, iscommand) " {{{
-    let canopensplit = &columns >= a:threshold + get(g:, 'opensplit_threshold', 50)
-    let open = !s:IsEmptyFile() ? canopensplit ? 
-                \ (a:iscommand ? 'vert ' : 'vsplit ') :
-                \ (a:iscommand ? 'tab '  : 'tabnew ') :
-                \ (a:iscommand ? ''      : 'edit '  )
+function! OpenScratch() " {{{
+    call OpenAuxFile('tab drop '.g:scratch)
+endfunction " }}}
 
-    if canopensplit && exists('t:opensplit_current_buffer')
-        execute 'bdelete! '.t:opensplit_current_buffer
-        execute l:open.a:input
-        let t:opensplit_current_buffer = bufnr('%')
-    else
-        execute l:open.a:input
+function! OpenSidePanel(input, ...) " {{{
+    let iscommand = get(a:, 1, 0)
+    let splitwidth = get(g:, 'opensplit_splitwidth', 80) 
+    let canopensplit = &columns >= splitwidth + get(g:, 'opensplit_mainwidth', 100)
+
+    let open = !s:IsEmptyFile() ? l:canopensplit ? 
+                \ (l:iscommand ? 'vert ' : 'vsplit '  ) :
+                \ (l:iscommand ? 'tab '  : 'tab drop ') :
+                \ (l:iscommand ? ''      : 'drop '    )
+    call OpenAuxFile(l:open.a:input)
+
+    execute 'vertical resize '.l:splitwidth
+    let &l:textwidth = l:splitwidth
+endfunction " }}}
+
+function! OpenAuxFile(opencmd) " {{{
+    let splitting = (a:opencmd =~# '^v\?\(ert\|split\)')
+    if l:splitting && exists('t:auxfile_bufnr')
+        let winnr = bufwinnr(t:auxfile_bufnr)
+        if l:winnr >= 0
+            execute l:winnr.'close!'
+        endif
     endif
 
-    execute 'wincmd '.(get(g:, 'openaux_splitright', !&splitright) ? 'L' : 'H')
-    execute 'vertical resize '.a:threshold
-    if l:open =~# 'v\(ert\|split\)'
-        let &l:textwidth = a:threshold
-        setlocal nonumber norelativenumber
-    endif
+    execute a:opencmd
+    execute 'wincmd '.(get(g:, 'auxfile_splitright', !&splitright) ? 'L' : 'H')
+
+    let b:auto_save = 1
+    noremap <buffer> Q q
+    noremap <buffer> q :q<cr>
+
+    let t:auxfile_bufnr = bufnr("%")
 endfunction " }}}
 
 function! SynStack() "{{{
