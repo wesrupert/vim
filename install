@@ -1,6 +1,7 @@
 #!/bin/bash
 
-installdir="$(dirname $0)"
+installdir=$(cd "$(dirname "$0")"; pwd)
+pushd "$installdir" >/dev/null
 
 # Set up links
 nvimdir="$HOME/.config/nvim"
@@ -13,4 +14,5 @@ ln -fsv $installdir/.ideavimrc $HOME/.ideavimrc
 # Initialize vim plug
 git submodule update --init --recursive
 
+popd >/dev/null
 echo Done!
