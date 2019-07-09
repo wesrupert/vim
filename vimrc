@@ -36,43 +36,11 @@ function! NormPath(path) " {{{
     return expanded
 endfunction " }}}
 
-function! GotoCompanionFile() " {{{
-    if !executable('find')
-        echom '[GCF] Find not installed'
-        return
-    endif
-
-    let reg_tstsfx = '^\(.*\)[_|-]\?\([Ss]pec\|[Tt]e\?sts\?\)\(\..*\)\?$'
-    let curfile = expand('%:p')
-
-    let matches = matchgroup(l:curfile, '^\(.*[/\\]\)\(src\|sources\?\)\([/\\].*\)$')
-    if len(matches) > 0
-        let findreg = '' " TODO Escape for find command
-
-    else
-        let matches = matchgroup(l:curfile, '^\(.*[/\\]\)\(tst\|tests\?\)\(.*\)\([/\\].*\)$')
-        if len(matches) > 0
-            let findreg = '' " TODO Escape for find command
-
-        else
-            echom '[GCF] No matching file found'
-        endif
-    endif
-endfunction " }}}
-
 function! ShowTodos() " {{{
-    silent execute 'grep!'
-        \ .' "\b(([Tt][Oo][Dd][Oo])\|([Hh][Aa][Cc][Kk])\|([Ff][Ii][Xx][Mm][Ee])\|([Xx][Xx][Xx]))\b:? "'
+    silent execute 'grep! -i'
+        \ .' "\b(todo\|hack\|fixme\|xxx)\b:? "'
         \ .' '.shellescape(get(b:, 'rootDir', getcwd()))
     copen
-endfunction " }}}
-
-function! ToggleBg() " {{{
-    if &background == 'dark'
-        set background=light
-    else
-        set background=dark
-    endif
 endfunction " }}}
 
 function! s:GenerateCAbbrev(orig, complStart, new) " {{{
@@ -101,12 +69,12 @@ endfunction " }}}
 
 " }}}
 
+let g:mapleader    = ','
 let g:slash        = has('win32') ? '\' : '/'
 let g:vimhome      = NormPath('$HOME/'.(has('win32') ? 'vimfiles' : '.vim'))
-let g:vimrc        = NormFile(g:vimhome.'/vimrc')
-let g:scratch      = NormFile('$HOME/.scratch.md')
 let g:temp         = NormPath(g:vimhome.'/tmp')
-let g:mapleader    = ','
+let g:scratch      = NormFile('$HOME/.scratch.md')
+let g:vimrc        = NormFile(g:vimhome.'/vimrc')
 let g:vimrc_leader = s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before')
 call Mkdir(g:temp)
 
@@ -116,40 +84,73 @@ call Mkdir(g:temp)
 colorscheme default
 syntax on
 filetype plugin indent on
-set shortmess+=A hidden switchbuf=usetab splitbelow splitright
-set noerrorbells belloff=all visualbell t_vb=
+set belloff=all
 set display+=lastline
-set scrolloff=3 sidescroll=1
-set tabline=%!TermTabLabel() guitablabel=%{MyTabLabel(v:lnum)} guitabtooltip=%{GuiTabToolTip()}
-set lazyredraw noequalalways guioptions=!egkt
-set updatetime=500
+set guioptions=!egkt
+set guitablabel=%{MyTabLabel(v:lnum)}
+set guitabtooltip=%{GuiTabToolTip()}
+set hidden
+set lazyredraw
 set mouse=a
+set noequalalways
+set noerrorbells
+set scrolloff=3
+set shortmess+=A
+set sidescroll=1
+set splitbelow
+set splitright
+set switchbuf=usetab
+set t_vb=
+set tabline=%!TermTabLabel()
+set updatetime=500
+set visualbell
 if exists('&termguicolors')
     set termguicolors
 endif
-set spell
-let &thesaurus = NormFile(g:vimhome.'/moby-thesaurus/words.txt')
 
 " Command bar
-set ignorecase smartcase infercase incsearch hlsearch gdefault
-set laststatus=2 showcmd ruler noshowmode
 set completeopt=menuone,preview
-set wildmenu wildignorecase
-set wildignore=*.swp,*.bak
+set gdefault
+set hlsearch
+set ignorecase
+set incsearch
+set infercase
+set laststatus=2
+set noshowmode
+set ruler
+set showcmd
+set smartcase
 set wildignore+=*.pyc,*.class,*.sln,*.Master,*.csproj,*.csproj.user,*.cache,*.dll,*.pdb,*.min.*
+set wildignore+=*.tar.*
 set wildignore+=*/.git/**/*,*/.hg/**/*,*/.svn/**/*
 set wildignore+=tags
-set wildignore+=*.tar.*
+set wildignore=*.swp,*.bak
+set wildignorecase
+set wildmenu
 if executable('rg')
     set grepprg=rg\ --vimgrep
 endif
 
 " Text options
-set autoindent smartindent linebreak breakindent
+set autoindent
 set backspace=indent,eol,start
-set expandtab smarttab tabstop=4 softtabstop=4 shiftwidth=4
-set number cursorline nowrap conceallevel=2 concealcursor=
-set foldmethod=syntax fdc=0
+set breakindent
+set concealcursor=
+set conceallevel=2
+set cursorline
+set expandtab
+set fdc=0
+set foldmethod=syntax
+set linebreak
+set nowrap
+set number
+set shiftwidth=4
+set smartindent
+set smarttab
+set softtabstop=4
+set spell
+set tabstop=4
+let &thesaurus = NormFile(g:vimhome.'/moby-thesaurus/words.txt')
 if !has('nvim')
     set listchars=tab:»\ ,space:·,trail:-,precedes:>,extends:<
 endif
@@ -162,9 +163,6 @@ endif
 if has('win32')
     source $VIMRUNTIME/mswin.vim
     set selectmode=
-endif
-if exists('g:gui_oni')
-    set noshowmode noruler laststatus=0 noshowcmd
 endif
 
 
@@ -203,7 +201,6 @@ Plug 'jaredgorski/spacecamp'
 " Command plugins
 Plug 'junegunn/vim-easy-align'
 Plug 'machakann/vim-sandwich'
-Plug 'nelstrom/vim-visual-star-search'
 Plug 'scrooloose/nerdcommenter'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-unimpaired'
@@ -216,8 +213,7 @@ Plug 'sheerun/vim-polyglot'
 " Completion plugins
 Plug 'neoclide/coc.nvim', {'tag': '*', 'do': { -> coc#util#install() } }
 Plug 'honza/vim-snippets'
-"Plug 'townk/vim-autoclose'
-"Plug 'alvan/vim-closetag'
+Plug 'alvan/vim-closetag'
 
 " Architecture plugins
 Plug 'airblade/vim-rooter'
@@ -263,29 +259,26 @@ let g:gitgutter_sign_modified_removed   = g:gitgutter_sign_added
 
 let g:closetag_filetypes = 'html,xhtml,phtml,vue'
 
-let g:coc_global_extensions = [
-            \ 'coc-calc',
-            \ 'coc-css',
-            \ 'coc-dictionary',
-            \ 'coc-eslint',
-            \ 'coc-git',
-            \ 'coc-highlight',
-            \ 'coc-html',
-            \ 'coc-java',
-            \ 'coc-jest',
-            \ 'coc-json',
-            \ 'coc-lists',
-            \ 'coc-neosnippet',
-            \ 'coc-pairs',
-            \ 'coc-prettier',
-            \ 'coc-pyls',
-            \ 'coc-solargraph',
-            \ 'coc-tsserver',
-            \ 'coc-vetur',
-            \ 'coc-vimlsp',
-            \ 'coc-yaml',
-            \ ]
-
+call coc#add_extension('coc-calc'      )
+call coc#add_extension('coc-css'       )
+call coc#add_extension('coc-dictionary')
+call coc#add_extension('coc-eslint'    )
+call coc#add_extension('coc-git'       )
+call coc#add_extension('coc-highlight' )
+call coc#add_extension('coc-html'      )
+call coc#add_extension('coc-java'      )
+call coc#add_extension('coc-jest'      )
+call coc#add_extension('coc-json'      )
+call coc#add_extension('coc-lists'     )
+call coc#add_extension('coc-neosnippet')
+call coc#add_extension('coc-pairs'     )
+call coc#add_extension('coc-prettier'  )
+call coc#add_extension('coc-pyls'      )
+call coc#add_extension('coc-solargraph')
+call coc#add_extension('coc-tsserver'  )
+call coc#add_extension('coc-vetur'     )
+call coc#add_extension('coc-vimlsp'    )
+call coc#add_extension('coc-yaml'      )
 
 let g:hoverhl#match_group = 'Pmenu'
 let g:hoverhl#custom_guidc = ''
@@ -367,13 +360,12 @@ call s:Helptags()
  noremap          _             +
  noremap <silent> gV            `[v`]
  noremap <silent> gs            :call OpenSidePanel(g:scratch)<cr>
- noremap <silent> gw            :silent !explorer <cWORD><cr>
- noremap          s             <nop>
- noremap          ss            s
 
 inoremap          <c-backspace> <c-w>
 inoremap <silent> <c-a>         <esc>ggVG
 inoremap kj                     <esc>
+
+if exists('g:mapleader') | execute 'noremap \ '.g:mapleader | endif
 
 " Coc mappings
 nmap [c   <plug>(coc-git-prevchunk)
@@ -398,7 +390,7 @@ inoremap <silent><expr> <tab>   pumvisible() ? "\<c-n>" : "\<tab>"
 inoremap <silent><expr> <s-tab> pumvisible() ? "\<c-p>" : "\<s-tab>"
 inoremap <expr> <cr> pumvisible() ? "\<c-y>" : "\<c-g>u\<cr>"
 
-augroup CocCustom | au!
+augroup Coc " Don't clear, defined above
     autocmd FileType typescript,javascript,vue,java,python,ruby
                 \ map <buffer> gd <plug>(coc-definition)
 augroup end
@@ -433,17 +425,17 @@ noremap <silent> fzs        :Snippets<cr>
 noremap <silent> fzt        :Tags<cr>
 noremap <silent> <leader>co :Colors<cr>
 
-if exists('g:mapleader') | execute 'noremap \ '.g:mapleader | endif
+" Sandwich mappings
+runtime macros/sandwich/keymap/surround.vim
 
+" Commands
 command! -nargs=0 Todos call ShowTodos()
-command! -nargs=0 Tbg call ToggleBg()
 command! -nargs=0 GotoCompanionFile call GotoCompanionFile()
 command! -nargs=+ OpenSidePanel     call OpenSidePanel(<f-args>)
 command! -nargs=1 -complete=help         Help  call OpenHelp(<f-args>)
 command! -nargs=1 -complete=help         THelp tab help <args>
 command! -nargs=+ -complete=file_in_path Grep  call Grep(0, <f-args>)
 command! -nargs=+ -complete=file_in_path LGrep call Grep(1, <f-args>)
-
 call s:GenerateCAbbrev('grep',  2, 'Grep' )
 call s:GenerateCAbbrev('rg',    2, 'Grep' )
 call s:GenerateCAbbrev('help',  1, 'Help' )
