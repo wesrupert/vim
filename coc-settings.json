@@ -1,0 +1,24 @@
+{
+  "coc.preferences.jumpCommand": "pedit"
+  , "eslint.autoFix": true
+  , "eslint.autoFixOnSave": true
+  , "eslint.filetypes": [ "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" ]
+  , "eslint.run": "onType"
+  , "git.addedSign.hlGroup": "GitGutterAdd"
+  , "git.addedSign.text": "|"
+  , "git.changeRemovedSign.hlGroup": "GitGutterChangeDelete"
+  , "git.changeRemovedSign.text": "|"
+  , "git.changedSign.hlGroup": "GitGutterChange"
+  , "git.changedSign.text": "|"
+  , "git.removedSign.hlGroup": "GitGutterDelete"
+  , "git.removedSign.text": "|"
+  , "git.topRemovedSign.hlGroup": "GitGutterDelete"
+  , "git.topRemovedSign.text": "|"
+  , "suggest.enablePreview": true
+  , "suggest.noselect": false
+  , "coc.preferences.formatOnType": true
+  , "diagnostic.infoSign": "⚲"
+  , "diagnostic.hintSign": "♪"
+  , "diagnostic.errorSign": "⚑"
+  , "diagnostic.warningSign": "⚐"
+}

@@ -13,5 +13,6 @@ vimrc.after
 autoload/
 moby-thesaurus/
 plug/
+sessions/
 spell/
 tmp/

@@ -7,9 +7,10 @@ pushd "$installdir" >/dev/null
 nvimdir="$HOME/.config/nvim"
 mkdir -p $nvimdir
 
-ln -fsv $installdir/vimrc $HOME/.vimrc
-ln -fsv $installdir/init.vim $nvimdir
-ln -fsv $installdir/.ideavimrc $HOME/.ideavimrc
+ln -fv $installdir/vimrc $HOME/.vimrc
+ln -fv $installdir/init.vim $nvimdir
+ln -fv $installdir/coc-settings.json $nvimdir
+ln -fv $installdir/.ideavimrc $HOME/.ideavimrc
 
 # Initialize vim plug
 git submodule update --init --recursive
