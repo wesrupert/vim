@@ -8,6 +8,7 @@ mkdir -p $nvimdir
 
 ln -fv $installdir/vimrc $HOME/.vimrc
 ln -fv $installdir/init.vim $nvimdir
+ln -fv $installdir/ginit.vim $nvimdir
 ln -fv $installdir/coc-settings.json $nvimdir
 ln -fv $installdir/.ideavimrc $HOME/.ideavimrc
 
