@@ -53,7 +53,7 @@ function! ToggleCopyMode()
     endif
 endfunction
 
-function! ShowTodos() " {{{
+function! GrepTodo() " {{{
     silent execute 'grep! -i'
         \ .' "\b(todo\|hack\|fixme\|xxx)\b:? "'
         \ .' '.shellescape(get(b:, 'rootDir', getcwd()))
@@ -76,14 +76,6 @@ endfunction " }}}
 
 function! s:IsEmptyFile() " {{{
     return !(@%!='' || filereadable(@%)!=0 || line('$')!=1 || col('$')!=1)
-endfunction " }}}
-
-function! s:ShowDoc() " {{{
-  if &filetype == 'vim'
-    execute 'Help '.expand('<cword>')
-  else
-    call CocAction('doHover')
-  endif
 endfunction " }}}
 
 function! s:TrySourceFile(path, backup) " {{{
@@ -215,6 +207,15 @@ endif
 
 call plug#begin(NormPath(g:vimhome.'/plug'))
 
+" Polyfills
+if has('nvim')
+    Plug 'equalsraf/neovim-gui-shim'
+else
+    Plug 'roxma/nvim-yarp'
+    Plug 'roxma/vim-hug-neovim-rpc'
+    Plug 'tpope/vim-dispatch'
+endif
+
 " Colorschemes
 Plug 'fenetikm/falcon'
 Plug 'nightsense/vimspectr'
@@ -231,10 +232,11 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-unimpaired'
 Plug 'vim-scripts/bufonly.vim'
 
-" Completion plugins
+" completion plugins
 Plug 'alvan/vim-closetag'
 Plug 'honza/vim-snippets'
 Plug 'neoclide/coc.nvim', {'tag': '*', 'do': { -> coc#util#install() } }
+Plug 'sirver/ultisnips'
 
 " Architecture plugins
 Plug 'airblade/vim-rooter'
@@ -244,55 +246,41 @@ Plug 'mbbill/undotree'
 Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-repeat'
 
-if has('nvim')
-    Plug 'equalsraf/neovim-gui-shim'
-else
-    Plug 'roxma/nvim-yarp'
-    Plug 'roxma/vim-hug-neovim-rpc'
-    Plug 'tpope/vim-dispatch'
-endif
-
 call s:TrySourceFile(g:vimrc.'.plugins.custom', '')
 call plug#end()
 
+let g:coc_global_extensions = [
+            \ 'coc-calc',
+            \ 'coc-css',
+            \ 'coc-dictionary',
+            \ 'coc-eslint',
+            \ 'coc-git',
+            \ 'coc-highlight',
+            \ 'coc-html',
+            \ 'coc-java',
+            \ 'coc-jest',
+            \ 'coc-json',
+            \ 'coc-lists',
+            \ 'coc-pairs',
+            \ 'coc-prettier',
+            \ 'coc-pyls',
+            \ 'coc-snippets',
+            \ 'coc-solargraph',
+            \ 'coc-tsserver',
+            \ 'coc-vetur',
+            \ 'coc-vimlsp',
+            \ 'coc-yaml',
+            \ ]
+
 " Configuration
 
-function! s:ShowDoc() " {{{
-  if &filetype == 'vim'
-    execute 'Help '.expand('<cword>')
-  else
-    call CocAction('doHover')
-  endif
-endfunction " }}}
-
 augroup Coc | autocmd!
-    autocmd CursorHold * silent call CocActionAsync('highlight') | call CocActionAsync('doHover')
+    autocmd CursorHold * silent call CocActionAsync('highlight')
     autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
     autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
 augroup end
 
 let g:closetag_filetypes = 'html,xhtml,phtml,vue'
-
-call coc#add_extension('coc-calc'      )
-call coc#add_extension('coc-css'       )
-call coc#add_extension('coc-dictionary')
-call coc#add_extension('coc-eslint'    )
-call coc#add_extension('coc-git'       )
-call coc#add_extension('coc-highlight' )
-call coc#add_extension('coc-html'      )
-call coc#add_extension('coc-java'      )
-call coc#add_extension('coc-jest'      )
-call coc#add_extension('coc-json'      )
-call coc#add_extension('coc-lists'     )
-call coc#add_extension('coc-neosnippet')
-call coc#add_extension('coc-pairs'     )
-call coc#add_extension('coc-prettier'  )
-call coc#add_extension('coc-pyls'      )
-call coc#add_extension('coc-solargraph')
-call coc#add_extension('coc-tsserver'  )
-call coc#add_extension('coc-vetur'     )
-call coc#add_extension('coc-vimlsp'    )
-call coc#add_extension('coc-yaml'      )
 
 if exists("*nvim_create_buf") && exists("*nvim_open_win")
     let $FZF_DEFAULT_OPTS = '--reverse --border --height 100%'
@@ -363,15 +351,13 @@ call s:Helptags()
 " Keybindings and Commands {{{
 " Sort via :sort /.*\%17v/
 
-noremap          +             -
-noremap          -             _
 noremap          :             ;
 noremap          ;             :
+nmap    <silent> <ESC>         <plug>(coc-float-hide)
 noremap <silent> <C-H>         <C-W>h
 noremap <silent> <C-J>         <C-W>j
 noremap <silent> <C-K>         <C-W>k
 noremap <silent> <C-L>         <C-W>l
-noremap <silent> <C-T>         :tabnew<cr>
 noremap <silent> <F12>         :Helptags<cr>
 noremap <silent> <expr> j      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'j' : 'gj'
 noremap <silent> <expr> k      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'k' : 'gk'
@@ -387,13 +373,13 @@ noremap <silent> <leader>f     <C-A>
 noremap          <leader>hu    :CocCommand git.chunkUndo<cr>
 noremap          <leader>r     :cfdo %s/<C-R>/// <bar> update<left><left><left><left><left><left><left><left><left><left>
 noremap          <leader>s     :%s/<C-R>//
-noremap <silent> <leader>t     :Todos<cr>
+noremap <silent> <leader>t     :GrepTodo<cr>
 noremap <silent> <leader>va    :call OpenSidePanel(g:vimrc_custom)<cr>
 noremap <silent> <leader>vb    :call OpenSidePanel(g:vimrc_leader)<cr>
 noremap <silent> <leader>vp    :call OpenSidePanel(g:vimrc.'.plugins.custom')<cr>
 noremap <silent> <leader>vr    :call OpenSidePanel(g:vimrc)<cr>
 noremap <silent> <leader>vz    :execute 'source '.g:vimrc<cr>
-noremap          K             :call <SID>ShowDoc()<cr>
+noremap <silent> K             :call CocAction('doHover')<cr>
 noremap          Q             <C-Q>
 noremap          Y             y$
 nmap             [c            <plug>(coc-git-prevchunk)
@@ -416,6 +402,8 @@ map              gd            <plug>(coc-definition)
 noremap <silent> gs            :call OpenSidePanel(g:scratch)<cr>
 noremap <silent> zp            :History<cr>
 
+inoremap <silent> <C-Backspace> <C-W>
+inoremap <silent> <D-Backspace> <C-U>
 inoremap <silent><expr> <tab>   pumvisible() ? "\<C-N>" : "\<tab>"
 inoremap <silent><expr> <s-tab> pumvisible() ? "\<C-P>" : "\<s-tab>"
 inoremap <expr> <cr> pumvisible() ? "\<C-Y>" : "\<C-G>u\<cr>"
@@ -425,6 +413,7 @@ runtime macros/sandwich/keymap/surround.vim
 
 " Platform-specific settings
 let conchar = has('mac') ? 'D' : 'C'
+let explorer = has('win32') ? 'explorer' : 'open'
 
 if has("clipboard")
     execute 'vnoremap <'.conchar.'-X> "+x'
@@ -433,13 +422,6 @@ if has("clipboard")
     execute 'noremap! <'.conchar.'-V> <C-R>+'
 endif
 
-if has('win32')
-    noremap  <silent> <C-E> :execute 'silent !explorer '.shellescape(expand('%:p:h'))<cr>
-elseif has('mac')
-    noremap  <silent> <D-E> :execute 'silent !open '.shellescape(expand('%:p:h'))<cr>
-endif
-
-execute 'inoremap <silent> <'.conchar.'-Backspace> <C-W>'
 execute 'map               <'.conchar.'-.>  <plug>(coc-fix-current)'
 execute 'noremap  <silent> <'.conchar.'-/>  :History/<cr>'
 execute 'noremap  <silent> <'.conchar.'-;>  :History:<cr>'
@@ -447,26 +429,30 @@ execute 'map               <'.conchar.'-?>  <plug>(coc-codeaction-selected)'
 execute 'noremap  <silent> <'.conchar.'-A>  <C-C>ggVG'
 execute 'inoremap <silent> <'.conchar.'-A>  <esc>ggVG'
 execute 'noremap  <silent> <'.conchar.'-B>  :Buffers<cr>'
-execute 'noremap  <silent> <'.conchar.'-B>  <C-^>'
+execute 'noremap  <silent> <'.conchar.'-C>  "+yy'
+execute "noremap  <silent> <".conchar."-E>  :execute 'silent !".explorer." '.shellescape(expand('%:p:h'))<cr>"
 execute 'noremap  <silent> <'.conchar.'-F>  :Rg<cr>'
 execute 'noremap  <silent> <'.conchar.'-G>b :BCommits<cr>'
 execute 'noremap  <silent> <'.conchar.'-G>f :GFiles?<cr>'
 execute 'noremap  <silent> <'.conchar.'-G>h :Commits<cr>'
+execute 'noremap           <'.conchar.'-K>  :Help <C-R><C-W><cr>'
 execute 'noremap  <silent> <'.conchar.'-M>  :Marks<cr>'
 execute 'noremap  <silent> <'.conchar.'-P>  :Files<cr>'
+execute 'noremap  <silent> <'.conchar.'-S>  :update<cr>'
+execute 'noremap  <silent> <'.conchar.'-T>  :tabnew<cr>'
 
 " Commands
 command! -nargs=0 CopyMode call ToggleCopyMode()
-command! -nargs=0 Todos call ShowTodos()
 command! -nargs=0 GotoCompanionFile call GotoCompanionFile()
-command! -nargs=+ OpenSidePanel     call OpenSidePanel(<f-args>)
-command! -nargs=1 -complete=help         Help  call OpenHelp(<f-args>)
-command! -nargs=1 -complete=help         THelp tab help <args>
-command! -nargs=+ -complete=file_in_path Grep  call Grep(0, <f-args>)
+command! -nargs=+ OpenSidePanel call OpenSidePanel(<f-args>)
+command! -nargs=0 Todos call GrepTodo()
+command! -nargs=1 -complete=help Help call OpenHelp(<f-args>)
+command! -nargs=1 -complete=help THelp tab help <args>
+command! -nargs=+ -complete=file_in_path Grep call Grep(0, <f-args>)
 command! -nargs=+ -complete=file_in_path LGrep call Grep(1, <f-args>)
-call s:GenerateCAbbrev('grep',  2, 'Grep' )
-call s:GenerateCAbbrev('rg',    2, 'Grep' )
-call s:GenerateCAbbrev('help',  1, 'Help' )
+call s:GenerateCAbbrev('grep', 2, 'Grep' )
+call s:GenerateCAbbrev('rg', 2, 'Grep' )
+call s:GenerateCAbbrev('help', 1, 'Help' )
 call s:GenerateCAbbrev('lgrep', 2, 'LGrep')
 call s:GenerateCAbbrev('thelp', 2, 'THelp')
 
@@ -484,13 +470,14 @@ augroup MkdirOnWrite | autocmd!
 augroup end
 
 augroup Filetypes | autocmd!
-    autocmd FileType notes                             set fo-=c | call SetAutosave(1)
-    autocmd BufNew,BufReadPost *                       set formatoptions=cjrqn1
-    autocmd BufNew,BufReadPre *.xaml,*.targets,*.props setf xml
-    autocmd FileType gitcommit                         setlocal tw=72 fo+=t cc=50,+0
-    autocmd FileType markdown,txt                      setlocal wrap nonumber norelativenumber nocursorline fo-=t
-    autocmd FileType crontab                           setlocal nobackup nowritebackup
+    autocmd BufNew,BufReadPre  *.xaml,*.targets,*.props setf xml
+
+    autocmd BufNew,BufReadPost *        set formatoptions=cjrqn1
     autocmd BufNew,BufReadPost keymap.c syn match QmkKcAux /_\{7}\|X\{7}\|__MIS__/ | hi! link QmkKcAux LineNr
+
+    autocmd FileType crontab      setlocal nobackup nowritebackup
+    autocmd FileType gitcommit    setlocal tw=72 fo+=t cc=50,+0
+    autocmd FileType markdown,txt setlocal wrap nonumber norelativenumber nocursorline fo-=t
 augroup end
 
 augroup ColorColumn | au!
@@ -724,7 +711,7 @@ function! OpenSidePanel(input, ...) " {{{
     if l:splitting && exists('t:auxfile_bufnr')
         let winnr = bufwinnr(t:auxfile_bufnr)
         if l:winnr >= 0
-            execute l:winnr.'close!'
+            execute 'silent! '.l:winnr.'close!'
         endif
     endif
 
@@ -739,12 +726,14 @@ function! OpenSidePanel(input, ...) " {{{
     execute 'wincmd '.(get(g:, 'auxfile_splitright', !&splitright) ? 'L' : 'H')
     execute 'vertical resize '.l:splitwidth
     let &l:textwidth = l:splitwidth
+    setlocal nohidden bufhidden=delete 
     call SetAutosave(1)
 endfunction " }}}
 
 function! SetAutosave(enabled) " {{{
     augroup Autosave | au! * <buffer>
         if a:enabled
+            setlocal autowrite
             autocmd InsertLeave,CursorHold <buffer> update
         endif
     augroup end
