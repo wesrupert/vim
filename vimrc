@@ -218,7 +218,6 @@ endif
 
 " Colorschemes
 Plug 'fenetikm/falcon'
-Plug 'nightsense/vimspectr'
 Plug 'reedes/vim-colors-pencil'
 Plug 'yous/vim-open-color'
 
@@ -399,7 +398,7 @@ noremap <silent> gV            `[v`]
 map              ga            <plug>(EasyAlign)
 noremap          gc            :call ToggleCopyMode()<cr>
 map              gd            <plug>(coc-definition)
-noremap <silent> gs            :call OpenSidePanel(g:scratch)<cr>
+noremap <silent> gs            :Scratch<cr>
 noremap <silent> zp            :History<cr>
 
 inoremap <silent> <C-Backspace> <C-W>
@@ -445,6 +444,7 @@ execute 'noremap  <silent> <'.conchar.'-T>  :tabnew<cr>'
 command! -nargs=0 CopyMode call ToggleCopyMode()
 command! -nargs=0 GotoCompanionFile call GotoCompanionFile()
 command! -nargs=+ OpenSidePanel call OpenSidePanel(<f-args>)
+command! -nargs=0 Scratch call OpenScratch()
 command! -nargs=0 Todos call GrepTodo()
 command! -nargs=1 -complete=help Help call OpenHelp(<f-args>)
 command! -nargs=1 -complete=help THelp tab help <args>
@@ -700,6 +700,10 @@ function! OpenHelp(topic) " {{{
     catch
         echohl ErrorMsg | echo 'Help:'.split(v:exception, ':')[-1] | echohl None
     endtry
+endfunction " }}}
+
+function! OpenScratch() " {{{
+    call OpenSidePanel(g:scratch)
 endfunction " }}}
 
 function! OpenSidePanel(input, ...) " {{{
