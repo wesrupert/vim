@@ -34,7 +34,14 @@ function! NormPath(path, ...) " {{{
     return expanded
 endfunction " }}}
 
-function! ToggleCopyMode()
+function! Paste() " {{{
+    let paste=&l:paste
+    setl paste
+    execute 'normal "+gP'
+    let &l:paste=paste
+endfunction " }}}
+
+function! ToggleCopyMode() " {{{
     if !exists('b:copymode_enabled')
         let b:copymode_enabled = 1
         let b:copymode_number = &l:number
@@ -51,7 +58,7 @@ function! ToggleCopyMode()
         let &l:signcolumn = b:copymode_signs
         echo '[copymode] disabled'
     endif
-endfunction
+endfunction " }}}
 
 function! GrepTodo() " {{{
     silent execute 'grep! -i'
@@ -72,7 +79,6 @@ function! s:CheckBackspace() abort " {{{
   let column = col('.') - 1
   return !column || getline('.')[column - 1]  =~# '\s'
 endfunction " }}}
-
 
 function! s:IsEmptyFile() " {{{
     return !(@%!='' || filereadable(@%)!=0 || line('$')!=1 || col('$')!=1)
@@ -106,6 +112,7 @@ set display+=lastline
 set guioptions=!egkt
 set guitablabel=%{MyTabLabel(v:lnum)}
 set guitabtooltip=%{GuiTabToolTip()}
+set fillchars=vert:┃
 set hidden
 set lazyredraw
 set mouse=a
@@ -145,6 +152,7 @@ set wildignore+=tags
 set wildignore=*.swp,*.bak
 set wildignorecase
 set wildmenu
+set wildoptions+=pum
 if executable('rg')
     set grepprg=rg\ --vimgrep
 endif
@@ -185,8 +193,9 @@ if has('win32')
 endif
 
 " Languages for other settings
-let g:programming_languages = [ 'c', 'cpp', 'cs', 'dosbatch', 'go', 'java', 'javascript',
-            \ 'jsp', 'objc', 'ruby', 'sh', 'typescript', 'vim', 'vue', 'zsh', ]
+let g:ui_languages = [ 'css', 'sass', 'scss', 'html', 'vue', 'tsx', 'jsx' ]
+let g:programming_languages = g:ui_languages + [ 'c', 'cpp', 'cs', 'dosbatch', 'go',
+            \ 'java', 'javascript', 'jsp', 'objc', 'ruby', 'sh', 'typescript', 'vim', 'zsh' ]
 
 " }}}
 
@@ -217,6 +226,7 @@ else
 endif
 
 " Colorschemes
+Plug 'challenger-deep-theme/vim'
 Plug 'fenetikm/falcon'
 Plug 'reedes/vim-colors-pencil'
 Plug 'yous/vim-open-color'
@@ -231,7 +241,7 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-unimpaired'
 Plug 'vim-scripts/bufonly.vim'
 
-" completion plugins
+" Completion plugins
 Plug 'alvan/vim-closetag'
 Plug 'honza/vim-snippets'
 Plug 'neoclide/coc.nvim', {'tag': '*', 'do': { -> coc#util#install() } }
@@ -241,7 +251,9 @@ Plug 'sirver/ultisnips'
 Plug 'airblade/vim-rooter'
 Plug 'conormcd/matchindent.vim'
 Plug 'editorconfig/editorconfig-vim'
+Plug 'junegunn/goyo.vim'
 Plug 'mbbill/undotree'
+Plug 'rrethy/vim-hexokinase'
 Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-repeat'
 
@@ -265,6 +277,7 @@ let g:coc_global_extensions = [
             \ 'coc-pyls',
             \ 'coc-snippets',
             \ 'coc-solargraph',
+            \ 'coc-sh',
             \ 'coc-tsserver',
             \ 'coc-vetur',
             \ 'coc-vimlsp',
@@ -305,6 +318,9 @@ if exists("*nvim_create_buf") && exists("*nvim_open_win")
     endfunction
 endif
 
+let g:Hexokinase_ftAutoload = g:ui_languages
+let g:Hexokinase_optInPatterns = ['full_hex', 'triple_hex', 'rgb', 'rgba', 'colour_names']
+
 let g:hoverhl#match_group = 'Pmenu'
 let g:hoverhl#custom_guidc = ''
 let g:hoverhl#case_sensitive = 1
@@ -329,6 +345,8 @@ let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes) + [
       \   {'buns': ['(\s*', '\s*)'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['(']},
       \ ]
 
+let g:vue_pre_processors = 'detect_on_enter'
+
 call s:TrySourceFile(g:vimrc.'.plugins.settings.custom', '')
 
 function! s:Helptags() abort " Invoke :helptags on all non-$VIM doc directories in runtimepath. {{{
@@ -350,34 +368,43 @@ call s:Helptags()
 " Keybindings and Commands {{{
 " Sort via :sort /.*\%17v/
 
+noremap          "             '
+noremap          '             "
 noremap          :             ;
 noremap          ;             :
-nmap    <silent> <ESC>         <plug>(coc-float-hide)
 noremap <silent> <C-H>         <C-W>h
 noremap <silent> <C-J>         <C-W>j
 noremap <silent> <C-K>         <C-W>k
 noremap <silent> <C-L>         <C-W>l
+nmap    <silent> <ESC>         <plug>(coc-float-hide)
 noremap <silent> <F12>         :Helptags<cr>
 noremap <silent> <expr> j      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'j' : 'gj'
 noremap <silent> <expr> k      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'k' : 'gk'
 noremap          <leader>-     :execute 'edit '.expand('%:p:h')<cr>
 noremap <silent> <leader>/     :nohlsearch<cr>
-noremap          <leader>;/    :%s/\<<C-R><C-W>\>/
+map              <leader>=     <plug>(coc-format-selected)
 noremap <silent> <leader>[     :setlocal wrap!<cr>:setlocal wrap?<cr>
 noremap <silent> <leader>c,    :cd ..<cr>:echo ':cd '.getcwd()<cr>
 noremap <silent> <leader>cd    :execute 'cd '.expand('%:p:h')<cr>:echo ':cd '.getcwd()<cr>
 noremap <silent> <leader>co    :Colors<cr>
 noremap <silent> <leader>d     <C-X>
 noremap <silent> <leader>f     <C-A>
+nmap             <leader>g     <plug>(coc-git-chunkinfo)
 noremap          <leader>hu    :CocCommand git.chunkUndo<cr>
-noremap          <leader>r     :cfdo %s/<C-R>/// <bar> update<left><left><left><left><left><left><left><left><left><left>
-noremap          <leader>s     :%s/<C-R>//
-noremap <silent> <leader>t     :GrepTodo<cr>
+nnoremap         <leader>i     :call CocAction('doHover')<cr>
+nnoremap         <leader>l     :CocList<cr>
+noremap          <leader>p     :Paste<cr>
+map              <leader>r     <plug>(coc-rename)
+noremap          <leader>s     :%s/\<<C-R><C-W>\>/
+noremap <silent> <leader>t     :Todos<cr>
 noremap <silent> <leader>va    :call OpenSidePanel(g:vimrc_custom)<cr>
 noremap <silent> <leader>vb    :call OpenSidePanel(g:vimrc_leader)<cr>
+noremap <silent> <leader>vc    :CocConfig<cr>
 noremap <silent> <leader>vp    :call OpenSidePanel(g:vimrc.'.plugins.custom')<cr>
 noremap <silent> <leader>vr    :call OpenSidePanel(g:vimrc)<cr>
-noremap <silent> <leader>vz    :execute 'source '.g:vimrc<cr>
+noremap <silent> <leader>vz    :execute 'source '.g:vimrc<cr>:CocRestart<cr>
+noremap          <leader>x     "+x
+noremap          <leader>y     "+y
 noremap <silent> K             :call CocAction('doHover')<cr>
 noremap          Q             <C-Q>
 noremap          Y             y$
@@ -386,10 +413,6 @@ map              [d            <plug>(coc-type-definition)
 map              [i            <plug>(coc-implementation)
 map              [i            <plug>(coc-references)
 map              [l            <plug>(coc-diagnostic-prev)
-map              \=            <plug>(coc-format-selected)
-nnoremap         \i            :call CocAction('doHover')<cr>
-nmap             \g            <plug>(coc-git-chunkinfo)
-map              \r            <plug>(coc-rename)
 nmap             ]c            <plug>(coc-git-nextchunk)
 map              ]d            <plug>(coc-definition)
 map              ]l            <plug>(coc-diagnostic-next)
@@ -399,6 +422,7 @@ map              ga            <plug>(EasyAlign)
 noremap          gc            :call ToggleCopyMode()<cr>
 map              gd            <plug>(coc-definition)
 noremap <silent> gs            :Scratch<cr>
+noremap <silent> gz            :Goyo<cr>
 noremap <silent> zp            :History<cr>
 
 inoremap <silent> <C-Backspace> <C-W>
@@ -417,7 +441,7 @@ let explorer = has('win32') ? 'explorer' : 'open'
 if has("clipboard")
     execute 'vnoremap <'.conchar.'-X> "+x'
     execute 'vnoremap <'.conchar.'-C> "+y'
-    execute 'noremap  <'.conchar.'-V> "+gP'
+    execute 'noremap  <'.conchar.'-V> :Paste<cr>'
     execute 'noremap! <'.conchar.'-V> <C-R>+'
 endif
 
@@ -439,11 +463,13 @@ execute 'noremap  <silent> <'.conchar.'-M>  :Marks<cr>'
 execute 'noremap  <silent> <'.conchar.'-P>  :Files<cr>'
 execute 'noremap  <silent> <'.conchar.'-S>  :update<cr>'
 execute 'noremap  <silent> <'.conchar.'-T>  :tabnew<cr>'
+execute 'noremap  <silent> <'.conchar.'-T>  :tabnew<cr>'
 
 " Commands
 command! -nargs=0 CopyMode call ToggleCopyMode()
 command! -nargs=0 GotoCompanionFile call GotoCompanionFile()
 command! -nargs=+ OpenSidePanel call OpenSidePanel(<f-args>)
+command! -nargs=0 Paste call Paste()
 command! -nargs=0 Scratch call OpenScratch()
 command! -nargs=0 Todos call GrepTodo()
 command! -nargs=1 -complete=help Help call OpenHelp(<f-args>)
