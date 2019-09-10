@@ -244,7 +244,7 @@ Plug 'vim-scripts/bufonly.vim'
 " Completion plugins
 Plug 'alvan/vim-closetag'
 Plug 'honza/vim-snippets'
-Plug 'neoclide/coc.nvim', {'tag': '*', 'do': { -> coc#util#install() } }
+Plug 'neoclide/coc.nvim', { 'do': { -> coc#util#install() } }
 Plug 'sirver/ultisnips'
 
 " Architecture plugins
@@ -504,6 +504,8 @@ augroup Filetypes | autocmd!
     autocmd FileType crontab      setlocal nobackup nowritebackup
     autocmd FileType gitcommit    setlocal tw=72 fo+=t cc=50,+0
     autocmd FileType markdown,txt setlocal wrap nonumber norelativenumber nocursorline fo-=t
+
+    autocmd BufRead keymap.c syn match QmkKcAux /_______\|XXXXXXX\|__MIS__/ | hi! link QmkKcAux LineNr
 augroup end
 
 augroup ColorColumn | au!
