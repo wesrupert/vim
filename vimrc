@@ -262,7 +262,6 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'junegunn/goyo.vim'
 Plug 'mbbill/undotree'
 Plug 'mhinz/vim-startify'
-Plug 'rrethy/vim-hexokinase', { 'do': 'make hexokinase' }
 
 Plug 'sheerun/vim-polyglot'
 Plug 'ipkiss42/xwiki.vim'
