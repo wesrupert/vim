@@ -153,7 +153,6 @@ set wildignore+=tags
 set wildignore=*.swp,*.bak
 set wildignorecase
 set wildmenu
-set wildoptions+=pum
 if executable('rg')
     set grepprg=rg\ --vimgrep
 endif
@@ -255,7 +254,6 @@ Plug 'sgur/vim-textobj-parameter'
 Plug 'alvan/vim-closetag'
 Plug 'honza/vim-snippets'
 Plug 'neoclide/coc.nvim', { 'do': { -> coc#util#install() } }
-Plug 'sirver/ultisnips'
 
 " Architecture plugins
 Plug 'airblade/vim-rooter'
@@ -409,6 +407,7 @@ noremap <silent> <leader>c,    :cd ..<cr>:echo ':cd '.getcwd()<cr>
 noremap <silent> <leader>cd    :execute 'cd '.expand('%:p:h')<cr>:echo ':cd '.getcwd()<cr>
 noremap <silent> <leader>co    :Colors<cr>
 noremap <silent> <leader>d     <C-X>
+noremap <silent> <leader>e     :CocCommand explorer<cr>
 noremap <silent> <leader>f     <C-A>
 nmap             <leader>g     <plug>(coc-git-chunkinfo)
 noremap          <leader>ha    :CocCommand git.chunkStage<cr>

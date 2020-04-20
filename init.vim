@@ -6,6 +6,7 @@ if filereadable(s:vimrc)
 endif
 
 set inccommand=split
+set wildoptions+=pum
 let g:markdown_preview_auto = 1
 
 noremap <f11> :ToggleFullscreen<cr>
