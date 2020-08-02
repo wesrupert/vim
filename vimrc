@@ -826,7 +826,10 @@ endfunction "}}}
 
 " }}}
 
-execute 'cd '.g:workplace_root
+if exists('g:workplace_root')
+    execute 'cd '.g:workplace_root
+endif
+
 let g:vimrc_custom = s:TrySourceFile(g:vimrc.'.custom', g:vimrc.'.after')
 
 " vim: foldmethod=marker
