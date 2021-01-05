@@ -1,5 +1,14 @@
 " Functions {{{
 
+function! Autosave(enabled) " {{{
+  augroup Autosave | au! * <buffer>
+      if a:enabled
+          setlocal autowrite
+          autocmd InsertLeave,CursorHold <buffer> update
+      endif
+  augroup end
+endfunction " }}}
+
 function! Mkdir(path) " {{{
     let l:path = expand(a:path)
     if !filereadable(l:path) && filewritable(l:path) != 1
@@ -75,11 +84,6 @@ function! s:GenerateCAbbrev(orig, complStart, new) " {{{
     endwhile
 endfunction " }}}
 
-function! s:CheckBackspace() abort " {{{
-  let column = col('.') - 1
-  return !column || getline('.')[column - 1]  =~# '\s'
-endfunction " }}}
-
 function! s:IsEmptyFile() " {{{
     return !(@%!='' || filereadable(@%)!=0 || line('$')!=1 || col('$')!=1)
 endfunction " }}}
@@ -107,27 +111,17 @@ call Mkdir(g:temp)
 colorscheme default
 syntax on
 filetype plugin indent on
-set belloff=all
-set display+=lastline
 set guioptions=!egkt
-set guitablabel=%{MyTabLabel(v:lnum)}
-set guitabtooltip=%{GuiTabToolTip()}
 set fillchars=vert:┃
 set hidden
 set lazyredraw
 set mouse=a
 set noequalalways
-set noerrorbells
-set scrolloff=3
-set shortmess+=A
-set sidescroll=1
-set splitbelow
-set splitright
+set scrolloff=2 sidescroll=1
+set splitbelow splitright
 set switchbuf=usetab
-set t_vb=
-set tabline=%!TermTabLabel()
 set updatetime=500
-set visualbell
+set visualbell t_vb=
 if exists('&termguicolors')
     set termguicolors
 endif
@@ -135,15 +129,7 @@ endif
 " Command bar
 set completeopt=menuone,preview
 set gdefault
-set hlsearch
-set ignorecase
-set incsearch
-set infercase
-set laststatus=2
-set noshowmode
-set ruler
-set showcmd
-set smartcase
+set ignorecase infercase smartcase
 set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc,.class
 set wildignore+=*.pyc,*.class,*.sln,*.Master,*.csproj,*.csproj.user,*.cache,*.dll,*.pdb,*.min.*
 set wildignore+=*.tar.*
@@ -152,33 +138,19 @@ set wildignore+=*/build/**,*/bin/**,*/dist/**,*/node_modules/**
 set wildignore+=tags
 set wildignore=*.swp,*.bak
 set wildignorecase
-set wildmenu
 if executable('rg')
     set grepprg=rg\ --vimgrep
 endif
 
 " Text options
-set autoindent
-set backspace=indent,eol,start
-set breakindent
-set concealcursor=
+set breakindent smartindent
 set conceallevel=2
 set cursorline
-set expandtab
-set fdc=0
+set expandtab shiftwidth=4 softtabstop=4 tabstop=4
 set foldmethod=syntax
-set linebreak
-set nowrap
 set number
-set textwidth=128
-set shiftwidth=4 softtabstop=4 tabstop=4
-set smartindent
-set smarttab
 set spell
 let &thesaurus = NormFile(g:vimhome.'/moby-thesaurus/words.txt')
-if !has('nvim')
-    set listchars=tab:»\ ,space:·,trail:-,precedes:>,extends:<
-endif
 if has('gui_running') && !has('gui_vimr')
     set guifont=Victor_Mono:h11,Hack:h9,Source_Code_Pro:h11,Consolas:h10
     set guicursor+=n-v-c:blinkwait500-blinkon500-blinkoff500
@@ -224,14 +196,8 @@ else
 endif
 
 " Colorschemes
-Plug 'arzg/vim-corvine'
-Plug 'jaredgorski/spacecamp'
-Plug 'arzg/vim-substrata'
-Plug 'challenger-deep-theme/vim'
 Plug 'fenetikm/falcon'
 Plug 'reedes/vim-colors-pencil'
-Plug 'tyrannicaltoucan/vim-deep-space'
-Plug 'yous/vim-open-color'
 
 " Command plugins
 Plug 'junegunn/fzf', { 'dir': NormPath('~/.fzf'), 'do': './install --all' }
@@ -253,7 +219,7 @@ Plug 'sgur/vim-textobj-parameter'
 " Completion plugins
 Plug 'alvan/vim-closetag'
 Plug 'honza/vim-snippets'
-Plug 'neoclide/coc.nvim', { 'do': { -> coc#util#install() } }
+Plug 'neoclide/coc.nvim', { 'branch': 'release' }
 
 " Architecture plugins
 Plug 'airblade/vim-rooter'
@@ -298,7 +264,9 @@ let g:coc_global_extensions = [
 " Configuration
 
 augroup Coc | autocmd!
-    autocmd CursorHold * silent call CocActionAsync('highlight')
+    if exists('*CocActionAsync')
+        autocmd CursorHold * silent call CocActionAsync('highlight')
+    endif
     autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
     autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
 augroup end
@@ -313,25 +281,15 @@ if exists("*nvim_create_buf") && exists("*nvim_open_win")
         let buf = nvim_create_buf(v:false, v:true)
         call setbufvar(buf, '&signcolumn', 'no')
 
-        let width = float2nr(&columns - (&columns * 4 / 10))
-        let height = max([&lines/3, 20])
+        let width = float2nr(&columns * 6 / 10)
+        let height = min([max([float2nr(&lines/2), 20]), &lines-4])
         let x = float2nr((&columns - width) / 2)
         let y = (tabpagenr('$') > 1 && !exists('&guitabline')) ? 1 : 0
 
-        let opts = {
-                    \ 'relative': 'editor',
-                    \ 'row': y,
-                    \ 'col': x,
-                    \ 'width': width,
-                    \ 'height': height
-                    \ }
-
+        let opts = { 'relative': 'editor', 'row': y, 'col': x, 'width': width, 'height': height }
         call nvim_open_win(buf, v:true, opts)
     endfunction
 endif
-
-let g:Hexokinase_ftAutoload = g:ui_languages
-let g:Hexokinase_optInPatterns = ['full_hex', 'triple_hex', 'rgb', 'rgba', 'colour_names']
 
 let g:hoverhl#match_group = 'Pmenu'
 let g:hoverhl#custom_guidc = ''
@@ -342,7 +300,7 @@ let g:markdown_fenced_languages = g:programming_languages + ['xwiki']
 
 let g:pencil_gutter_color = 1
 
-let g:rooter_use_lcd = 1
+let g:rooter_cd_cmd = 'lcd'
 let g:rooter_silent_chdir = 1
 augroup RooterPost | autocmd!
     autocmd User RooterChDir try | cd src | catch | endtry
@@ -380,8 +338,6 @@ call s:Helptags()
 " Keybindings and Commands {{{
 " Sort via :sort /.*\%17v/
 
-noremap          "             '
-noremap          '             "
 noremap          :             ;
 noremap          ;             :
 noremap <silent> <C-H>         <C-W>h
@@ -390,63 +346,51 @@ noremap <silent> <C-K>         <C-W>k
 noremap <silent> <C-L>         <C-W>l
 nmap    <silent> <ESC>         <plug>(coc-float-hide)
 noremap <silent> <F12>         :Helptags<cr>
-noremap <silent> <expr> j      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'j' : 'gj'
-noremap <silent> <expr> k      v:count ? (v:count > 5 ? "m'" . v:count : '') . 'k' : 'gk'
-noremap <silent> <leader>'     :Marks<cr>
-map              <leader>,     <plug>(coc-codeaction-selected)
-noremap          <leader>-     :execute 'edit '.expand('%:p:h')<cr>
-noremap          <leader>.     :CocFix<cr>
-noremap <silent> <leader>/     :History/<cr>
 noremap <silent> <leader>/     :nohlsearch<cr>
-noremap <silent> <leader>;     :History:<cr>
-map              <leader>=     <plug>(coc-format-selected)
 noremap <silent> <leader>[     :setlocal wrap!<cr>:setlocal wrap?<cr>
-noremap          <leader>]     :CocCommand<cr>
+noremap          <leader>c     :call ToggleCopyMode()<cr>
 noremap <silent> <leader>c,    :cd ..<cr>:echo ':cd '.getcwd()<cr>
 noremap <silent> <leader>cd    :execute 'cd '.expand('%:p:h')<cr>:echo ':cd '.getcwd()<cr>
-noremap <silent> <leader>co    :Colors<cr>
-noremap <silent> <leader>d     <C-X>
-noremap <silent> <leader>e     :CocCommand explorer<cr>
-noremap <silent> <leader>f     <C-A>
 nmap             <leader>g     <plug>(coc-git-chunkinfo)
 noremap          <leader>ha    :CocCommand git.chunkStage<cr>
 noremap          <leader>hu    :CocCommand git.chunkUndo<cr>
-nnoremap         <leader>i     :call CocAction('doHover')<cr>
-nnoremap         <leader>k     :Help <C-R><C-W><cr>'
-noremap          <leader>l     :CocList<cr>
-map              <leader>r     <plug>(coc-rename)
-noremap          <leader>s     :%s/\<<C-R><C-W>\>/
-noremap <silent> <leader>t     :Todos<cr>
-noremap <silent> <leader>va    :call OpenSidePanel(g:vimrc_custom)<cr>
-noremap <silent> <leader>vb    :call OpenSidePanel(g:vimrc_leader)<cr>
-noremap <silent> <leader>vc    :CocConfig<cr>
-noremap <silent> <leader>vp    :call OpenSidePanel(g:vimrc.'.plugins.custom')<cr>
-noremap <silent> <leader>vr    :call OpenSidePanel(g:vimrc)<cr>
+nnoremap         <leader>k     K
+noremap <silent> <leader>va    :execute 'tab drop '.g:vimrc_custom<cr>
+noremap <silent> <leader>vb    :execute 'tab drop '.g:vimrc_leader<cr>
+noremap <silent> <leader>vp    :execute 'tab drop '.g:vimrc.'.plugins.custom'<cr>
+noremap <silent> <leader>vr    :execute 'tab drop '.g:vimrc<cr>
 noremap <silent> <leader>vz    :execute 'source '.g:vimrc<cr>:CocRestart<cr>
-noremap <silent> <leader>y     :<C-U>CocList -A --normal yank<cr>
-noremap <silent> K             :call CocAction('doHover')<cr>
-noremap          Q             <C-Q>
-noremap          Y             y$
+
 nmap             [c            <plug>(coc-git-prevchunk)
 map              [d            <plug>(coc-type-definition)
-map              [i            <plug>(coc-implementation)
 map              [i            <plug>(coc-references)
 map              [l            <plug>(coc-diagnostic-prev)
 nmap             ]c            <plug>(coc-git-nextchunk)
 map              ]d            <plug>(coc-definition)
+map              ]i            <plug>(coc-implementation)
 map              ]l            <plug>(coc-diagnostic-next)
-noremap          _             +
+
+noremap <silent> K             :call CocAction('doHover')<cr>
+noremap          Q             <C-Q>
+noremap          Y             y$
+map              g=            <plug>(coc-format-selected)
+noremap          g.            :CocFix<cr>
+map              g,            <plug>(coc-codeaction-selected)
+noremap <silent> g/            :Rg<cr>
 noremap <silent> gV            `[v`]
 map              ga            <plug>(EasyAlign)
 noremap <silent> gb            :Buffers<cr>
-noremap          gc            :call ToggleCopyMode()<cr>
+noremap <silent> gc            :BCommits<cr>
 map              gd            <plug>(coc-definition)
-noremap <silent> ggb           :BCommits<cr>
-noremap <silent> ggc           :Commits<cr>
-noremap <silent> ggf           :GFiles?<cr>
-noremap <silent> gs            :Scratch<cr>
+noremap          gl            :CocList<cr>
+noremap <silent> go            :GFiles?<cr>
+noremap <silent> gp            :Files<cr>
+noremap <silent> gs            :execute 'tab drop '.g:scratch<cr>:Autosave<cr>
+noremap <silent> gy            :<C-U>CocList -A --normal yank<cr>
 noremap <silent> gz            :Goyo<cr>
-noremap <silent> gw            :call SetAutosave(1)<cr>:Goyo<cr>
+noremap <silent> z'            :Marks<cr>
+noremap <silent> z/            :History/<cr>
+noremap <silent> z;            :History:<cr>
 noremap <silent> zp            :History<cr>
 
 inoremap <silent> <C-Backspace> <C-W>
@@ -460,8 +404,6 @@ inoremap kj <esc>
 noremap  <silent> \a  <C-C>ggVG
 inoremap <silent> \a  <esc>ggVG
 noremap  <silent> \c  "+yy
-noremap  <silent> \f  :Rg<cr>
-noremap  <silent> \p  :Files<cr>
 noremap  <silent> \s  :update<cr>
 noremap  <silent> \t  :tabnew<cr>
 noremap  <silent> <C-S> :update<cr>
@@ -475,10 +417,6 @@ if has("clipboard")
     noremap  \y "+y
     noremap  \v :Paste<cr>
     noremap! \v <C-O>:Paste<cr>
-else
-    noremap  \x :echo Missing clipboard support!<cr>
-    noremap  \y :echo Missing clipboard support!<cr>
-    noremap! \v :echo Missing clipboard support!<cr>
 endif
 
 " Sandwich mappings
@@ -486,22 +424,15 @@ runtime macros/sandwich/keymap/surround.vim
 
 " Commands
 command! -nargs=0 CopyMode call ToggleCopyMode()
-command! -nargs=0 GotoCompanionFile call GotoCompanionFile()
-command! -nargs=+ OpenSidePanel call OpenSidePanel(<f-args>)
+command! -nargs=0 Autosave call Autosave(1)
+command! -nargs=0 NoAutosave call Autosave(0)
 command! -nargs=0 Paste call Paste()
-command! -nargs=0 Scratch call OpenScratch()
-command! -nargs=0 Snap call ResizeToContents(0)
 command! -nargs=0 Todos call GrepTodo()
-command! -nargs=0 VSnap call ResizeToContents(1)
-command! -nargs=1 -complete=help Help call OpenHelp(<f-args>)
-command! -nargs=1 -complete=help THelp tab help <args>
 command! -nargs=+ -complete=file_in_path Grep call Grep(0, <f-args>)
 command! -nargs=+ -complete=file_in_path LGrep call Grep(1, <f-args>)
 call s:GenerateCAbbrev('grep', 2, 'Grep' )
-call s:GenerateCAbbrev('rg', 2, 'Grep' )
-call s:GenerateCAbbrev('help', 1, 'Help' )
 call s:GenerateCAbbrev('lgrep', 2, 'LGrep')
-call s:GenerateCAbbrev('thelp', 2, 'THelp')
+call s:GenerateCAbbrev('rg', 2, 'Grep' )
 
 " }}}
 
@@ -518,31 +449,9 @@ augroup end
 
 augroup Filetypes | autocmd!
     autocmd BufNew,BufReadPre  *.xaml,*.targets,*.props setf xml
-
     autocmd BufNew,BufReadPost keymap.c syn match QmkKcAux /_\{7}\|X\{7}\|__MIS__/ | hi! link QmkKcAux LineNr
-
-    autocmd FileType crontab      setlocal nobackup nowritebackup
     autocmd FileType gitcommit    setlocal tw=72 fo+=t cc=50,+0
-    autocmd FileType markdown     setlocal formatoptions+=tcrqon formatoptions-=wa
-    autocmd FileType markdown,txt setlocal wrap nonumber norelativenumber nocursorline fo-=t
-
-    autocmd BufRead keymap.c syn match QmkKcAux /_______\|XXXXXXX\|__MIS__/ | hi! link QmkKcAux LineNr
-augroup end
-
-augroup ColorColumn | au!
-    function! s:SetCC()
-        let l:set_in_cwd = 0
-        if exists('g:workplace_root')
-            let l:cwd = expand('%:p:h')
-            if l:cwd == '' | let l:cwd = getcwd() | endif
-            let l:cwd = strpart(l:cwd, 0, strlen(g:workplace_root))
-            let l:set_in_cwd = (l:cwd ==# g:workplace_root)
-        endif
-        if l:set_in_cwd && index(g:programming_languages, &filetype) >= 0
-            let &l:colorcolumn = get(g:, 'ccwidth', &l:textwidth)
-        endif
-    endfunction
-    autocmd BufNew,BufReadPost * call s:SetCC()
+    autocmd FileType markdown,txt setlocal nonumber norelativenumber nocursorline fo-=t
 augroup end
 
 augroup QuickExit | autocmd!
@@ -577,10 +486,6 @@ augroup FiletypeMarks | autocmd!
     autocmd BufLeave * call s:SetFtMark()
 augroup end
 
-augroup ResponsiveResize | autocmd!
-    autocmd VimResized * let &cmdheight = (&columns >= 80 ? 1 : &columns >= 60 ? 2 : 3)
-augroup end
-
 " }}}
 
 " Statusline {{{
@@ -591,16 +496,13 @@ function! s:StatusLine()
     set statusline+=%(\ \[%{SL_FileType()}\]%)%(\ [%R%M]%)%w%q                   " Filetype if it doesn't match extension + Buffer flags
     set statusline+=%=                                                           " Move to right side
     set statusline+=%{get(g:,'coc_git_status','')}%{get(b:,'coc_git_status','')} " Git status
-    set statusline+=%#PMenu#\ b%n\ %#StatusLine#                                 " Buffer number
-    set statusline+=\ %p%%\ [%l/%L\ %c]\                                         " Cursor location
+    set statusline+=%#PMenu#\ %p%%\ [%l/%L\ %c]\%#StatusLine#                    " Cursor location
 endfunction
 call s:StatusLine()
 
-let g:modemap={ 'n'  : 'Normal', 'no' : 'OpPend', 'v'  : 'Visual', 'V'  : 'VsLine',
-              \ '^V' : 'VBlock', 's'  : 'Select', 'S'  : 'SelLin', '^S' : 'SBlock',
-              \ 'i'  : 'Insert', 'R'  : 'Rplace', 'Rv' : 'VReplc', 'c'  : 'Commnd',
-              \ 'cv' : 'Vim Ex', 'ce' : 'ExMode', 'r'  : 'Prompt', 'rm' : '  More',
-              \ 'r?' : 'Confrm', '!'  : ' Shell', 't'  : '  Term'}
+let g:modemap={ 'n'  : 'Normal', 'no' : 'OpPend', 'v'  : 'Visual', 'V'  : 'VsLine', '^V' : 'VBlock', 's'  : 'Select', 'S'  : 'SelLin',
+              \ '^S' : 'SBlock', 'i'  : 'Insert', 'R'  : 'Rplace', 'Rv' : 'VReplc', 'c'  : 'Commnd', 'cv' : 'Vim Ex', 'ce' : 'ExMode',
+              \ 'r'  : 'Prompt', 'rm' : '  More', 'r?' : 'Confrm', '!'  : ' Shell', 't'  : '  Term'}
 
 function! SL_ModeCurrent() abort
     return toupper(get(g:modemap, mode(), 'VBlock'))
@@ -613,7 +515,7 @@ function! SL_FilePath(len) abort
 endfunction
 
 function! SL_FileType() abort
-    return expand('%:e') == &filetype ? '' : &filetype
+    return expand('%:e') == &filetype ? 'new' : &filetype
 endfunction
 
 " }}}
@@ -655,181 +557,5 @@ endfunction
 
 " }}}
 
-" Tabs {{{
-
-function! TermTabLabel() " {{{
-    let label = ''
-    for i in range(tabpagenr('$'))
-        let label .= (i+1 == tabpagenr()) ? '%#TabLineSel#' : '%#TabLine#' " Select the highlighting
-        let label .= '%'.(i+1).'T %{MyTabLabel('.(i+1).')} %#TabLine#|'    " The label is made by MyTabLabel()
-    endfor
-    let label .= '%#TabLineFill#%T'                                        " Fill with TabLineFill and reset tab page nr
-    return label
-endfunction " }}}
-
-function! MyTabLabel(lnum) " {{{
-    let bufnrlist = tabpagebuflist(a:lnum)
-    let bufnr = tabpagewinnr(a:lnum) - 1
-    let name = bufname(bufnrlist[bufnr])
-    let modified = getbufvar(bufnrlist[bufnr], '&modified')
-    let readonly = getbufvar(bufnrlist[bufnr], '&readonly') || !getbufvar(bufnrlist[bufnr], '&modifiable')
-
-    if name != '' && name !~ 'NERD_tree'
-        let name = fnamemodify(name, ':t')
-    else
-        let bufnr = len(bufnrlist)
-        while (name == '' || name =~ 'NERD_tree') && bufnr >= 0
-            let bufnr -= 1
-            let name = bufname(bufnrlist[bufnr])
-            let modified = getbufvar(bufnrlist[bufnr], '&modified')
-        endwhile
-        let name = name=='' ? &buftype=='quickfix' ? '[Quickfix]' : '[No Name]' : fnamemodify(name, ':t')
-    endif
-    if name == '.scratch.md' || name =~ 'Scratch' | let name = '[Scratch]' | endif
-    if name =~ '^vimrc' | let name = '['.name.']' | endif
-    if getbufvar(bufnrlist[bufnr], '&buftype') == 'help'
-        let modified = 0 | let readonly = 0
-        let name = 'H['.fnamemodify(name, ':r').']'
-    endif
-    let label = a:lnum.' '.name
-
-    let uncounted = 0
-    for bufnr in bufnrlist
-        let tmpname = bufname(bufnr)
-        if tmpname == '' || tmpname =~ 'NERD_tree' || getbufvar(bufnr, '&buftype') == 'help'
-            if bufnr != bufnrlist[tabpagewinnr(a:lnum) - 1]
-                let uncounted += 1
-            endif
-        endif
-    endfor
-    let wincount = tabpagewinnr(a:lnum, '$') - uncounted
-    if wincount > 1
-        let label .= ' (..'.wincount
-        for bufnr in bufnrlist
-            if (modified == 0 && getbufvar(bufnr, '&modified'))
-                let label .= ' [+]'
-                break
-            endif
-        endfor
-        let label .= ')'
-    endif
-    let label .= modified ? readonly ? '[+/-]' : '[+]' : readonly ? '[-]' : ''
-
-    return label
-endfunction " }}}
-
-function! GuiTabToolTip() " {{{
-    let tooltip = ''
-    let bufnrlist = tabpagebuflist(v:lnum)
-    for bufnr in bufnrlist
-        let name=bufname(bufnr)
-        if (name =~ 'NERD_tree') | continue | endif
-        if tooltip!='' | let tooltip .= "\n" | endif
-        if name == ''
-            let name = getbufvar(bufnr,'&buftype')=='quickfix' ? '[Quickfix List]' : '[No Name]'
-        elseif getbufvar(bufnr,'&buftype')=='help'
-            let name = 'help: '.fnamemodify(name, ':p:t:r')
-        else
-            let name = fnamemodify(name, ':p:t')
-        endif
-        let tooltip .= name
-
-        " add modified/modifiable flags
-        let modified = 0 | let readonly = 0
-        if getbufvar(bufnr, '&modified') | let modified = 1 | endif
-        if getbufvar(bufnr, '&modifiable') == 0 || getbufvar(bufnr, '&readonly') == 1 | let readonly = 1 | endif
-        let tooltip .= modified ? readonly ? ' [+/-]' : ' [+]' : readonly ? ' [-]' : ''
-    endfor
-    return tooltip
-endfunction " }}}
-
-function! OpenHelp(topic) " {{{
-    try
-        call OpenSidePanel('help '.a:topic, 1)
-    catch
-        echohl ErrorMsg | echo 'Help:'.split(v:exception, ':')[-1] | echohl None
-    endtry
-endfunction " }}}
-
-function! OpenScratch() " {{{
-    call OpenSidePanel(g:scratch)
-endfunction " }}}
-
-function! ResizeToContents(vert) " {{{
-    if a:vert == 1
-        let maxcol = max(map(range(1, line('$')), "col([v:val, '$'])")) 
-        execute 'vertical resize '.maxcol
-    else
-        execute 'resize '.line('$')
-    endif
-endfunction " }}}
-
-function! OpenSidePanel(input, ...) " {{{
-    let iscommand  = get(a:, 1, 0)
-    let splitwidth = get(g:, 'opensplit_splitwidth', 80)
-    let canopensplit = &columns >= splitwidth + get(g:, 'opensplit_mainwidth', 100)
-    let splitting = !s:IsEmptyFile() && l:canopensplit
-
-    if l:splitting && exists('t:auxfile_bufnr')
-        let winnr = bufwinnr(t:auxfile_bufnr)
-        if l:winnr >= 0
-            execute 'silent! '.l:winnr.'close!'
-        endif
-    endif
-
-    let open = s:IsEmptyFile()   ? (l:iscommand ? ''      : 'drop '    ) :
-                \ l:canopensplit ? (l:iscommand ? 'vert ' : 'vsplit '  ) :
-                \ (l:iscommand   ? 'tab '  : 'tab drop ')
-    let opencmd = l:open.a:input
-
-    execute l:opencmd
-
-    let t:auxfile_bufnr = bufnr("%")
-    execute 'wincmd '.(get(g:, 'auxfile_splitright', !&splitright) ? 'L' : 'H')
-    execute 'vertical resize '.l:splitwidth
-    let &l:textwidth = l:splitwidth
-    setlocal nohidden bufhidden=delete 
-    call SetAutosave(1)
-endfunction " }}}
-
-function! SetAutosave(enabled) " {{{
-    augroup Autosave | au! * <buffer>
-        if a:enabled
-            setlocal autowrite
-            autocmd InsertLeave,CursorHold <buffer> update
-        endif
-    augroup end
-endfunction " }}}
-
-function! SynStack() "{{{
-    return exists('*synstack') ? '['.join(map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")'), ',').']' : ''
-endfunction "}}}
-
-function! GetDecorations(synID, type) " {{{
-    let l:decorations = ['bold', 'italic', 'reverse', 'inverse', 'standout', 'underline', 'undercurl']
-    let l:decorationsString = ''
-    for l:decoration in l:decorations
-        if synIDattr(a:synID, l:decoration, a:type)
-            if l:decorationsString
-                let l:decorationsString .= ','
-            endif
-            let l:decorationsString .= l:decoration
-        endif
-    endfor
-
-    return l:decorationsString
-endfunction " }}}
-
-function! TabOrComplete() "{{{
-    return col('.')>1 && strpart( getline('.'), col('.')-2, 3 ) =~ '^\w' ? "\<C-N>" : "\<tab>"
-endfunction "}}}
-
-" }}}
-
-if exists('g:workplace_root')
-    execute 'cd '.g:workplace_root
-endif
-
 let g:vimrc_custom = s:TrySourceFile(g:vimrc.'.custom', g:vimrc.'.after')
-
 " vim: foldmethod=marker
