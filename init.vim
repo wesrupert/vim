@@ -5,6 +5,15 @@ if filereadable(s:vimrc)
     execute 'source '.s:vimrc
 endif
 
+lua << EOF
+require'lspinstall'.setup()
+local servers = require'lspinstall'.installed_servers()
+for _, server in pairs(servers) do
+      require'lspconfig'[server].setup{}
+  end
+
+EOF
+
 set inccommand=split
 set wildoptions+=pum
 let g:markdown_preview_auto = 1

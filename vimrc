@@ -127,7 +127,7 @@ if exists('&termguicolors')
 endif
 
 " Command bar
-set completeopt=menuone,preview
+set completeopt=menuone,preview,noinsert,noselect
 set gdefault
 set ignorecase infercase smartcase
 set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc,.class
@@ -163,7 +163,7 @@ if has('win32')
 endif
 
 " Languages for other settings
-let g:ui_languages = [ 'css', 'sass', 'scss', 'html', 'vue', 'tsx', 'jsx' ]
+let g:ui_languages = [ 'css', 'sass', 'scss', 'html', 'vue' ]
 let g:programming_languages = g:ui_languages + [ 'c', 'cpp', 'cs', 'dosbatch', 'go',
             \ 'java', 'javascript', 'jsp', 'objc', 'ruby', 'sh', 'typescript', 'vim', 'zsh' ]
 
@@ -196,6 +196,7 @@ else
 endif
 
 " Colorschemes
+Plug 'folke/lsp-colors.nvim'
 Plug 'fenetikm/falcon'
 Plug 'reedes/vim-colors-pencil'
 
@@ -219,57 +220,37 @@ Plug 'sgur/vim-textobj-parameter'
 " Completion plugins
 Plug 'alvan/vim-closetag'
 Plug 'honza/vim-snippets'
-Plug 'neoclide/coc.nvim', { 'branch': 'release' }
+Plug 'neovim/nvim-lspconfig'
+Plug 'kabouzeid/nvim-lspinstall'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'nvim-lua/completion-nvim'
 
 " Architecture plugins
 Plug 'airblade/vim-rooter'
+Plug 'simrat39/symbols-outline.nvim'
 Plug 'conormcd/matchindent.vim'
+Plug 'lukas-reineke/indent-blankline.nvim', { 'branch': 'lua' }
 Plug 'editorconfig/editorconfig-vim'
 Plug 'junegunn/goyo.vim'
 Plug 'mbbill/undotree'
 Plug 'mhinz/vim-startify'
-
-Plug 'sheerun/vim-polyglot'
-Plug 'ipkiss42/xwiki.vim'
 Plug 'tpope/vim-repeat'
+
+" Filetype plugins
+Plug 'HerringtonDarkholme/yats.vim'
+Plug 'aklt/plantuml-syntax'
+Plug 'cakebaker/scss-syntax.vim'
+Plug 'ipkiss42/xwiki.vim'
+Plug 'othree/yajs.vim'
+Plug 'pangloss/vim-javascript'
+Plug 'posva/vim-vue'
+Plug 'sheerun/html5.vim'
+Plug 'tpope/vim-git'
 
 call s:TrySourceFile(g:vimrc.'.plugins.custom', '')
 call plug#end()
 
-let g:coc_global_extensions = [
-            \ 'coc-calc',
-            \ 'coc-css',
-            \ 'coc-cssmodules',
-            \ 'coc-dictionary',
-            \ 'coc-eslint',
-            \ 'coc-git',
-            \ 'coc-highlight',
-            \ 'coc-html',
-            \ 'coc-java',
-            \ 'coc-inline-jest',
-            \ 'coc-json',
-            \ 'coc-pairs',
-            \ 'coc-prettier',
-            \ 'coc-pyls',
-            \ 'coc-snippets',
-            \ 'coc-solargraph',
-            \ 'coc-sh',
-            \ 'coc-tsserver',
-            \ 'coc-vetur',
-            \ 'coc-vimlsp',
-            \ 'coc-yaml',
-            \ 'coc-yank',
-            \ ]
-
 " Configuration
-
-augroup Coc | autocmd!
-    if exists('*CocActionAsync')
-        autocmd CursorHold * silent call CocActionAsync('highlight')
-    endif
-    autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
-    autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
-augroup end
 
 let g:closetag_filetypes = 'html,xhtml,phtml,vue'
 
@@ -290,6 +271,8 @@ if exists("*nvim_create_buf") && exists("*nvim_open_win")
         call nvim_open_win(buf, v:true, opts)
     endfunction
 endif
+
+set omnifunc=v:lua.vim.lsp.omnifunc
 
 let g:hoverhl#match_group = 'Pmenu'
 let g:hoverhl#custom_guidc = ''
@@ -344,50 +327,35 @@ noremap <silent> <C-H>         <C-W>h
 noremap <silent> <C-J>         <C-W>j
 noremap <silent> <C-K>         <C-W>k
 noremap <silent> <C-L>         <C-W>l
-nmap    <silent> <ESC>         <plug>(coc-float-hide)
 noremap <silent> <F12>         :Helptags<cr>
 noremap <silent> <leader>/     :nohlsearch<cr>
 noremap <silent> <leader>[     :setlocal wrap!<cr>:setlocal wrap?<cr>
 noremap          <leader>c     :call ToggleCopyMode()<cr>
 noremap <silent> <leader>c,    :cd ..<cr>:echo ':cd '.getcwd()<cr>
+noremap <silent> <leader>d     :lua vim.lsp.diagnostic.show_line_diagnostics()<cr>
 noremap <silent> <leader>cd    :execute 'cd '.expand('%:p:h')<cr>:echo ':cd '.getcwd()<cr>
-nmap             <leader>g     <plug>(coc-git-chunkinfo)
-noremap          <leader>ha    :CocCommand git.chunkStage<cr>
-noremap          <leader>hu    :CocCommand git.chunkUndo<cr>
 nnoremap         <leader>k     K
 noremap <silent> <leader>va    :execute 'tab drop '.g:vimrc_custom<cr>
 noremap <silent> <leader>vb    :execute 'tab drop '.g:vimrc_leader<cr>
 noremap <silent> <leader>vp    :execute 'tab drop '.g:vimrc.'.plugins.custom'<cr>
 noremap <silent> <leader>vr    :execute 'tab drop '.g:vimrc<cr>
-noremap <silent> <leader>vz    :execute 'source '.g:vimrc<cr>:CocRestart<cr>
+noremap <silent> <leader>vz    :execute 'source '.g:vimrc<cr>
 
-nmap             [c            <plug>(coc-git-prevchunk)
-map              [d            <plug>(coc-type-definition)
-map              [i            <plug>(coc-references)
-map              [l            <plug>(coc-diagnostic-prev)
-nmap             ]c            <plug>(coc-git-nextchunk)
-map              ]d            <plug>(coc-definition)
-map              ]i            <plug>(coc-implementation)
-map              ]l            <plug>(coc-diagnostic-next)
-
-noremap <silent> K             :call CocAction('doHover')<cr>
+noremap          K             :lua vim.lsp.buf.hover()<cr>
 noremap          Q             <C-Q>
 noremap          Y             y$
-map              g=            <plug>(coc-format-selected)
-noremap          g.            :CocFix<cr>
-map              g,            <plug>(coc-codeaction-selected)
 noremap <silent> g/            :Rg<cr>
 noremap <silent> gV            `[v`]
 map              ga            <plug>(EasyAlign)
 noremap <silent> gb            :Buffers<cr>
 noremap <silent> gc            :BCommits<cr>
-map              gd            <plug>(coc-definition)
-noremap          gl            :CocList<cr>
+noremap <silent> gd            :lua vim.lsp.buf.definition()<cr>
 noremap <silent> go            :GFiles?<cr>
 noremap <silent> gp            :Files<cr>
 noremap <silent> gs            :execute 'tab drop '.g:scratch<cr>:Autosave<cr>
-noremap <silent> gy            :<C-U>CocList -A --normal yank<cr>
+noremap <silent> gx            :lua vim.lsp.diagnostic.set_loclist()<cr>
 noremap <silent> gz            :Goyo<cr>
+noremap <silent> g=            :lua vim.lsp.buf.formatting()<cr>
 noremap <silent> z'            :Marks<cr>
 noremap <silent> z/            :History/<cr>
 noremap <silent> z;            :History:<cr>
@@ -399,6 +367,13 @@ inoremap <silent><expr> <tab>   pumvisible() ? "\<C-N>" : "\<tab>"
 inoremap <silent><expr> <s-tab> pumvisible() ? "\<C-P>" : "\<s-tab>"
 inoremap <expr> <cr> pumvisible() ? "\<C-Y>" : "\<C-G>u\<cr>"
 inoremap kj <esc>
+
+noremap ]r :lua vim.lsp.buf.declaration()<cr>
+noremap [r :lua vim.lsp.buf.definition()<cr>
+noremap [d :lua vim.lsp.diagnostic.goto_prev()<cr>
+noremap ]d :lua vim.lsp.diagnostic.goto_next()<cr>
+noremap [i :lua vim.lsp.buf.implementation()<cr>
+noremap ]i :lua vim.lsp.buf.references()<cr>
 
 " System (Ctrl- / Cmd-) commands
 noremap  <silent> \a  <C-C>ggVG
@@ -448,6 +423,7 @@ augroup MkdirOnWrite | autocmd!
 augroup end
 
 augroup Filetypes | autocmd!
+    autocmd BufNew,BufReadPost * lua require'completion'.on_attach()
     autocmd BufNew,BufReadPre  *.xaml,*.targets,*.props setf xml
     autocmd BufNew,BufReadPost keymap.c syn match QmkKcAux /_\{7}\|X\{7}\|__MIS__/ | hi! link QmkKcAux LineNr
     autocmd FileType gitcommit    setlocal tw=72 fo+=t cc=50,+0
@@ -495,7 +471,6 @@ function! s:StatusLine()
     set statusline+=%#PMenu#\ %{SL_FilePath(20)}\ %t\ %#StatusLineNC#            " File full path with truncation + Filename
     set statusline+=%(\ \[%{SL_FileType()}\]%)%(\ [%R%M]%)%w%q                   " Filetype if it doesn't match extension + Buffer flags
     set statusline+=%=                                                           " Move to right side
-    set statusline+=%{get(g:,'coc_git_status','')}%{get(b:,'coc_git_status','')} " Git status
     set statusline+=%#PMenu#\ %p%%\ [%l/%L\ %c]\%#StatusLine#                    " Cursor location
 endfunction
 call s:StatusLine()
