@@ -46,7 +46,7 @@ endfunction " }}}
 function! Paste() " {{{
     let paste=&l:paste
     setl paste
-    execute 'normal! "*gP'
+    execute 'normal! "*gp'
     let &l:paste=paste
 endfunction " }}}
 
@@ -350,10 +350,10 @@ map              ga            <plug>(EasyAlign)
 noremap <silent> gb            :Buffers<cr>
 noremap <silent> gc            :BCommits<cr>
 noremap <silent> gd            :lua vim.lsp.buf.definition()<cr>
+noremap <silent> gi            :lua vim.lsp.diagnostic.set_loclist()<cr>
 noremap <silent> go            :GFiles?<cr>
 noremap <silent> gp            :Files<cr>
 noremap <silent> gs            :execute 'tab drop '.g:scratch<cr>:Autosave<cr>
-noremap <silent> gx            :lua vim.lsp.diagnostic.set_loclist()<cr>
 noremap <silent> gz            :Goyo<cr>
 noremap <silent> g=            :lua vim.lsp.buf.formatting()<cr>
 noremap <silent> z'            :Marks<cr>
