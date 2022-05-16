@@ -69,13 +69,6 @@ function! ToggleCopyMode() " {{{
     endif
 endfunction " }}}
 
-function! GrepTodo() " {{{
-    silent execute 'grep! -i'
-        \ .' "\b(todo\|hack\|fixme\|xxx)\b:? "'
-        \ .' '.shellescape(get(b:, 'rootDir', getcwd()))
-    copen
-endfunction " }}}
-
 function! s:GenerateCAbbrev(orig, complStart, new) " {{{
     let len = len(a:orig) | if a:complStart > len | let a:complStart = len | endif
     while len >= a:complStart
@@ -108,20 +101,14 @@ call Mkdir(g:temp)
 " Preferences and Settings {{{
 
 " Application settings
-colorscheme default
 syntax on
 filetype plugin indent on
 set guioptions=!egkt
-set fillchars=vert:┃
-set hidden
-set lazyredraw
 set mouse=a
-set noequalalways
 set scrolloff=2 sidescroll=1
 set splitbelow splitright
 set switchbuf=usetab
 set updatetime=500
-set visualbell t_vb=
 if exists('&termguicolors')
     set termguicolors
 endif
@@ -132,11 +119,10 @@ set gdefault
 set ignorecase infercase smartcase
 set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc,.class
 set wildignore+=*.pyc,*.class,*.sln,*.Master,*.csproj,*.csproj.user,*.cache,*.dll,*.pdb,*.min.*
-set wildignore+=*.tar.*
+set wildignore+=*.tar.*,*.swp,*.bak
 set wildignore+=*/.git/**/*,*/.hg/**/*,*/.svn/**/*
 set wildignore+=*/build/**,*/bin/**,*/dist/**,*/node_modules/**
 set wildignore+=tags
-set wildignore=*.swp,*.bak
 set wildignorecase
 if executable('rg')
     set grepprg=rg\ --vimgrep
@@ -146,14 +132,12 @@ endif
 set breakindent smartindent
 set conceallevel=2
 set cursorline
-set expandtab shiftwidth=4 softtabstop=4 tabstop=4
+set expandtab shiftwidth=4 tabstop=4 softtabstop=-1
 set foldmethod=syntax
 set number
-set spell
 let &thesaurus = NormFile(g:vimhome.'/moby-thesaurus/words.txt')
 if has('gui_running') && !has('gui_vimr')
     set guifont=Victor_Mono:h11,Hack:h9,Source_Code_Pro:h11,Consolas:h10
-    set guicursor+=n-v-c:blinkwait500-blinkon500-blinkoff500
 endif
 
 " Platform-specific settings
@@ -164,8 +148,10 @@ endif
 
 " Languages for other settings
 let g:ui_languages = [ 'css', 'sass', 'scss', 'html', 'vue' ]
-let g:programming_languages = g:ui_languages + [ 'c', 'cpp', 'cs', 'dosbatch', 'go',
-            \ 'java', 'javascript', 'jsp', 'objc', 'ruby', 'sh', 'typescript', 'vim', 'zsh' ]
+let g:programming_languages = g:ui_languages +
+            \ [ 'c', 'cpp', 'cs', 'dosbatch', 'go', 'java',
+            \ 'javascript', 'jsp', 'jsx', 'objc', 'ruby', 'sh',
+            \ 'typescript', 'tsx', 'vim', 'zsh' ]
 
 " }}}
 
@@ -196,8 +182,10 @@ else
 endif
 
 " Colorschemes
-Plug 'folke/lsp-colors.nvim'
-Plug 'fenetikm/falcon'
+if has('nvim')
+    Plug 'folke/lsp-colors.nvim', { 'branch': 'main' }
+    Plug 'EdenEast/nightfox.nvim', { 'branch': 'main' }
+endif
 Plug 'reedes/vim-colors-pencil'
 
 " Command plugins
@@ -206,7 +194,6 @@ Plug 'junegunn/fzf.vim'
 Plug 'junegunn/vim-easy-align'
 Plug 'machakann/vim-sandwich'
 Plug 'scrooloose/nerdcommenter'
-Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-unimpaired'
 Plug 'vim-scripts/bufonly.vim'
 
@@ -217,19 +204,12 @@ Plug 'kana/vim-textobj-user'
 Plug 'lucapette/vim-textobj-underscore'
 Plug 'sgur/vim-textobj-parameter'
 
-" Completion plugins
-Plug 'alvan/vim-closetag'
-Plug 'honza/vim-snippets'
-Plug 'neovim/nvim-lspconfig'
-Plug 'kabouzeid/nvim-lspinstall'
-Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-Plug 'nvim-lua/completion-nvim'
-
 " Architecture plugins
+if has('nvim')
+    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+endif
 Plug 'airblade/vim-rooter'
-Plug 'simrat39/symbols-outline.nvim'
 Plug 'conormcd/matchindent.vim'
-Plug 'lukas-reineke/indent-blankline.nvim', { 'branch': 'lua' }
 Plug 'editorconfig/editorconfig-vim'
 Plug 'junegunn/goyo.vim'
 Plug 'mbbill/undotree'
@@ -252,8 +232,6 @@ call plug#end()
 
 " Configuration
 
-let g:closetag_filetypes = 'html,xhtml,phtml,vue'
-
 if exists("*nvim_create_buf") && exists("*nvim_open_win")
     let $FZF_DEFAULT_OPTS = '--reverse --border --height 100%'
     let $FZF_DEFAULT_COMMAND='rg --files --hidden --follow 2>/dev/null'
@@ -272,16 +250,7 @@ if exists("*nvim_create_buf") && exists("*nvim_open_win")
     endfunction
 endif
 
-set omnifunc=v:lua.vim.lsp.omnifunc
-
-let g:hoverhl#match_group = 'Pmenu'
-let g:hoverhl#custom_guidc = ''
-let g:hoverhl#case_sensitive = 1
-let g:hoverhl#enabled_filetypes = g:programming_languages
-
-let g:markdown_fenced_languages = g:programming_languages + ['xwiki']
-
-let g:pencil_gutter_color = 1
+let g:markdown_fenced_languages = g:programming_languages
 
 let g:rooter_cd_cmd = 'lcd'
 let g:rooter_silent_chdir = 1
@@ -298,65 +267,40 @@ let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes) + [
       \   {'buns': ['(\s*', '\s*)'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['(']},
       \ ]
 
-let g:vue_pre_processors = 'detect_on_enter'
-
 call s:TrySourceFile(g:vimrc.'.plugins.settings.custom', '')
-
-function! s:Helptags() abort " Invoke :helptags on all non-$VIM doc directories in runtimepath. {{{
-    " Credit goes to Tim Pope (https://tpo.pe/) for this function.
-    for glob in map(split(&rtp,'\\\@<!\%(\\\\\)*\zs,'),'substitute(v:val,''\\\([\\,]\)'',''\1'',"g")')
-        for dir in map(split(glob(glob), "\n"), 'v:val.g:slash."doc".g:slash')
-            if (dir)[0 : strlen($VIMRUNTIME)] !=# $VIMRUNTIME.g:slash &&
-                        \ filewritable(dir) == 2 && !empty(split(glob(dir.'*.txt'))) &&
-                        \ (!filereadable(dir.'tags') || filewritable(dir.'tags'))
-                silent! execute 'helptags' fnameescape(dir)
-            endif
-        endfor
-    endfor
-endfunction " }}}
-call s:Helptags()
 
 " }}}
 
 " Keybindings and Commands {{{
 " Sort via :sort /.*\%17v/
-
-noremap          :             ;
 noremap          ;             :
+noremap          :             ;
+
 noremap <silent> <C-H>         <C-W>h
 noremap <silent> <C-J>         <C-W>j
 noremap <silent> <C-K>         <C-W>k
 noremap <silent> <C-L>         <C-W>l
-noremap <silent> <F12>         :Helptags<cr>
 noremap <silent> <leader>/     :nohlsearch<cr>
 noremap <silent> <leader>[     :setlocal wrap!<cr>:setlocal wrap?<cr>
-noremap          <leader>c     :call ToggleCopyMode()<cr>
+noremap          <leader>c     :CopyMode<cr>
 noremap <silent> <leader>c,    :cd ..<cr>:echo ':cd '.getcwd()<cr>
-noremap <silent> <leader>d     :lua vim.lsp.diagnostic.show_line_diagnostics()<cr>
 noremap <silent> <leader>cd    :execute 'cd '.expand('%:p:h')<cr>:echo ':cd '.getcwd()<cr>
-nnoremap         <leader>k     K
 noremap <silent> <leader>va    :execute 'tab drop '.g:vimrc_custom<cr>
 noremap <silent> <leader>vb    :execute 'tab drop '.g:vimrc_leader<cr>
 noremap <silent> <leader>vp    :execute 'tab drop '.g:vimrc.'.plugins.custom'<cr>
 noremap <silent> <leader>vr    :execute 'tab drop '.g:vimrc<cr>
 noremap <silent> <leader>vz    :execute 'source '.g:vimrc<cr>
 
-noremap          K             :lua vim.lsp.buf.hover()<cr>
 noremap          Q             <C-Q>
-noremap          Y             y$
 noremap <silent> g/            :Rg<cr>
 noremap <silent> gV            `[v`]
 map              ga            <plug>(EasyAlign)
 noremap <silent> gb            :Buffers<cr>
 noremap <silent> gc            :BCommits<cr>
-noremap <silent> gd            :lua vim.lsp.buf.definition()<cr>
-noremap <silent> gi            :lua vim.lsp.diagnostic.set_loclist()<cr>
 noremap <silent> go            :GFiles?<cr>
 noremap <silent> gp            :Files<cr>
 noremap <silent> gs            :execute 'tab drop '.g:scratch<cr>:Autosave<cr>
 noremap <silent> gz            :Goyo<cr>
-noremap <silent> g=            :lua vim.lsp.buf.formatting()<cr>
-noremap <silent> z'            :Marks<cr>
 noremap <silent> z/            :History/<cr>
 noremap <silent> z;            :History:<cr>
 noremap <silent> zp            :History<cr>
@@ -366,19 +310,10 @@ inoremap <silent> <D-Backspace> <C-U>
 inoremap <silent><expr> <tab>   pumvisible() ? "\<C-N>" : "\<tab>"
 inoremap <silent><expr> <s-tab> pumvisible() ? "\<C-P>" : "\<s-tab>"
 inoremap <expr> <cr> pumvisible() ? "\<C-Y>" : "\<C-G>u\<cr>"
-inoremap kj <esc>
-
-noremap ]r :lua vim.lsp.buf.declaration()<cr>
-noremap [r :lua vim.lsp.buf.definition()<cr>
-noremap [d :lua vim.lsp.diagnostic.goto_prev()<cr>
-noremap ]d :lua vim.lsp.diagnostic.goto_next()<cr>
-noremap [i :lua vim.lsp.buf.implementation()<cr>
-noremap ]i :lua vim.lsp.buf.references()<cr>
 
 " System (Ctrl- / Cmd-) commands
 noremap  <silent> \a  <C-C>ggVG
 inoremap <silent> \a  <esc>ggVG
-noremap  <silent> \c  "+yy
 noremap  <silent> \s  :update<cr>
 noremap  <silent> \t  :tabnew<cr>
 noremap  <silent> <C-S> :update<cr>
@@ -388,6 +323,7 @@ let explorer = has('win32') ? 'explorer' : 'open'
 execute "noremap  <silent> \\e  :execute 'silent !".explorer." '.shellescape(expand('%:p:h'))<cr>"
 
 if has("clipboard")
+    noremap  \c "+yy
     noremap  \x "+x
     noremap  \y "+y
     noremap  \v :Paste<cr>
@@ -402,7 +338,6 @@ command! -nargs=0 CopyMode call ToggleCopyMode()
 command! -nargs=0 Autosave call Autosave(1)
 command! -nargs=0 NoAutosave call Autosave(0)
 command! -nargs=0 Paste call Paste()
-command! -nargs=0 Todos call GrepTodo()
 command! -nargs=+ -complete=file_in_path Grep call Grep(0, <f-args>)
 command! -nargs=+ -complete=file_in_path LGrep call Grep(1, <f-args>)
 call s:GenerateCAbbrev('grep', 2, 'Grep' )
@@ -423,11 +358,9 @@ augroup MkdirOnWrite | autocmd!
 augroup end
 
 augroup Filetypes | autocmd!
-    autocmd BufNew,BufReadPost * lua require'completion'.on_attach()
     autocmd BufNew,BufReadPre  *.xaml,*.targets,*.props setf xml
     autocmd BufNew,BufReadPost keymap.c syn match QmkKcAux /_\{7}\|X\{7}\|__MIS__/ | hi! link QmkKcAux LineNr
     autocmd FileType gitcommit    setlocal tw=72 fo+=t cc=50,+0
-    autocmd FileType markdown,txt setlocal nonumber norelativenumber nocursorline fo-=t
 augroup end
 
 augroup QuickExit | autocmd!
@@ -517,6 +450,7 @@ silent call Mkdir(g:fzf_history_dir)
 " }}}
 
 " Diff Settings {{{
+set diffopt=filler,internal,algorithm:histogram,indent-heuristic
 
 augroup DiffLayout | autocmd!
     autocmd VimEnter * if &diff | call s:SetDiffLayout() | endif
