@@ -466,5 +466,13 @@ endfunction
 
 " }}}
 
+if 7 < strftime("%H") && strftime("%H") < 18
+    set background=light
+    execute 'colorscheme  '.get(g:, 'daytheme', 'pencil')
+else
+    set background=dark
+    execute 'colorscheme  '.get(g:, 'nightheme', 'pencil')
+endif
+
 let g:vimrc_custom = s:TrySourceFile(g:vimrc.'.custom', g:vimrc.'.after')
 " vim: foldmethod=marker
