@@ -157,6 +157,13 @@ let g:programming_languages = g:ui_languages +
 
 " Plugins {{{
 
+" From https://github.com/vscode-neovim/vscode-neovim/issues/415#issuecomment-715533865
+function! LoadIf(cond, ...)
+  let opts = get(a:000, 0, {})
+  return a:cond ? opts : extend(opts, { 'on': [], 'for': [] })
+endfunction
+
+
 " Update packpath
 if exists('&packpath')
     let s:packpath = fnamemodify(g:vimrc, ':p:h')
@@ -173,19 +180,14 @@ endif
 call plug#begin(NormPath(g:vimhome.'/plug'))
 
 " Polyfills
-if has('nvim')
-    Plug 'equalsraf/neovim-gui-shim'
-else
-    Plug 'roxma/nvim-yarp'
-    Plug 'roxma/vim-hug-neovim-rpc'
-    Plug 'tpope/vim-dispatch'
-endif
+Plug 'equalsraf/neovim-gui-shim', LoadIf(has('nvim'))
+Plug 'roxma/nvim-yarp', LoadIf(!has('nvim'))
+Plug 'roxma/vim-hug-neovim-rpc', LoadIf(!has('nvim'))
+Plug 'tpope/vim-dispatch', LoadIf(!has('nvim'))
 
 " Colorschemes
-if has('nvim')
-    Plug 'folke/lsp-colors.nvim', { 'branch': 'main' }
-    Plug 'EdenEast/nightfox.nvim', { 'branch': 'main' }
-endif
+Plug 'folke/lsp-colors.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
+Plug 'EdenEast/nightfox.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
 Plug 'reedes/vim-colors-pencil'
 
 " Command plugins
@@ -205,9 +207,7 @@ Plug 'lucapette/vim-textobj-underscore'
 Plug 'sgur/vim-textobj-parameter'
 
 " Architecture plugins
-if has('nvim')
-    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-endif
+Plug 'nvim-treesitter/nvim-treesitter', LoadIf(has('nvim'), {'do': ':TSUpdate'})
 Plug 'airblade/vim-rooter'
 Plug 'conormcd/matchindent.vim'
 Plug 'editorconfig/editorconfig-vim'
@@ -471,7 +471,7 @@ if 7 < strftime("%H") && strftime("%H") < 18
     execute 'colorscheme  '.get(g:, 'daytheme', 'pencil')
 else
     set background=dark
-    execute 'colorscheme  '.get(g:, 'nightheme', 'pencil')
+    execute 'colorscheme  '.get(g:, 'nighttheme', 'pencil')
 endif
 
 let g:vimrc_custom = s:TrySourceFile(g:vimrc.'.custom', g:vimrc.'.after')
