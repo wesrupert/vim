@@ -214,6 +214,7 @@ Plug 'mhinz/vim-startify'
 Plug 'tpope/vim-repeat'
 
 " Filetype plugins
+Plug 'sheerun/vim-polyglot'
 Plug 'HerringtonDarkholme/yats.vim'
 Plug 'aklt/plantuml-syntax'
 Plug 'cakebaker/scss-syntax.vim'
