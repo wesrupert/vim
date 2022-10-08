@@ -178,6 +178,7 @@ call plug#begin(NormPath(g:vimhome.'/plug'))
 
 " Polyfills
 Plug 'equalsraf/neovim-gui-shim', LoadIf(has('nvim'))
+Plug 'nvim-lua/plenary.nvim', LoadIf(has('nvim'))
 Plug 'roxma/nvim-yarp', LoadIf(!has('nvim'))
 Plug 'roxma/vim-hug-neovim-rpc', LoadIf(!has('nvim'))
 Plug 'tpope/vim-dispatch', LoadIf(!has('nvim'))
@@ -188,13 +189,15 @@ Plug 'EdenEast/nightfox.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
 Plug 'reedes/vim-colors-pencil'
 
 " Command plugins
-Plug 'junegunn/fzf', { 'dir': NormPath('~/.fzf'), 'do': './install --all' }
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/vim-easy-align'
 Plug 'machakann/vim-sandwich'
 Plug 'scrooloose/nerdcommenter'
 Plug 'tpope/vim-unimpaired'
 Plug 'vim-scripts/bufonly.vim'
+Plug 'ggandor/leap.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
+Plug 'nvim-telescope/telescope.nvim', LoadIf(has('nvim'), { 'branch': '0.1.x' })
 
 " Text object plugins
 Plug 'glts/vim-textobj-comment'
@@ -282,30 +285,36 @@ noremap <silent> <C-H>         <C-W>h
 noremap <silent> <C-J>         <C-W>j
 noremap <silent> <C-K>         <C-W>k
 noremap <silent> <C-L>         <C-W>l
-noremap <silent> <leader>/     :nohlsearch<cr>
-noremap <silent> <leader>[     :setlocal wrap!<cr>:setlocal wrap?<cr>
-noremap          <leader>c     :CopyMode<cr>
-noremap <silent> <leader>c,    :cd ..<cr>:echo ':cd '.getcwd()<cr>
-noremap <silent> <leader>cd    :execute 'cd '.expand('%:p:h')<cr>:echo ':cd '.getcwd()<cr>
-noremap <silent> <leader>va    :execute 'tab drop '.g:vimrc_custom<cr>
-noremap <silent> <leader>vb    :execute 'tab drop '.g:vimrc_leader<cr>
-noremap <silent> <leader>vp    :execute 'tab drop '.g:vimrc.'.plugins.custom'<cr>
-noremap <silent> <leader>vr    :execute 'tab drop '.g:vimrc<cr>
-noremap <silent> <leader>vz    :execute 'source '.g:vimrc<cr>
+noremap <silent> <leader>/     <cmd>nohlsearch<cr>
+noremap <silent> <leader>[     <cmd>setlocal wrap!<cr><cmd>setlocal wrap?<cr>
+noremap          <leader>c     <cmd>CopyMode<cr>
+noremap <silent> <leader>c,    <cmd>cd ..<cr><cmd>echo ':cd '.getcwd()<cr>
+noremap <silent> <leader>cd    <cmd>execute 'cd '.expand('%:p:h')<cr><cmd>echo ':cd '.getcwd()<cr>
+noremap <silent> <leader>va    <cmd>execute 'tab drop '.g:vimrc_custom<cr>
+noremap <silent> <leader>vb    <cmd>execute 'tab drop '.g:vimrc_leader<cr>
+noremap <silent> <leader>vp    <cmd>execute 'tab drop '.g:vimrc.'.plugins.custom'<cr>
+noremap <silent> <leader>vr    <cmd>execute 'tab drop '.g:vimrc<cr>
+noremap <silent> <leader>vz    <cmd>execute 'source '.g:vimrc<cr>
 
 noremap          Q             <C-Q>
-noremap <silent> g/            :Rg<cr>
+noremap <silent> g/            <cmd>Rg<cr>
 noremap <silent> gV            `[v`]
 map              ga            <plug>(EasyAlign)
-noremap <silent> gb            :Buffers<cr>
-noremap <silent> gc            :BCommits<cr>
-noremap <silent> go            :GFiles?<cr>
-noremap <silent> gp            :Files<cr>
-noremap <silent> gs            :execute 'tab drop '.g:scratch<cr>:Autosave<cr>
-noremap <silent> gz            :Goyo<cr>
-noremap <silent> z/            :History/<cr>
-noremap <silent> z;            :History:<cr>
-noremap <silent> zp            :History<cr>
+noremap <silent> gb            <cmd>Buffers<cr>
+noremap <silent> gc            <cmd>BCommits<cr>
+noremap <silent> gl            <plug>(leap-forward)
+noremap <silent> gL            <plug>(leap-backward)
+noremap <silent> go            <plug>(leap-forward-x)
+noremap <silent> gO            <plug>(leap-backward-x)
+noremap <silent> gp            <cmd>Files<cr>
+noremap <silent> gP            <cmd>GFiles?<cr>
+noremap <silent> gs            <cmd>execute 'tab drop '.g:scratch<cr><cmd>Autosave<cr>
+noremap <silent> gz            <cmd>Goyo<cr>
+noremap <silent> g.            g;
+noremap <silent> g;            <plug>(leap-cross-window)
+noremap <silent> z/            <cmd>History/<cr>
+noremap <silent> z;            <cmd>History:<cr>
+noremap <silent> zp            <cmd>History<cr>
 
 inoremap <silent> <C-Backspace> <C-W>
 inoremap <silent> <D-Backspace> <C-U>
@@ -316,20 +325,20 @@ inoremap <expr> <cr> pumvisible() ? "\<C-Y>" : "\<C-G>u\<cr>"
 " System (Ctrl- / Cmd-) commands
 noremap  <silent> \a  <C-C>ggVG
 inoremap <silent> \a  <esc>ggVG
-noremap  <silent> \s  :update<cr>
-noremap  <silent> \t  :tabnew<cr>
-noremap  <silent> <C-S> :update<cr>
-noremap  <silent> <D-S> :update<cr>
+noremap  <silent> \s  <cmd>update<cr>
+noremap  <silent> \t  <cmd>tabnew<cr>
+noremap  <silent> <C-S> <cmd>update<cr>
+noremap  <silent> <D-S> <cmd>update<cr>
 
 let explorer = has('win32') ? 'explorer' : 'open'
-execute "noremap  <silent> \\e  :execute 'silent !".explorer." '.shellescape(expand('%:p:h'))<cr>"
+execute "noremap  <silent> \\e  <cmd>execute 'silent !".explorer." '.shellescape(expand('%:p:h'))<cr>"
 
 if has("clipboard")
     noremap  \c "+yy
     noremap  \x "+x
     noremap  \y "+y
-    noremap  \v :Paste<cr>
-    noremap! \v <C-O>:Paste<cr>
+    noremap  \v <cmd>Paste<cr>
+    noremap! \v <C-O><cmd>Paste<cr>
 endif
 
 " Sandwich mappings
