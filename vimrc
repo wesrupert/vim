@@ -136,9 +136,6 @@ set expandtab shiftwidth=4 tabstop=4 softtabstop=-1
 set foldmethod=syntax
 set number
 let &thesaurus = NormFile(g:vimhome.'/moby-thesaurus/words.txt')
-if has('gui_running') && !has('gui_vimr')
-    set guifont=Victor_Mono:h11,Hack:h9,Source_Code_Pro:h11,Consolas:h10
-endif
 
 " Platform-specific settings
 if has('win32')
@@ -234,7 +231,11 @@ call plug#end()
 
 if exists("*nvim_create_buf") && exists("*nvim_open_win")
     let $FZF_DEFAULT_OPTS = '--reverse --border --height 100%'
-    let $FZF_DEFAULT_COMMAND='rg --files --hidden --follow 2>/dev/null'
+    if has('windows')
+        let $FZF_DEFAULT_COMMAND='rg --files --hidden --follow'
+    else
+        let $FZF_DEFAULT_COMMAND='rg --files --hidden --follow 2>/dev/null'
+    endif
     let g:fzf_layout = { 'window': 'call FloatingFZF()' }
     function! FloatingFZF()
         let buf = nvim_create_buf(v:false, v:true)
