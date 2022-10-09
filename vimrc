@@ -190,14 +190,14 @@ Plug 'reedes/vim-colors-pencil'
 
 " Command plugins
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim'
+Plug 'junegunn/fzf.vim', LoadIf(!has('nvim'))
+Plug 'nvim-telescope/telescope.nvim', LoadIf(has('nvim'), { 'branch': '0.1.x' })
+Plug 'ggandor/leap.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
 Plug 'junegunn/vim-easy-align'
 Plug 'machakann/vim-sandwich'
 Plug 'scrooloose/nerdcommenter'
 Plug 'tpope/vim-unimpaired'
 Plug 'vim-scripts/bufonly.vim'
-Plug 'ggandor/leap.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
-Plug 'nvim-telescope/telescope.nvim', LoadIf(has('nvim'), { 'branch': '0.1.x' })
 
 " Text object plugins
 Plug 'glts/vim-textobj-comment'
@@ -208,6 +208,7 @@ Plug 'sgur/vim-textobj-parameter'
 
 " Architecture plugins
 Plug 'nvim-treesitter/nvim-treesitter', LoadIf(has('nvim'), {'do': ':TSUpdate'})
+Plug 'nvim-treesitter/nvim-treesitter-textobjects', LoadIf(has('nvim'))
 Plug 'airblade/vim-rooter'
 Plug 'conormcd/matchindent.vim'
 Plug 'editorconfig/editorconfig-vim'
@@ -297,24 +298,38 @@ noremap <silent> <leader>vr    <cmd>execute 'tab drop '.g:vimrc<cr>
 noremap <silent> <leader>vz    <cmd>execute 'source '.g:vimrc<cr>
 
 noremap          Q             <C-Q>
-noremap <silent> g/            <cmd>Rg<cr>
 noremap <silent> gV            `[v`]
 map              ga            <plug>(EasyAlign)
-noremap <silent> gb            <cmd>Buffers<cr>
-noremap <silent> gc            <cmd>BCommits<cr>
 noremap <silent> gl            <plug>(leap-forward)
 noremap <silent> gL            <plug>(leap-backward)
 noremap <silent> go            <plug>(leap-forward-x)
 noremap <silent> gO            <plug>(leap-backward-x)
-noremap <silent> gp            <cmd>Files<cr>
-noremap <silent> gP            <cmd>GFiles?<cr>
 noremap <silent> gs            <cmd>execute 'tab drop '.g:scratch<cr><cmd>Autosave<cr>
 noremap <silent> gz            <cmd>Goyo<cr>
 noremap <silent> g.            g;
 noremap <silent> g;            <plug>(leap-cross-window)
-noremap <silent> z/            <cmd>History/<cr>
-noremap <silent> z;            <cmd>History:<cr>
-noremap <silent> zp            <cmd>History<cr>
+
+if has('nvim')
+    noremap <silent> g/ <cmd>Telescope grep_string<cr>
+    noremap <silent> gb <cmd>Telescope buffers<cr>
+    noremap <silent> gc <cmd>Telescope git_bcommits<cr>
+    noremap <silent> gp <cmd>Telescope find_files<cr>
+    noremap <silent> gP <cmd>Telescope git_files<cr>
+    noremap <silent> z/ <cmd>Telescope search_history<cr>
+    noremap <silent> z; <cmd>Telescope command_history<cr>
+    noremap <silent> zp <cmd>Telescope oldfiles<cr>
+    noremap <silent> zr <cmd>Telescope treesitter<cr>
+else
+    noremap <silent> g/ <cmd>Rg<cr>
+    noremap <silent> gb <cmd>Buffers<cr>
+    noremap <silent> gc <cmd>BCommits<cr>
+    noremap <silent> gp <cmd>Files<cr>
+    noremap <silent> gP <cmd>GFiles?<cr>
+    noremap <silent> z/ <cmd>History/<cr>
+    noremap <silent> z; <cmd>History:<cr>
+    noremap <silent> zp <cmd>History<cr>
+endif
+
 
 inoremap <silent> <C-Backspace> <C-W>
 inoremap <silent> <D-Backspace> <C-U>
