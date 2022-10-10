@@ -219,7 +219,7 @@ Plug 'nvim-treesitter/nvim-treesitter-textobjects', LoadIf(has('nvim'))
 " Command plugins
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim', LoadIf(!has('nvim'))
-Plug 'nvim-telescope/telescope.nvim', LoadIf(has('nvim') && !has('vscode'), { 'branch': '0.1.x' })
+Plug 'nvim-telescope/telescope.nvim', LoadIf(has('nvim'), { 'branch': '0.1.x' })
 Plug 'ggandor/leap.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
 Plug 'junegunn/vim-easy-align'
 Plug 'machakann/vim-sandwich'

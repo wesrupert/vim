@@ -16,11 +16,12 @@ set foldexpr=nvim_treesitter#foldexpr()
 lua << EOF
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {
-    'vim', 'markdown', 'lua', 'php', 'css', 'javascript',
-    'typescript', 'vue',
+    'vim', 'markdown', 'lua', 'php', 'css', 'javascript', 'typescript',
+    -- Vue is failing with uv_dlopen errors in _ts_add_language. TODO: RC
+    -- 'vue',
   },
   sync_install = false,
-  auto_install = true,
+  auto_install = false,
   highlight = {
     enable = true,
     additional_vim_regex_highlighting = { 'markdown' },
@@ -123,7 +124,9 @@ cmp.setup {
     },
 }
 
-cmp.setup.filetype({ 'javascript', 'typescript', 'vue' }, {
+cmp.setup.filetype({ 'javascript', 'typescript',
+    -- 'vue'
+}, {
   sources = {
     { name = 'npm', keyword_length = 3 },
   }
