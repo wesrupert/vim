@@ -16,12 +16,14 @@ if has('nvim')
 lua << EOF
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {
-    'vim', 'lua', 'php', 'html', 'css', 'javascript', 'typescript', 'vue',
+    'vim', 'markdown', 'lua', 'php', 'css', 'javascript',
+    'typescript', 'vue',
   },
   sync_install = false,
   auto_install = true,
   highlight = {
     enable = true,
+    additional_vim_regex_highlighting = { 'markdown' },
     },
   indent = {
     enable = true,
@@ -84,21 +86,67 @@ require'nvim-treesitter.configs'.setup {
     },
   }
 
-local telescopeConfig = require("telescope.config")
-local vimgrep_arguments = { unpack(telescopeConfig.values.vimgrep_arguments) }
-table.insert(vimgrep_arguments, "--hidden")
-table.insert(vimgrep_arguments, "--glob")
-table.insert(vimgrep_arguments, "!.git/*")
-require"telescope".setup {
+local telescope_config = require('telescope.config')
+local vimgrep_arguments = { unpack(telescope_config.values.vimgrep_arguments) }
+table.insert(vimgrep_arguments, '--hidden')
+table.insert(vimgrep_arguments, '--glob')
+table.insert(vimgrep_arguments, '!.git/*')
+require'telescope'.setup {
   defaults = {
     vimgrep_arguments = vimgrep_arguments,
     },
   pickers = {
     find_files = {
-      find_command = { "rg", "--files", "--hidden", "--glob", "!.git/*" },
+      find_command = { 'rg', '--files', '--hidden', '--glob', '!.git/*' },
       },
     },
   }
+
+local cmp = require'cmp'
+cmp.setup {
+  window = { documentation = cmp.config.window.bordered() },
+  mapping = cmp.mapping.preset.insert {
+    ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-Space>'] = cmp.mapping.complete(),
+    ['<C-e>'] = cmp.mapping.abort(),
+    ['<CR>'] = cmp.mapping.confirm({ select = true }),
+    },
+  sources = {
+    { name = 'nvim_lsp' },
+    { name = 'omni' },
+    { name = 'treesitter' },
+    { name = 'rg' },
+    { name = 'buffer' },
+    { name = 'path' },
+    { name = 'calc' },
+    },
+}
+
+cmp.setup.filetype({ 'javascript', 'typescript', 'vue' }, {
+  sources = {
+    { name = 'npm', keyword_length = 3 },
+  }
+})
+
+cmp.setup.filetype({ 'markdown', 'txt' }, {
+  sources = {
+    { name = 'spell' },
+  }
+})
+
+cmp.setup.filetype({ 'conf', 'config', 'vim' }, {
+  sources = {
+    { name = 'fonts' },
+  }
+})
+
+cmp.setup.cmdline(':', {
+  mapping = cmp.mapping.preset.cmdline(),
+  sources = cmp.config.sources({
+    { name = 'cmdline' },
+  })
+})
 
 EOF
 endif

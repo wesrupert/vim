@@ -95,6 +95,7 @@ let g:vimhome      = NormPath('$HOME/'.(has('win32') ? 'vimfiles' : '.vim'))
 let g:temp         = NormPath(g:vimhome.'/tmp')
 let g:scratch      = NormFile('$HOME/.scratch.md')
 let g:vimrc        = NormFile(g:vimhome.'/vimrc')
+let g:viminit      = NormFile(g:vimhome.'/init.vim')
 let g:vimrc_leader = s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before')
 call Mkdir(g:temp)
 
@@ -183,32 +184,8 @@ Plug 'roxma/nvim-yarp', LoadIf(!has('nvim'))
 Plug 'roxma/vim-hug-neovim-rpc', LoadIf(!has('nvim'))
 Plug 'tpope/vim-dispatch', LoadIf(!has('nvim'))
 
-" Colorschemes
-Plug 'folke/lsp-colors.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
-Plug 'EdenEast/nightfox.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
-Plug 'reedes/vim-colors-pencil'
-
-" Command plugins
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim', LoadIf(!has('nvim'))
-Plug 'nvim-telescope/telescope.nvim', LoadIf(has('nvim'), { 'branch': '0.1.x' })
-Plug 'ggandor/leap.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
-Plug 'junegunn/vim-easy-align'
-Plug 'machakann/vim-sandwich'
-Plug 'scrooloose/nerdcommenter'
-Plug 'tpope/vim-unimpaired'
-Plug 'vim-scripts/bufonly.vim'
-
-" Text object plugins
-Plug 'glts/vim-textobj-comment'
-Plug 'kana/vim-textobj-indent'
-Plug 'kana/vim-textobj-user'
-Plug 'lucapette/vim-textobj-underscore'
-Plug 'sgur/vim-textobj-parameter'
-
 " Architecture plugins
-Plug 'nvim-treesitter/nvim-treesitter', LoadIf(has('nvim'), {'do': ':TSUpdate'})
-Plug 'nvim-treesitter/nvim-treesitter-textobjects', LoadIf(has('nvim'))
+Plug 'nvim-treesitter/nvim-treesitter', LoadIf(has('nvim'))
 Plug 'airblade/vim-rooter'
 Plug 'conormcd/matchindent.vim'
 Plug 'editorconfig/editorconfig-vim'
@@ -216,6 +193,39 @@ Plug 'junegunn/goyo.vim'
 Plug 'mbbill/undotree'
 Plug 'mhinz/vim-startify'
 Plug 'tpope/vim-repeat'
+
+" Completion plugins
+Plug 'hrsh7th/nvim-cmp',        LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
+Plug 'David-Kunz/cmp-npm',      LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
+Plug 'amarakon/nvim-cmp-fonts', LoadIf(has('nvim') && !has('vscode'))
+Plug 'f3fora/cmp-spell',        LoadIf(has('nvim') && !has('vscode'))
+Plug 'hrsh7th/cmp-buffer',      LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
+Plug 'hrsh7th/cmp-calc',        LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
+Plug 'hrsh7th/cmp-cmdline',     LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
+Plug 'hrsh7th/cmp-nvim-lsp',    LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
+Plug 'hrsh7th/cmp-omni',        LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
+Plug 'hrsh7th/cmp-path',        LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
+Plug 'lukas-reineke/cmp-rg',    LoadIf(has('nvim') && !has('vscode'))
+Plug 'ray-x/cmp-treesitter',    LoadIf(has('nvim') && !has('vscode'))
+
+" Text object plugins
+Plug 'glts/vim-textobj-comment'
+Plug 'kana/vim-textobj-indent'
+Plug 'kana/vim-textobj-user'
+Plug 'lucapette/vim-textobj-underscore'
+Plug 'sgur/vim-textobj-parameter'
+Plug 'nvim-treesitter/nvim-treesitter-textobjects', LoadIf(has('nvim'))
+
+" Command plugins
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim', LoadIf(!has('nvim'))
+Plug 'nvim-telescope/telescope.nvim', LoadIf(has('nvim') && !has('vscode'), { 'branch': '0.1.x' })
+Plug 'ggandor/leap.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
+Plug 'junegunn/vim-easy-align'
+Plug 'machakann/vim-sandwich'
+Plug 'scrooloose/nerdcommenter'
+Plug 'tpope/vim-unimpaired'
+Plug 'vim-scripts/bufonly.vim'
 
 " Filetype plugins
 Plug 'sheerun/vim-polyglot'
@@ -228,6 +238,11 @@ Plug 'pangloss/vim-javascript'
 Plug 'posva/vim-vue'
 Plug 'sheerun/html5.vim'
 Plug 'tpope/vim-git'
+
+" Colorschemes
+Plug 'folke/lsp-colors.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
+Plug 'EdenEast/nightfox.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
+Plug 'reedes/vim-colors-pencil'
 
 call s:TrySourceFile(g:vimrc.'.plugins.custom', '')
 call plug#end()
@@ -295,6 +310,7 @@ noremap <silent> <leader>va    <cmd>execute 'tab drop '.g:vimrc_custom<cr>
 noremap <silent> <leader>vb    <cmd>execute 'tab drop '.g:vimrc_leader<cr>
 noremap <silent> <leader>vp    <cmd>execute 'tab drop '.g:vimrc.'.plugins.custom'<cr>
 noremap <silent> <leader>vr    <cmd>execute 'tab drop '.g:vimrc<cr>
+noremap <silent> <leader>vi    <cmd>execute 'tab drop '.g:viminit<cr>
 noremap <silent> <leader>vz    <cmd>execute 'source '.g:vimrc<cr>
 
 noremap          Q             <C-Q>
