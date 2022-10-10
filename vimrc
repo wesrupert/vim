@@ -228,7 +228,6 @@ Plug 'tpope/vim-unimpaired'
 Plug 'vim-scripts/bufonly.vim'
 
 " Filetype plugins
-Plug 'sheerun/vim-polyglot'
 Plug 'HerringtonDarkholme/yats.vim'
 Plug 'aklt/plantuml-syntax'
 Plug 'cakebaker/scss-syntax.vim'

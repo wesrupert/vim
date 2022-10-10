@@ -8,11 +8,11 @@ endif
 set inccommand=split
 set wildoptions+=pum
 
+" Lua config {{{
+if has('nvim')
 set foldmethod=expr
 set foldexpr=nvim_treesitter#foldexpr()
 
-" Lua config {{{
-if has('nvim')
 lua << EOF
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {
