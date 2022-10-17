@@ -14,6 +14,8 @@ set foldmethod=expr
 set foldexpr=nvim_treesitter#foldexpr()
 
 lua << EOF
+local vscode = vim.fn.has('vscode')
+
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {
     'vim', 'markdown', 'lua', 'php', 'css', 'javascript', 'typescript',
@@ -23,7 +25,7 @@ require'nvim-treesitter.configs'.setup {
   sync_install = false,
   auto_install = false,
   highlight = {
-    enable = true,
+    enable = not vscode,
     additional_vim_regex_highlighting = { 'markdown' },
     },
   indent = {
@@ -58,18 +60,22 @@ require'nvim-treesitter.configs'.setup {
       set_jumps = true,
       goto_next_start = {
         [']m'] = '@function.outer',
+        [']p'] = '@parameter.outer',
         [']]'] = '@class.outer',
         },
       goto_next_end = {
         [']M'] = '@function.outer',
+        [']P'] = '@parameter.outer',
         [']['] = '@class.outer',
         },
       goto_previous_start = {
         ['[m'] = '@function.outer',
+        ['[p'] = '@parameter.outer',
         ['[['] = '@class.outer',
         },
       goto_previous_end = {
         ['[M'] = '@function.outer',
+        ['[P'] = '@parameter.outer',
         ['[]'] = '@class.outer',
         },
       },
@@ -87,69 +93,116 @@ require'nvim-treesitter.configs'.setup {
     },
   }
 
-local telescope_config = require('telescope.config')
-local vimgrep_arguments = { unpack(telescope_config.values.vimgrep_arguments) }
-table.insert(vimgrep_arguments, '--hidden')
-table.insert(vimgrep_arguments, '--glob')
-table.insert(vimgrep_arguments, '!.git/*')
-require'telescope'.setup {
-  defaults = {
-    vimgrep_arguments = vimgrep_arguments,
-    },
-  pickers = {
-    find_files = {
-      find_command = { 'rg', '--files', '--hidden', '--glob', '!.git/*' },
+if not vscode then
+  local telescope_config = require('telescope.config')
+  local vimgrep_arguments = { unpack(telescope_config.values.vimgrep_arguments) }
+  table.insert(vimgrep_arguments, '--hidden')
+  table.insert(vimgrep_arguments, '--glob')
+  table.insert(vimgrep_arguments, '!.git/*')
+  require'telescope'.setup {
+    defaults = {
+      vimgrep_arguments = vimgrep_arguments,
       },
+    pickers = {
+      find_files = {
+        find_command = { 'rg', '--files', '--hidden', '--glob', '!.git/*' },
+        },
+      },
+    }
+end
+
+if not vscode then
+  local cmp = require'cmp'
+  cmp.setup {
+    window = { documentation = cmp.config.window.bordered() },
+    mapping = cmp.mapping.preset.insert {
+      ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+      ['<C-f>'] = cmp.mapping.scroll_docs(4),
+      ['<C-Space>'] = cmp.mapping.complete(),
+      ['<C-e>'] = cmp.mapping.abort(),
+      ['<CR>'] = cmp.mapping.confirm({ select = true }),
+    },
+    sources = {
+      { name = 'nvim_lsp' },
+      { name = 'omni' },
+      { name = 'treesitter' },
+      { name = 'rg' },
+      { name = 'buffer' },
+      { name = 'path' },
+      { name = 'calc' },
     },
   }
 
-local cmp = require'cmp'
-cmp.setup {
-  window = { documentation = cmp.config.window.bordered() },
-  mapping = cmp.mapping.preset.insert {
-    ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-    ['<C-f>'] = cmp.mapping.scroll_docs(4),
-    ['<C-Space>'] = cmp.mapping.complete(),
-    ['<C-e>'] = cmp.mapping.abort(),
-    ['<CR>'] = cmp.mapping.confirm({ select = true }),
-    },
-  sources = {
-    { name = 'nvim_lsp' },
-    { name = 'omni' },
-    { name = 'treesitter' },
-    { name = 'rg' },
-    { name = 'buffer' },
-    { name = 'path' },
-    { name = 'calc' },
-    },
-}
-
-cmp.setup.filetype({ 'javascript', 'typescript',
-    -- 'vue'
-}, {
-  sources = {
-    { name = 'npm', keyword_length = 3 },
-  }
-})
-
-cmp.setup.filetype({ 'markdown', 'txt' }, {
-  sources = {
-    { name = 'spell' },
-  }
-})
-
-cmp.setup.filetype({ 'conf', 'config', 'vim' }, {
-  sources = {
-    { name = 'fonts' },
-  }
-})
-
-cmp.setup.cmdline(':', {
-  mapping = cmp.mapping.preset.cmdline(),
-  sources = cmp.config.sources({
-    { name = 'cmdline' },
+  cmp.setup.filetype({ 'javascript', 'typescript',
+      -- 'vue'
+  }, {
+    sources = {
+      { name = 'npm', keyword_length = 3 },
+    }
   })
-})
+
+  cmp.setup.filetype({ 'markdown', 'txt' }, {
+    sources = {
+      { name = 'spell' },
+    }
+  })
+
+  cmp.setup.filetype({ 'conf', 'config', 'vim' }, {
+    sources = {
+      { name = 'fonts' },
+    }
+  })
+
+  cmp.setup.cmdline(':', {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = cmp.config.sources({
+      { name = 'cmdline' },
+    })
+  })
+end
+
+require'gitsigns'.setup{
+  current_line_blame = not vscode,
+  signcolumn = not vscode,
+  on_attach = function(bufnr)
+    local gs = package.loaded.gitsigns
+
+    local function map(mode, l, r, opts)
+      opts = opts or {}
+      opts.buffer = bufnr
+      vim.keymap.set(mode, l, r, opts)
+    end
+
+    -- Navigation
+    map('n', ']c', function()
+      if vim.wo.diff then return ']c' end
+      vim.schedule(function() gs.next_hunk() end)
+      return '<Ignore>'
+    end, {expr=true})
+
+    map('n', '[c', function()
+      if vim.wo.diff then return '[c' end
+      vim.schedule(function() gs.prev_hunk() end)
+      return '<Ignore>'
+    end, {expr=true})
+
+    -- Actions
+    map({'n', 'v'}, '<leader>hs', '<cmd>Gitsigns stage_hunk<cr>')
+    map({'n', 'v'}, '<leader>hr', '<cmd>Gitsigns reset_hunk<cr>')
+    map('n', '<leader>hS', gs.stage_buffer)
+    map('n', '<leader>hu', gs.undo_stage_hunk)
+    map('n', '<leader>hR', gs.reset_buffer)
+    map('n', '<leader>hp', gs.preview_hunk)
+    map('n', '<leader>hb', function() gs.blame_line{full=true} end)
+    map('n', '<leader>tb', gs.toggle_current_line_blame)
+    map('n', '<leader>hd', gs.diffthis)
+    map('n', '<leader>hD', function() gs.diffthis('~') end)
+    map('n', '<leader>td', gs.toggle_deleted)
+
+    -- Text object
+    map({'o', 'x'}, 'ih', ':<c-U>Gitsigns select_hunk<cr>')
+  end
+}
 
 EOF
 endif

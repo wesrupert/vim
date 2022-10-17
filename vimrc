@@ -193,6 +193,7 @@ Plug 'junegunn/goyo.vim'
 Plug 'mbbill/undotree'
 Plug 'mhinz/vim-startify'
 Plug 'tpope/vim-repeat'
+Plug 'lewis6991/gitsigns.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
 
 " Completion plugins
 Plug 'hrsh7th/nvim-cmp',        LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
@@ -219,7 +220,7 @@ Plug 'nvim-treesitter/nvim-treesitter-textobjects', LoadIf(has('nvim'))
 " Command plugins
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim', LoadIf(!has('nvim'))
-Plug 'nvim-telescope/telescope.nvim', LoadIf(has('nvim'), { 'branch': '0.1.x' })
+Plug 'nvim-telescope/telescope.nvim', LoadIf(has('nvim') && !has('vscode'), { 'branch': '0.1.x' })
 Plug 'ggandor/leap.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
 Plug 'junegunn/vim-easy-align'
 Plug 'machakann/vim-sandwich'
@@ -329,7 +330,7 @@ if has('nvim')
     noremap <silent> gb <cmd>Telescope buffers<cr>
     noremap <silent> gc <cmd>Telescope git_bcommits<cr>
     noremap <silent> gp <cmd>Telescope find_files<cr>
-    noremap <silent> gP <cmd>Telescope git_files<cr>
+    noremap <silent> gP <cmd>Telescope git_status<cr>
     noremap <silent> z/ <cmd>Telescope search_history<cr>
     noremap <silent> z; <cmd>Telescope command_history<cr>
     noremap <silent> zp <cmd>Telescope oldfiles<cr>
