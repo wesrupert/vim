@@ -189,9 +189,9 @@ Plug 'nvim-treesitter/nvim-treesitter', LoadIf(has('nvim'))
 Plug 'airblade/vim-rooter'
 Plug 'conormcd/matchindent.vim'
 Plug 'editorconfig/editorconfig-vim'
-Plug 'junegunn/goyo.vim'
-Plug 'mbbill/undotree'
-Plug 'mhinz/vim-startify'
+Plug 'junegunn/goyo.vim', LoadIf(!has('vscode'))
+Plug 'mbbill/undotree', LoadIf(!has('vscode'))
+Plug 'mhinz/vim-startify', LoadIf(!has('vscode'))
 Plug 'tpope/vim-repeat'
 Plug 'lewis6991/gitsigns.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
 
@@ -218,15 +218,15 @@ Plug 'sgur/vim-textobj-parameter'
 Plug 'nvim-treesitter/nvim-treesitter-textobjects', LoadIf(has('nvim'))
 
 " Command plugins
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim', LoadIf(!has('nvim'))
+Plug 'junegunn/fzf', LoadIf(!has('vscode'), { 'do': { -> fzf#install() } })
+Plug 'junegunn/fzf.vim', LoadIf(!has('nvim') && !has('vscode'))
 Plug 'nvim-telescope/telescope.nvim', LoadIf(has('nvim') && !has('vscode'), { 'branch': '0.1.x' })
 Plug 'ggandor/leap.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
 Plug 'junegunn/vim-easy-align'
 Plug 'machakann/vim-sandwich'
-Plug 'scrooloose/nerdcommenter'
-Plug 'tpope/vim-unimpaired'
-Plug 'vim-scripts/bufonly.vim'
+Plug 'scrooloose/nerdcommenter', LoadIf(!has('vscode'))
+Plug 'tpope/vim-unimpaired', LoadIf(!has('vscode'))
+Plug 'vim-scripts/bufonly.vim', LoadIf(!has('vscode'))
 
 " Filetype plugins
 Plug 'HerringtonDarkholme/yats.vim'
@@ -240,9 +240,11 @@ Plug 'sheerun/html5.vim'
 Plug 'tpope/vim-git'
 
 " Colorschemes
-Plug 'folke/lsp-colors.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
-Plug 'EdenEast/nightfox.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
-Plug 'reedes/vim-colors-pencil'
+Plug 'gruvbox-community/gruvbox', LoadIf(!has('nvim') && !has('vscode'))
+Plug 'ellisonleao/gruvbox.nvim',  LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
+Plug 'folke/lsp-colors.nvim',     LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
+Plug 'EdenEast/nightfox.nvim',    LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
+Plug 'reedes/vim-colors-pencil',  LoadIf(!has('vscode'))
 
 call s:TrySourceFile(g:vimrc.'.plugins.custom', '')
 call plug#end()
@@ -288,6 +290,31 @@ let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes) + [
       \   {'buns': ['(\s*', '\s*)'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['(']},
       \ ]
 
+let g:sandwich#recipes += [
+      \   {
+      \     'buns'    : ['TagInput(1)', 'TagInput(0)'],
+      \     'expr'    : 1,
+      \     'filetype': ['html'],
+      \     'kind'    : ['add', 'replace'],
+      \     'action'  : ['add'],
+      \     'input'   : ['t'],
+      \   },
+      \ ]
+
+function! TagInput(is_head) abort
+  if a:is_head
+    let s:TagLast = input('Tag: ')
+    if s:TagLast !=# ''
+      let tag = printf('<%s>', s:TagLast)
+    else
+      throw 'OperatorSandwichCancel'
+    endif
+  else
+    let tag = printf('</%s>', matchstr(s:TagLast, '^\a[^[:blank:]>/]*'))
+  endif
+  return tag
+endfunction
+
 call s:TrySourceFile(g:vimrc.'.plugins.settings.custom', '')
 
 " }}}
@@ -314,6 +341,7 @@ noremap <silent> <leader>vi    <cmd>execute 'tab drop '.g:viminit<cr>
 noremap <silent> <leader>vz    <cmd>execute 'source '.g:vimrc<cr>
 
 noremap          Q             <C-Q>
+noremap          ss            s
 noremap <silent> gV            `[v`]
 map              ga            <plug>(EasyAlign)
 noremap <silent> gl            <plug>(leap-forward)
@@ -371,9 +399,6 @@ if has("clipboard")
     noremap  \v <cmd>Paste<cr>
     noremap! \v <C-O><cmd>Paste<cr>
 endif
-
-" Sandwich mappings
-runtime macros/sandwich/keymap/surround.vim
 
 " Commands
 command! -nargs=0 CopyMode call ToggleCopyMode()
@@ -508,11 +533,11 @@ endfunction
 
 " }}}
 
-if 7 < strftime("%H") && strftime("%H") < 18
-    set background=light
+if 7 < strftime("%H") && strftime("%H") < 17
+    execute 'set background='.get(g:, 'daybackground', 'light')
     execute 'colorscheme  '.get(g:, 'daytheme', 'pencil')
-else
-    set background=dark
+els
+    execute 'set background='.get(g:, 'daybackground', 'dark')
     execute 'colorscheme  '.get(g:, 'nighttheme', 'pencil')
 endif
 
