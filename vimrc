@@ -208,6 +208,7 @@ Plug 'hrsh7th/cmp-omni',        LoadIf(has('nvim') && !has('vscode'), { 'branch'
 Plug 'hrsh7th/cmp-path',        LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
 Plug 'lukas-reineke/cmp-rg',    LoadIf(has('nvim') && !has('vscode'))
 Plug 'ray-x/cmp-treesitter',    LoadIf(has('nvim') && !has('vscode'))
+Plug 'aduros/ai.vim',           { 'branch': 'main' }
 
 " Text object plugins
 Plug 'glts/vim-textobj-comment'
@@ -536,8 +537,8 @@ endfunction
 if 7 < strftime("%H") && strftime("%H") < 17
     execute 'set background='.get(g:, 'daybackground', 'light')
     execute 'colorscheme  '.get(g:, 'daytheme', 'pencil')
-els
-    execute 'set background='.get(g:, 'daybackground', 'dark')
+else
+    execute 'set background='.get(g:, 'nightbackground', 'dark')
     execute 'colorscheme  '.get(g:, 'nighttheme', 'pencil')
 endif
 
