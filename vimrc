@@ -148,8 +148,8 @@ endif
 let g:ui_languages = [ 'css', 'sass', 'scss', 'html', 'vue' ]
 let g:programming_languages = g:ui_languages +
             \ [ 'c', 'cpp', 'cs', 'dosbatch', 'go', 'java',
-            \ 'javascript', 'jsp', 'jsx', 'objc', 'ruby', 'sh',
-            \ 'typescript', 'tsx', 'vim', 'zsh' ]
+            \ 'javascript', 'jsp', 'objc', 'ruby', 'sh',
+            \ 'typescript', 'vim', 'zsh' ]
 
 " }}}
 
@@ -198,7 +198,6 @@ Plug 'lewis6991/gitsigns.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
 " Completion plugins
 Plug 'hrsh7th/nvim-cmp',        LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
 Plug 'David-Kunz/cmp-npm',      LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
-Plug 'amarakon/nvim-cmp-fonts', LoadIf(has('nvim') && !has('vscode'))
 Plug 'f3fora/cmp-spell',        LoadIf(has('nvim') && !has('vscode'))
 Plug 'hrsh7th/cmp-buffer',      LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
 Plug 'hrsh7th/cmp-calc',        LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })

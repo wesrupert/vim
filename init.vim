@@ -16,6 +16,8 @@ set foldexpr=nvim_treesitter#foldexpr()
 lua << EOF
 local vscode = vim.fn.has('vscode')
 
+require 'plugins/cmp'
+
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {
     'vim', 'markdown', 'lua', 'php', 'css', 'javascript', 'typescript',
@@ -109,56 +111,6 @@ if not vscode then
         },
       },
     }
-end
-
-if not vscode then
-  local cmp = require'cmp'
-  cmp.setup {
-    window = { documentation = cmp.config.window.bordered() },
-    mapping = cmp.mapping.preset.insert {
-      ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-      ['<C-f>'] = cmp.mapping.scroll_docs(4),
-      ['<C-Space>'] = cmp.mapping.complete(),
-      ['<C-e>'] = cmp.mapping.abort(),
-      ['<CR>'] = cmp.mapping.confirm({ select = true }),
-    },
-    sources = {
-      { name = 'nvim_lsp' },
-      { name = 'omni' },
-      { name = 'treesitter' },
-      { name = 'rg' },
-      { name = 'buffer' },
-      { name = 'path' },
-      { name = 'calc' },
-    },
-  }
-
-  cmp.setup.filetype({ 'javascript', 'typescript',
-      -- 'vue'
-  }, {
-    sources = {
-      { name = 'npm', keyword_length = 3 },
-    }
-  })
-
-  cmp.setup.filetype({ 'markdown', 'txt' }, {
-    sources = {
-      { name = 'spell' },
-    }
-  })
-
-  cmp.setup.filetype({ 'conf', 'config', 'vim' }, {
-    sources = {
-      { name = 'fonts' },
-    }
-  })
-
-  cmp.setup.cmdline(':', {
-    mapping = cmp.mapping.preset.cmdline(),
-    sources = cmp.config.sources({
-      { name = 'cmdline' },
-    })
-  })
 end
 
 require'gitsigns'.setup{
