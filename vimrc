@@ -89,13 +89,17 @@ endfunction " }}}
 
 " }}}
 
-let g:mapleader    = ','
+if !has('nvim')
+  " Defined in init.lua, as it has to come before lazy.nvim
+  let g:mapleader = ','
+endif
+
 let g:slash        = has('win32') ? '\' : '/'
 let g:vimhome      = NormPath('$HOME/'.(has('win32') ? 'vimfiles' : '.vim'))
 let g:temp         = NormPath(g:vimhome.'/tmp')
 let g:scratch      = NormFile('$HOME/.scratch.md')
 let g:vimrc        = NormFile(g:vimhome.'/vimrc')
-let g:viminit      = NormFile(g:vimhome.'/init.vim')
+let g:viminit      = NormFile(g:vimhome.'/init.lua')
 let g:vimrc_leader = s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before')
 call Mkdir(g:temp)
 
@@ -116,8 +120,7 @@ endif
 
 " Command bar
 set completeopt=menuone,preview,noinsert,noselect
-set gdefault
-set ignorecase infercase smartcase
+set gdefault ignorecase infercase smartcase
 set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc,.class
 set wildignore+=*.pyc,*.class,*.sln,*.Master,*.csproj,*.csproj.user,*.cache,*.dll,*.pdb,*.min.*
 set wildignore+=*.tar.*,*.swp,*.bak
@@ -133,16 +136,10 @@ endif
 set breakindent smartindent
 set conceallevel=2
 set cursorline
-set expandtab shiftwidth=4 tabstop=4 softtabstop=-1
+set expandtab shiftwidth=2 tabstop=2 softtabstop=-1
 set foldmethod=syntax
 set number
 let &thesaurus = NormFile(g:vimhome.'/moby-thesaurus/words.txt')
-
-" Platform-specific settings
-if has('win32')
-    source $VIMRUNTIME/mswin.vim
-    set selectmode=
-endif
 
 " Languages for other settings
 let g:ui_languages = [ 'css', 'sass', 'scss', 'html', 'vue' ]
@@ -164,90 +161,15 @@ endfunction
 
 " Update packpath
 if exists('&packpath')
-    let s:packpath = fnamemodify(g:vimrc, ':p:h')
-    if match(&packpath, substitute(s:packpath, '[\\/]', '[\\\\/]', 'g')) == -1
-        let &packpath .= ','.s:packpath
-    endif
+  if match(&packpath, substitute(g:vimhome, '[\\/]', '[\\\\/]', 'g')) == -1
+    let &packpath .= ','.g:vimhome
+  endif
 endif
 
 " Legacy plugins
 if !has('nvim') && exists(':packadd')
-    packadd! matchit
+  packadd! matchit
 endif
-
-call plug#begin(NormPath(g:vimhome.'/plug'))
-
-" Polyfills
-Plug 'equalsraf/neovim-gui-shim', LoadIf(has('nvim'))
-Plug 'nvim-lua/plenary.nvim', LoadIf(has('nvim'))
-Plug 'roxma/nvim-yarp', LoadIf(!has('nvim'))
-Plug 'roxma/vim-hug-neovim-rpc', LoadIf(!has('nvim'))
-Plug 'tpope/vim-dispatch', LoadIf(!has('nvim'))
-
-" Architecture plugins
-Plug 'nvim-treesitter/nvim-treesitter', LoadIf(has('nvim'))
-Plug 'airblade/vim-rooter'
-Plug 'conormcd/matchindent.vim'
-Plug 'editorconfig/editorconfig-vim'
-Plug 'junegunn/goyo.vim', LoadIf(!has('vscode'))
-Plug 'mbbill/undotree', LoadIf(!has('vscode'))
-Plug 'mhinz/vim-startify', LoadIf(!has('vscode'))
-Plug 'tpope/vim-repeat'
-Plug 'lewis6991/gitsigns.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
-
-" Completion plugins
-Plug 'hrsh7th/nvim-cmp',        LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
-Plug 'David-Kunz/cmp-npm',      LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
-Plug 'f3fora/cmp-spell',        LoadIf(has('nvim') && !has('vscode'))
-Plug 'hrsh7th/cmp-buffer',      LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
-Plug 'hrsh7th/cmp-calc',        LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
-Plug 'hrsh7th/cmp-cmdline',     LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
-Plug 'hrsh7th/cmp-nvim-lsp',    LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
-Plug 'hrsh7th/cmp-omni',        LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
-Plug 'hrsh7th/cmp-path',        LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
-Plug 'lukas-reineke/cmp-rg',    LoadIf(has('nvim') && !has('vscode'))
-Plug 'ray-x/cmp-treesitter',    LoadIf(has('nvim') && !has('vscode'))
-Plug 'aduros/ai.vim',           { 'branch': 'main' }
-
-" Text object plugins
-Plug 'glts/vim-textobj-comment'
-Plug 'kana/vim-textobj-indent'
-Plug 'kana/vim-textobj-user'
-Plug 'lucapette/vim-textobj-underscore'
-Plug 'sgur/vim-textobj-parameter'
-Plug 'nvim-treesitter/nvim-treesitter-textobjects', LoadIf(has('nvim'))
-
-" Command plugins
-Plug 'junegunn/fzf', LoadIf(!has('vscode'), { 'do': { -> fzf#install() } })
-Plug 'junegunn/fzf.vim', LoadIf(!has('nvim') && !has('vscode'))
-Plug 'nvim-telescope/telescope.nvim', LoadIf(has('nvim') && !has('vscode'), { 'branch': '0.1.x' })
-Plug 'ggandor/leap.nvim', LoadIf(has('nvim'), { 'branch': 'main' })
-Plug 'junegunn/vim-easy-align'
-Plug 'machakann/vim-sandwich'
-Plug 'scrooloose/nerdcommenter', LoadIf(!has('vscode'))
-Plug 'tpope/vim-unimpaired', LoadIf(!has('vscode'))
-Plug 'vim-scripts/bufonly.vim', LoadIf(!has('vscode'))
-
-" Filetype plugins
-Plug 'HerringtonDarkholme/yats.vim'
-Plug 'aklt/plantuml-syntax'
-Plug 'cakebaker/scss-syntax.vim'
-Plug 'ipkiss42/xwiki.vim'
-Plug 'othree/yajs.vim'
-Plug 'pangloss/vim-javascript'
-Plug 'posva/vim-vue'
-Plug 'sheerun/html5.vim'
-Plug 'tpope/vim-git'
-
-" Colorschemes
-Plug 'gruvbox-community/gruvbox', LoadIf(!has('nvim') && !has('vscode'))
-Plug 'ellisonleao/gruvbox.nvim',  LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
-Plug 'folke/lsp-colors.nvim',     LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
-Plug 'EdenEast/nightfox.nvim',    LoadIf(has('nvim') && !has('vscode'), { 'branch': 'main' })
-Plug 'reedes/vim-colors-pencil',  LoadIf(!has('vscode'))
-
-call s:TrySourceFile(g:vimrc.'.plugins.custom', '')
-call plug#end()
 
 " Configuration
 
@@ -283,22 +205,12 @@ augroup end
 
 let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes) + [
       \   {'buns': ['{ ', ' }'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['{']},
-      \   {'buns': ['[ ', ' ]'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['[']},
-      \   {'buns': ['( ', ' )'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['(']},
-      \   {'buns': ['{\s*', '\s*}'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['{']},
-      \   {'buns': ['\[\s*', '\s*\]'], 'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['[']},
-      \   {'buns': ['(\s*', '\s*)'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['(']},
-      \ ]
-
-let g:sandwich#recipes += [
-      \   {
-      \     'buns'    : ['TagInput(1)', 'TagInput(0)'],
-      \     'expr'    : 1,
-      \     'filetype': ['html'],
-      \     'kind'    : ['add', 'replace'],
-      \     'action'  : ['add'],
-      \     'input'   : ['t'],
-      \   },
+      \   {'buns': ['[ ', ' ]'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': [']']},
+      \   {'buns': ['( ', ' )'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': [')']},
+      \   {'buns': ['{\s*', '\s*}'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['{', '}']},
+      \   {'buns': ['\[\s*', '\s*\]'], 'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['[', ']']},
+      \   {'buns': ['(\s*', '\s*)'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['(', ')']},
+      \   { 'buns' : ['TagInput(1)', 'TagInput(0)'], 'expr' : 1, 'filetype': ['html'], 'kind' : ['add', 'replace'], 'action' : ['add'], 'input' : ['t'], },
       \ ]
 
 function! TagInput(is_head) abort
@@ -314,8 +226,6 @@ function! TagInput(is_head) abort
   endif
   return tag
 endfunction
-
-call s:TrySourceFile(g:vimrc.'.plugins.settings.custom', '')
 
 " }}}
 

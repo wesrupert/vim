@@ -32,7 +32,7 @@ Write-Host Setting up links...
 $nvimdir ="$($env:LOCALAPPDATA)\nvim"
 New-Item -Type Directory $nvimdir -ErrorAction SilentlyContinue
 Ln -Target "$installdir\vimrc" -Path "$HOME\vimrc"
-Ln -Target "$installdir\init.vim" -Path "$nvimdir\init.vim"
+Ln -Target "$installdir\init.lua" -Path "$nvimdir\init.lua"
 Ln -Target "$installdir\ginit.vim" -Path "$nvimdir\ginit.vim"
 Ln -Target "$installdir\coc-settings.json" -Path "$nvimdir\coc-settings.json"
 Ln -Target "$installdir\.ideavimrc" -Path "$HOME\ideavimrc"

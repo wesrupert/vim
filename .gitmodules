@@ -1,7 +1,3 @@
-[submodule "vim-plug"]
-	path = autoload
-	url = https://github.com/junegunn/vim-plug.git
-    ignore = dirty
 [submodule "moby-thesaurus"]
 	path = moby-thesaurus
 	url = https://github.com/words/moby
