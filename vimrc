@@ -105,6 +105,12 @@ call Mkdir(g:temp)
 
 " Preferences and Settings {{{
 
+" GUI settings
+if exists('&guifont')
+  set guifont=Iosevka\ Atkinson:h12,Source\ Code\ Pro:h12
+endif
+let g:neovide_cursor_animate_command_line = v:false
+
 " Application settings
 syntax on
 filetype plugin indent on
@@ -267,6 +273,7 @@ if has('nvim')
     noremap <silent> g/ <cmd>Telescope grep_string<cr>
     noremap <silent> gb <cmd>Telescope buffers<cr>
     noremap <silent> gc <cmd>Telescope git_bcommits<cr>
+    noremap <silent> gh <cmd>Telescope<cr>
     noremap <silent> gp <cmd>Telescope find_files<cr>
     noremap <silent> gP <cmd>Telescope git_status<cr>
     noremap <silent> z/ <cmd>Telescope search_history<cr>
