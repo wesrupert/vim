@@ -94,6 +94,12 @@ if !has('nvim')
   let g:mapleader = ','
 endif
 
+if has('nvim') && has('vscode')
+  " VS Code nvim is the most common ShaDa concurrency culprit.
+  " Just use VS Code features instead.
+  set shada="NONE"
+endif
+
 let g:slash        = has('win32') ? '\' : '/'
 let g:vimhome      = NormPath('$HOME/'.(has('win32') ? 'vimfiles' : '.vim'))
 let g:temp         = NormPath(g:vimhome.'/tmp')

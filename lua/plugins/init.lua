@@ -1,5 +1,5 @@
 local notvscode = vim.fn.has('vscode') ~= 1
-print(notvscode)
+
 return {
   -- Colorschemes
   { 'edeneast/nightfox.nvim', priority = 1000, enabled = notvscode },
@@ -9,7 +9,6 @@ return {
   -- Meta plugins
   { 'equalsraf/neovim-gui-shim' },
   { 'nvim-lua/plenary.nvim' },
-  { 'nvim-treesitter/nvim-treesitter' },
   { 'folke/lsp-colors.nvim', enabled = notvscode },
   { 'tpope/vim-repeat' },
 
@@ -18,13 +17,11 @@ return {
   { 'airblade/vim-rooter' },
   { 'editorconfig/editorconfig-vim' },
   { 'conormcd/matchindent.vim' },
-  { 'lewis6991/gitsigns.nvim' },
-  { 'nvim-treesitter/nvim-treesitter-textobjects' },
+  { 'nvim-treesitter/nvim-treesitter-context', dependencies = { 'nvim-treesitter/nvim-treesitter' } },
 
   -- Action plugins
   { 'mbbill/undotree', enabled = notvscode },
   { 'junegunn/goyo.vim', enabled = notvscode },
-  { 'nvim-telescope/telescope.nvim', event = "VeryLazy", enabled = notvscode },
   { 'ggandor/leap.nvim' },
 
   -- Completion plugins
@@ -55,10 +52,10 @@ return {
   },
 
   -- Text object plugins
-  { 'glts/vim-textobj-comment',         dependencies = { 'kana/vim-textobj-user' } },
-  { 'kana/vim-textobj-indent',          dependencies = { 'kana/vim-textobj-user' } },
-  { 'lucapette/vim-textobj-underscore', dependencies = { 'kana/vim-textobj-user' } },
-  { 'sgur/vim-textobj-parameter',       dependencies = { 'kana/vim-textobj-user' } },
+  { 'glts/vim-textobj-comment',                    dependencies = { 'kana/vim-textobj-user' } },
+  { 'kana/vim-textobj-indent',                     dependencies = { 'kana/vim-textobj-user' } },
+  { 'lucapette/vim-textobj-underscore',            dependencies = { 'kana/vim-textobj-user' } },
+  { 'sgur/vim-textobj-parameter',                  dependencies = { 'kana/vim-textobj-user' } },
 
   -- Command plugins
   { 'junegunn/vim-easy-align' },
