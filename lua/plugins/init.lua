@@ -69,37 +69,21 @@ return {
   { 'sgur/vim-textobj-parameter', dependencies = { 'kana/vim-textobj-user' } },
 
   -- Command plugins
+  {
+    'chrisgrieser/nvim-spider',
+    lazy = true,
+    init = function()
+      vim.keymap.set({'n', 'o', 'x'}, 'w', '<cmd>lua require("spider").motion("w")<CR>', { desc = 'Spider-w' })
+      vim.keymap.set({'n', 'o', 'x'}, 'e', '<cmd>lua require("spider").motion("e")<CR>', { desc = 'Spider-e' })
+      vim.keymap.set({'n', 'o', 'x'}, 'b', '<cmd>lua require("spider").motion("b")<CR>', { desc = 'Spider-b' })
+      vim.keymap.set({'n', 'o', 'x'}, 'ge', '<cmd>lua require("spider").motion("ge")<CR>', { desc = 'Spider-ge' })
+    end,
+  },
   { 'junegunn/vim-easy-align' },
   { 'machakann/vim-sandwich' },
   { 'scrooloose/nerdcommenter', enabled = notvscode },
   { 'tpope/vim-unimpaired', enabled = notvscode },
   { 'vim-scripts/bufonly.vim', enabled = notvscode },
-
-  -- LSP plugins
-  {
-    'williamboman/mason.nvim',
-    dependencies = {
-      'neovim/nvim-lspconfig',
-    },
-    build = ':MasonUpdate',
-    opts = {},
-  },
-  {
-    'williamboman/mason-lspconfig.nvim',
-    config = function(_, opts)
-      require('mason-lspconfig').setup(opts)
-      require('mason-lspconfig').setup_handlers({
-        function (server_name)
-          require('lspconfig')[server_name].setup({})
-        end,
-        ['lua_ls'] = function(server_name)
-          require('lspconfig')[server_name].setup({
-            settings = { Lua = { diagnostics = { globals = { 'vim' } } } },
-          })
-        end
-      })
-    end,
-  },
 
   -- Filetype plugins
   { 'herringtondarkholme/yats.vim' },
