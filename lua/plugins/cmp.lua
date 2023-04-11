@@ -1,6 +1,6 @@
 return {{
   'hrsh7th/nvim-cmp',
-  enabled = function() return vim.fn.has('vscode') ~= 1 end,
+  enabled = vim.g.vscode ~= 1,
   dependencies = {
     'david-kunz/cmp-npm',
     'f3fora/cmp-spell',

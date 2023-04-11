@@ -94,7 +94,7 @@ if !has('nvim')
   let g:mapleader = ','
 endif
 
-if has('nvim') && has('vscode')
+if has('nvim') && get(g:, 'vscode', 0)
   " VS Code nvim is the most common ShaDa concurrency culprit.
   " Just use VS Code features instead.
   set shada="NONE"
@@ -149,7 +149,6 @@ set breakindent smartindent
 set conceallevel=2
 set cursorline
 set expandtab shiftwidth=2 tabstop=2 softtabstop=-1
-set foldmethod=syntax
 set number
 let &thesaurus = NormFile(g:vimhome.'/moby-thesaurus/words.txt')
 
@@ -285,7 +284,6 @@ if has('nvim')
     noremap <silent> z/ <cmd>Telescope search_history<cr>
     noremap <silent> z; <cmd>Telescope command_history<cr>
     noremap <silent> zp <cmd>Telescope oldfiles<cr>
-    noremap <silent> zr <cmd>Telescope treesitter<cr>
 else
     noremap <silent> g/ <cmd>Rg<cr>
     noremap <silent> gb <cmd>Buffers<cr>
@@ -296,7 +294,6 @@ else
     noremap <silent> z; <cmd>History:<cr>
     noremap <silent> zp <cmd>History<cr>
 endif
-
 
 inoremap <silent> <C-Backspace> <C-W>
 inoremap <silent> <D-Backspace> <C-U>
@@ -456,12 +453,14 @@ endfunction
 
 " }}}
 
-if 7 < strftime("%H") && strftime("%H") < 17
+if get(g:, 'vscode', 0)
+  if 7 < strftime("%H") && strftime("%H") < 17
     execute 'set background='.get(g:, 'daybackground', 'light')
     execute 'colorscheme  '.get(g:, 'daytheme', 'pencil')
-else
+  else
     execute 'set background='.get(g:, 'nightbackground', 'dark')
     execute 'colorscheme  '.get(g:, 'nighttheme', 'pencil')
+  endif
 endif
 
 let g:vimrc_custom = s:TrySourceFile(g:vimrc.'.custom', g:vimrc.'.after')

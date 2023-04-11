@@ -1,7 +1,7 @@
 return {
   {
     'lewis6991/gitsigns.nvim',
-    enabled = function() return vim.fn.has('vscode') ~= 1 end,
+    enabled = vim.g.vscode ~= 1,
     opts = function()
       return {
         current_line_blame = true,

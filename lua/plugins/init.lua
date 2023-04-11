@@ -1,4 +1,4 @@
-local notvscode = vim.fn.has('vscode') ~= 1
+local notvscode = vim.g.vscode ~= 1
 
 return {
   -- Colorschemes
@@ -17,7 +17,18 @@ return {
   { 'airblade/vim-rooter' },
   { 'editorconfig/editorconfig-vim' },
   { 'conormcd/matchindent.vim' },
-  { 'nvim-treesitter/nvim-treesitter-context', dependencies = { 'nvim-treesitter/nvim-treesitter' } },
+  {
+    'nvim-treesitter/nvim-treesitter-context',
+    dependencies = { 'nvim-treesitter/nvim-treesitter' },
+    init = function()
+      vim.api.nvim_create_autocmd('ColorScheme', {
+        pattern='*',
+        callback = function()
+          vim.api.nvim_set_hl(0, 'TreesitterContextBottom', { underline = true, sp = 'Grey' })
+        end,
+      })
+    end,
+  },
 
   -- Action plugins
   { 'mbbill/undotree', enabled = notvscode },
@@ -52,10 +63,10 @@ return {
   },
 
   -- Text object plugins
-  { 'glts/vim-textobj-comment',                    dependencies = { 'kana/vim-textobj-user' } },
-  { 'kana/vim-textobj-indent',                     dependencies = { 'kana/vim-textobj-user' } },
-  { 'lucapette/vim-textobj-underscore',            dependencies = { 'kana/vim-textobj-user' } },
-  { 'sgur/vim-textobj-parameter',                  dependencies = { 'kana/vim-textobj-user' } },
+  { 'glts/vim-textobj-comment', dependencies = { 'kana/vim-textobj-user' } },
+  { 'kana/vim-textobj-indent', dependencies = { 'kana/vim-textobj-user' } },
+  { 'lucapette/vim-textobj-underscore', dependencies = { 'kana/vim-textobj-user' } },
+  { 'sgur/vim-textobj-parameter', dependencies = { 'kana/vim-textobj-user' } },
 
   -- Command plugins
   { 'junegunn/vim-easy-align' },

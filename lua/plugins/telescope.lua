@@ -2,7 +2,7 @@ return {
   {
     'nvim-telescope/telescope.nvim',
     event = "VeryLazy",
-    enabled = function() return vim.fn.has('vscode') ~= 1 end,
+    enabled = vim.g.vscode ~= 1,
     opts = function()
       local telescope_config = require('telescope.config')
       local vimgrep_arguments = { unpack(telescope_config.values.vimgrep_arguments) }
