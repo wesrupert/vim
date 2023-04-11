@@ -27,27 +27,27 @@ return {
   -- Completion plugins
   { 'aduros/ai.vim' },
   {
-    "jackMort/ChatGPT.nvim",
-    enabled = notvscode,
-    event = "VeryLazy",
-    config = function()
-      require("chatgpt").setup({
-        keymaps = { submit = "<c-s>" },
-        openai_params = {
-          model = "gpt-3.5-turbo",
-          frequency_penalty = 0,
-          presence_penalty = 0,
-          max_tokens = 256,
-          temperature = 0.3,
-          top_p = 1,
-          n = 1,
-        },
-      })
-    end,
+    'jackmort/chatgpt.nvim',
     dependencies = {
-      "MunifTanjim/nui.nvim",
-      "nvim-lua/plenary.nvim",
-      "nvim-telescope/telescope.nvim"
+      'muniftanjim/nui.nvim',
+      'nvim-lua/plenary.nvim',
+      'nvim-telescope/telescope.nvim'
+    },
+    enabled = notvscode,
+    event = 'VeryLazy',
+    opts = {
+      keymaps = {
+        submit = '<c-s>',
+      },
+      openai_params = {
+        model = 'gpt-3.5-turbo',
+        frequency_penalty = 0,
+        presence_penalty = 0,
+        max_tokens = 256,
+        temperature = 0.3,
+        top_p = 1,
+        n = 1,
+      },
     }
   },
 
@@ -63,6 +63,27 @@ return {
   { 'scrooloose/nerdcommenter', enabled = notvscode },
   { 'tpope/vim-unimpaired', enabled = notvscode },
   { 'vim-scripts/bufonly.vim', enabled = notvscode },
+
+  -- LSP plugins
+  {
+    'williamboman/mason.nvim',
+    dependencies = {
+      'neovim/nvim-lspconfig',
+    },
+    build = ':MasonUpdate',
+    opts = {},
+  },
+  {
+    'williamboman/mason-lspconfig.nvim',
+    config = function(_, opts)
+      require('mason-lspconfig').setup(opts)
+      require('mason-lspconfig').setup_handlers({
+        function (server_name)
+          require('lspconfig')[server_name].setup({})
+        end,
+      })
+    end,
+  },
 
   -- Filetype plugins
   { 'herringtondarkholme/yats.vim' },
