@@ -228,11 +228,11 @@ noremap <silent> <leader>/     <cmd>nohlsearch<cr>
 noremap <silent> <leader>[     <cmd>setlocal wrap!<cr><cmd>setlocal wrap?<cr>
 noremap <silent> <leader>c,    <cmd>cd ..<cr><cmd>echo ':cd '.getcwd()<cr>
 noremap <silent> <leader>cd    <cmd>execute 'cd '.expand('%:p:h')<cr><cmd>echo ':cd '.getcwd()<cr>
-noremap <silent> <leader>va    <cmd>execute 'tab drop '.g:vimrc_custom<cr>
-noremap <silent> <leader>vb    <cmd>execute 'tab drop '.g:vimrc_leader<cr>
-noremap <silent> <leader>vp    <cmd>execute 'tab drop '.g:vimplug<cr>
-noremap <silent> <leader>vr    <cmd>execute 'tab drop '.g:vimrc<cr>
-noremap <silent> <leader>vi    <cmd>execute 'tab drop '.g:viminit<cr>
+noremap <silent> <leader>va    <cmd>execute 'e '.g:vimrc_custom<cr>
+noremap <silent> <leader>vb    <cmd>execute 'e '.g:vimrc_leader<cr>
+noremap <silent> <leader>vp    <cmd>execute 'e '.g:vimplug<cr>
+noremap <silent> <leader>vr    <cmd>execute 'e '.g:vimrc<cr>
+noremap <silent> <leader>vi    <cmd>execute 'e '.g:viminit<cr>
 noremap <silent> <leader>vz    <cmd>execute 'source '.g:vimrc<cr>
 
 noremap          Q             <C-Q>
@@ -243,7 +243,7 @@ noremap <silent> gl            <plug>(leap-forward)
 noremap <silent> gL            <plug>(leap-backward)
 noremap <silent> go            <plug>(leap-forward-x)
 noremap <silent> gO            <plug>(leap-backward-x)
-noremap <silent> gs            <cmd>execute 'tab drop '.g:scratch<cr><cmd>Autosave<cr>
+noremap <silent> gs            <cmd>execute 'e '.g:scratch<cr><cmd>Autosave<cr>
 noremap <silent> gz            <cmd>Goyo<cr>
 noremap <silent> g.            g;
 noremap <silent> g;            <plug>(leap-cross-window)

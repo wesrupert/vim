@@ -12,23 +12,39 @@ return {
   { 'folke/lsp-colors.nvim', enabled = notvscode },
   { 'tpope/vim-repeat' },
 
+  -- Mini plugins
+  {
+    'echasnovski/mini.nvim',
+    config = function()
+      require('mini.sessions').setup()
+      require('mini.splitjoin').setup()
+      local starter = require('mini.starter')
+      starter.setup({
+        items = {
+          starter.sections.sessions(5, true),
+          { section = 'Telescope', name = 'Files',   action = 'Telescope find_files', },
+          { section = 'Telescope', name = 'Tracked', action = 'Telescope git_files',  },
+          { section = 'Telescope', name = 'Recent',  action = 'Telescope oldfiles',   },
+          { section = 'Telescope', name = 'Grep',    action = 'Telescope live_grep',  },
+          starter.sections.recent_files(10, false),
+          starter.sections.recent_files(10, true),
+        },
+        content_hooks = {
+          starter.gen_hook.adding_bullet(),
+          starter.gen_hook.aligning('center', 'center'),
+        },
+      })
+    end,
+    init = function ()
+      vim.keymap.set('n', '<leader>ss', '<cmd>lua MiniSessions.select()<cr>', { desc = 'MiniSession-select' })
+      vim.keymap.set('n', '<leader>sw', '<cmd>lua MiniSessions.write(vim.fn.input("Session Name > "))<cr>', { desc = 'MiniSession-write' })
+    end
+  },
+
   -- Architecture plugins
-  { 'mhinz/vim-startify', enabled = notvscode },
   { 'airblade/vim-rooter' },
   { 'editorconfig/editorconfig-vim' },
   { 'conormcd/matchindent.vim' },
-  {
-    'nvim-treesitter/nvim-treesitter-context',
-    dependencies = { 'nvim-treesitter/nvim-treesitter' },
-    init = function()
-      vim.api.nvim_create_autocmd('ColorScheme', {
-        pattern='*',
-        callback = function()
-          vim.api.nvim_set_hl(0, 'TreesitterContextBottom', { underline = true, sp = 'Grey' })
-        end,
-      })
-    end,
-  },
 
   -- Action plugins
   { 'mbbill/undotree', enabled = notvscode },
@@ -73,10 +89,15 @@ return {
     'chrisgrieser/nvim-spider',
     lazy = true,
     init = function()
-      vim.keymap.set({'n', 'o', 'x'}, 'w', '<cmd>lua require("spider").motion("w")<CR>', { desc = 'Spider-w' })
-      vim.keymap.set({'n', 'o', 'x'}, 'e', '<cmd>lua require("spider").motion("e")<CR>', { desc = 'Spider-e' })
-      vim.keymap.set({'n', 'o', 'x'}, 'b', '<cmd>lua require("spider").motion("b")<CR>', { desc = 'Spider-b' })
+      vim.keymap.set('n', 'w', '<cmd>lua require("spider").motion("w")<CR>', { desc = 'Spider-w' })
+      vim.keymap.set('n', 'e', '<cmd>lua require("spider").motion("e")<CR>', { desc = 'Spider-e' })
+      vim.keymap.set('n', 'b', '<cmd>lua require("spider").motion("b")<CR>', { desc = 'Spider-b' })
+      vim.keymap.set({'o', 'x'}, 'u', '<cmd>lua require("spider").motion("w")<CR>', { desc = 'Spider-w' })
+      vim.keymap.set({'o', 'x'}, 'o', '<cmd>lua require("spider").motion("e")<CR>', { desc = 'Spider-e' })
+      vim.keymap.set({'o', 'x'}, 'p', '<cmd>lua require("spider").motion("b")<CR>', { desc = 'Spider-b' })
+      vim.keymap.set({'n', 'o', 'x'}, 'gw', '<cmd>lua require("spider").motion("gw")<CR>', { desc = 'Spider-gw' })
       vim.keymap.set({'n', 'o', 'x'}, 'ge', '<cmd>lua require("spider").motion("ge")<CR>', { desc = 'Spider-ge' })
+      vim.keymap.set({'n', 'o', 'x'}, 'gb', '<cmd>lua require("spider").motion("gb")<CR>', { desc = 'Spider-gb' })
     end,
   },
   { 'junegunn/vim-easy-align' },

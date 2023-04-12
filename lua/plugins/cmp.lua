@@ -11,7 +11,7 @@ return {{
     'hrsh7th/cmp-omni',
     'hrsh7th/cmp-path',
     'lukas-reineke/cmp-rg',
-    { 'l3mon4d3/luasnip', version = "'CurrentMajor'.*", build = 'make install_jsregexp' },
+    { 'l3mon4d3/luasnip', build = 'make install_jsregexp' },
   },
   event = 'InsertEnter',
   opts = function()
