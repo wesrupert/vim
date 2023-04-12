@@ -91,6 +91,7 @@ if exists('&guifont')
   set guifont=Iosevka\ Atkinson:h12,Source\ Code\ Pro:h12
 endif
 let g:neovide_cursor_animate_command_line = v:false
+let g:neovide_remember_window_size = v:false
 
 " Application settings
 syntax on

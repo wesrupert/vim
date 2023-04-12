@@ -12,8 +12,6 @@ return {
     build = function() require('nvim-treesitter.install').update({ with_sync = true }) end,
     config = function(_, opts)
       require('nvim-treesitter.configs').setup(opts)
-      vim.wo.foldmethod = 'expr'
-      vim.wo.foldexpr = 'nvim_treesitter#foldexpr()'
     end,
     opts = function()
       return {
@@ -96,6 +94,11 @@ return {
           },
         },
       }
+    end,
+    init = function ()
+      vim.o.foldlevelstart = 999
+      vim.wo.foldmethod = 'expr'
+      vim.wo.foldexpr = 'nvim_treesitter#foldexpr()'
     end,
   },
 }
