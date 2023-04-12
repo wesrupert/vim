@@ -16,24 +16,26 @@ return {
   {
     'echasnovski/mini.nvim',
     config = function()
-      require('mini.sessions').setup()
       require('mini.splitjoin').setup()
-      local starter = require('mini.starter')
-      starter.setup({
-        items = {
-          starter.sections.sessions(5, true),
-          { section = 'Telescope', name = 'Files',   action = 'Telescope find_files', },
-          { section = 'Telescope', name = 'Tracked', action = 'Telescope git_files',  },
-          { section = 'Telescope', name = 'Recent',  action = 'Telescope oldfiles',   },
-          { section = 'Telescope', name = 'Grep',    action = 'Telescope live_grep',  },
-          starter.sections.recent_files(10, false),
-          starter.sections.recent_files(10, true),
-        },
-        content_hooks = {
-          starter.gen_hook.adding_bullet(),
-          starter.gen_hook.aligning('center', 'center'),
-        },
-      })
+      if notvscode then
+        require('mini.sessions').setup()
+        local starter = require('mini.starter')
+        starter.setup({
+          items = {
+            starter.sections.sessions(5, true),
+            { section = 'Telescope', name = 'Files',   action = 'Telescope find_files', },
+            { section = 'Telescope', name = 'Tracked', action = 'Telescope git_files',  },
+            { section = 'Telescope', name = 'Recent',  action = 'Telescope oldfiles',   },
+            { section = 'Telescope', name = 'Grep',    action = 'Telescope live_grep',  },
+            starter.sections.recent_files(10, false),
+            starter.sections.recent_files(10, true),
+          },
+          content_hooks = {
+            starter.gen_hook.adding_bullet(),
+            starter.gen_hook.aligning('center', 'center'),
+          },
+        })
+      end
     end,
     init = function ()
       vim.keymap.set('n', '<leader>ss', '<cmd>lua MiniSessions.select()<cr>', { desc = 'MiniSession-select' })
@@ -110,10 +112,16 @@ return {
   { 'herringtondarkholme/yats.vim' },
   { 'aklt/plantuml-syntax' },
   { 'cakebaker/scss-syntax.vim' },
+  { 'groenewege/vim-less' },
   { 'ipkiss42/xwiki.vim' },
   { 'othree/yajs.vim' },
   { 'pangloss/vim-javascript' },
-  { 'posva/vim-vue' },
+  {
+    'posva/vim-vue',
+    init = function ()
+      vim.g.vue_pre_processors = 'detect_on_enter'
+    end,
+  },
   { 'sheerun/html5.vim' },
   { 'tpope/vim-git' },
 }

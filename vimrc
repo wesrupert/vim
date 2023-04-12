@@ -128,7 +128,7 @@ set number
 let &thesaurus = NormFile(g:vimhome.'/moby-thesaurus/words.txt')
 
 " Languages for other settings
-let g:ui_languages = [ 'css', 'sass', 'scss', 'html', 'vue' ]
+let g:ui_languages = [ 'css', 'less', 'sass', 'scss', 'html', 'vue' ]
 let g:programming_languages = g:ui_languages +
       \ [ 'c', 'cpp', 'cs', 'dosbatch', 'go', 'java',
       \ 'javascript', 'jsp', 'objc', 'ruby', 'sh',
