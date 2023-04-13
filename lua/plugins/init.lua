@@ -12,37 +12,6 @@ return {
   { 'folke/lsp-colors.nvim', enabled = notvscode },
   { 'tpope/vim-repeat' },
 
-  -- Mini plugins
-  {
-    'echasnovski/mini.nvim',
-    config = function()
-      require('mini.splitjoin').setup()
-      if notvscode then
-        require('mini.sessions').setup()
-        local starter = require('mini.starter')
-        starter.setup({
-          items = {
-            starter.sections.sessions(5, true),
-            { section = 'Telescope', name = 'Files',   action = 'Telescope find_files', },
-            { section = 'Telescope', name = 'Tracked', action = 'Telescope git_files',  },
-            { section = 'Telescope', name = 'Recent',  action = 'Telescope oldfiles',   },
-            { section = 'Telescope', name = 'Grep',    action = 'Telescope live_grep',  },
-            starter.sections.recent_files(10, false),
-            starter.sections.recent_files(10, true),
-          },
-          content_hooks = {
-            starter.gen_hook.adding_bullet(),
-            starter.gen_hook.aligning('center', 'center'),
-          },
-        })
-      end
-    end,
-    init = function ()
-      vim.keymap.set('n', '<leader>ss', '<cmd>lua MiniSessions.select()<cr>', { desc = 'MiniSession-select' })
-      vim.keymap.set('n', '<leader>sw', '<cmd>lua MiniSessions.write(vim.fn.input("Session Name > "))<cr>', { desc = 'MiniSession-write' })
-    end
-  },
-
   -- Architecture plugins
   { 'airblade/vim-rooter' },
   { 'editorconfig/editorconfig-vim' },
