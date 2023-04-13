@@ -63,15 +63,14 @@ return {
       vim.keymap.set('n', 'w', '<cmd>lua require("spider").motion("w")<CR>', { desc = 'Spider-w' })
       vim.keymap.set('n', 'e', '<cmd>lua require("spider").motion("e")<CR>', { desc = 'Spider-e' })
       vim.keymap.set('n', 'b', '<cmd>lua require("spider").motion("b")<CR>', { desc = 'Spider-b' })
-      vim.keymap.set({'o', 'x'}, 'u', '<cmd>lua require("spider").motion("w")<CR>', { desc = 'Spider-w' })
-      vim.keymap.set({'o', 'x'}, 'o', '<cmd>lua require("spider").motion("e")<CR>', { desc = 'Spider-e' })
-      vim.keymap.set({'o', 'x'}, 'p', '<cmd>lua require("spider").motion("b")<CR>', { desc = 'Spider-b' })
+      vim.keymap.set({'o', 'x'}, 'o', '<cmd>lua require("spider").motion("w")<CR>', { desc = 'Spider-w' })
+      vim.keymap.set({'o', 'x'}, 'e', '<cmd>lua require("spider").motion("e")<CR>', { desc = 'Spider-e' })
+      vim.keymap.set({'o', 'x'}, 'u', '<cmd>lua require("spider").motion("b")<CR>', { desc = 'Spider-b' })
       vim.keymap.set({'n', 'o', 'x'}, 'gw', '<cmd>lua require("spider").motion("gw")<CR>', { desc = 'Spider-gw' })
       vim.keymap.set({'n', 'o', 'x'}, 'ge', '<cmd>lua require("spider").motion("ge")<CR>', { desc = 'Spider-ge' })
       vim.keymap.set({'n', 'o', 'x'}, 'gb', '<cmd>lua require("spider").motion("gb")<CR>', { desc = 'Spider-gb' })
     end,
   },
-  { 'junegunn/vim-easy-align' },
   { 'machakann/vim-sandwich' },
   { 'scrooloose/nerdcommenter', enabled = notvscode },
   { 'tpope/vim-unimpaired', enabled = notvscode },

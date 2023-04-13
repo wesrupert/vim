@@ -287,7 +287,7 @@ noremap  <silent> <D-S> <cmd>update<cr>
 let explorer = has('win32') ? 'explorer' : 'open'
 execute "noremap  <silent> \\e  <cmd>execute 'silent !".explorer." '.shellescape(expand('%:p:h'))<cr>"
 
-if has("clipboard")
+if has('clipboard')
   noremap  \c "+c
   noremap  \C "+C
   noremap  \d "+d
@@ -303,6 +303,15 @@ if has("clipboard")
   noremap! \V <c-o>"+gP
 endif
 
+if has('nvim')
+  " Terminal commands
+  noremap <leader>t <cmd>Terminal<cr>
+  noremap <leader>T <cmd>terminal<cr>
+
+  tnoremap <c-n> <c-\><c-n>
+  tnoremap <c-w> <c-\><c-n><c-w>
+endif
+
 " Commands
 command! -nargs=0 Autosave call Autosave(1)
 command! -nargs=0 NoAutosave call Autosave(0)
@@ -311,6 +320,16 @@ command! -nargs=+ -complete=file_in_path LGrep call Grep(1, <f-args>)
 call s:GenerateCAbbrev('grep', 2, 'Grep' )
 call s:GenerateCAbbrev('lgrep', 2, 'LGrep')
 call s:GenerateCAbbrev('rg', 2, 'Grep' )
+
+if has('nvim')
+  command! -nargs=* Terminal wincmd b | bel split | terminal <args>
+  command! -nargs=* VTerminal wincmd l | bel vsplit | terminal <args>
+  command! -nargs=* ETerminal terminal <args>
+  call s:GenerateCAbbrev('terminal', 2, 'Terminal' )
+  call s:GenerateCAbbrev('sterminal', 3, 'Terminal' )
+  call s:GenerateCAbbrev('vterminal', 3, 'VTerminal' )
+  call s:GenerateCAbbrev('eterminal', 3, 'terminal' )
+endif
 
 " }}}
 
@@ -330,6 +349,13 @@ augroup Filetypes | autocmd!
   autocmd BufNew,BufReadPost keymap.c syn match QmkKcAux /_\{7}\|X\{7}\|__MIS__/ | hi! link QmkKcAux LineNr
   autocmd FileType gitcommit setlocal tw=72 fo+=t cc=50,+0
 augroup end
+
+if has('nvim')
+  augroup Terminal | autocmd!
+    autocmd TermOpen * startinsert
+    autocmd TermClose * if v:event.status == 0 | bdelete | endif
+  augroup end
+endif
 
 augroup QuickExit | autocmd!
   autocmd BufWinEnter * if (&buftype =~ 'help\|quickfix' || &previewwindow) | noremap <buffer> q <C-W>c | endif

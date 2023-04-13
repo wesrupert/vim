@@ -1,7 +1,25 @@
 local plugins = {
-  splitjoin = {
+  align = {
     config = function ()
-      require('mini.splitjoin').setup()
+      require('mini.align').setup()
+    end,
+  },
+
+  comment = {
+    config = function ()
+      require('mini.comment').setup({
+        mappings = {
+          comment = '<leader>cs',
+          comment_line = '<leader>cc',
+          textobject = 'gc',
+        }
+      })
+    end,
+  },
+
+  indentscope = {
+    config = function ()
+      require('mini.indentscope').setup()
     end,
   },
 
@@ -13,6 +31,12 @@ local plugins = {
     init = function ()
       vim.keymap.set('n', '<leader>ss', '<cmd>lua MiniSessions.select()<cr>', { desc = 'MiniSession-select' })
       vim.keymap.set('n', '<leader>sw', '<cmd>lua MiniSessions.write(vim.fn.input("Session Name > "))<cr>', { desc = 'MiniSession-write' })
+    end,
+  },
+
+  splitjoin = {
+    config = function ()
+      require('mini.splitjoin').setup()
     end,
   },
 
@@ -56,16 +80,20 @@ return {
     'echasnovski/mini.nvim',
     config = function()
       for _, plugin in pairs(plugins) do
-        if plugin.enabled ~= false and plugin.config ~= nil then
-          plugin.config()
-        end
+        pcall(function ()
+          if plugin.enabled ~= false and plugin.config ~= nil then
+            plugin.config()
+          end
+        end)
       end
     end,
     init = function ()
       for _, plugin in pairs(plugins) do
-        if plugin.enabled ~= false and plugin.init ~= nil then
-          plugin.init()
-        end
+        pcall(function ()
+          if plugin.enabled ~= false and plugin.init ~= nil then
+            plugin.init()
+          end
+        end)
       end
     end
   },
