@@ -14,7 +14,6 @@ return {
 
   -- Architecture plugins
   { 'airblade/vim-rooter' },
-  { 'editorconfig/editorconfig-vim' },
   { 'conormcd/matchindent.vim' },
 
   -- Action plugins
@@ -72,8 +71,6 @@ return {
     end,
   },
   { 'machakann/vim-sandwich' },
-  { 'scrooloose/nerdcommenter', enabled = notvscode },
-  { 'tpope/vim-unimpaired', enabled = notvscode },
   { 'vim-scripts/bufonly.vim', enabled = notvscode },
 
   -- Filetype plugins

@@ -240,7 +240,6 @@ noremap <silent> <leader>vz    <cmd>execute 'source '.g:vimrc<cr>
 noremap          Q             <C-Q>
 noremap          ss            s
 noremap <silent> gV            `[v`]
-map              ga            <plug>(EasyAlign)
 noremap <silent> gl            <plug>(leap-forward)
 noremap <silent> gL            <plug>(leap-backward)
 noremap <silent> go            <plug>(leap-forward-x)
@@ -366,37 +365,6 @@ augroup Spelling | autocmd!
   autocmd ColorScheme * hi clear SpellRare | hi clear SpellLocal
   autocmd BufRead * if &l:modifiable == 0 | setlocal nospell | endif
 augroup end
-
-" }}}
-
-" Statusline {{{
-
-function! s:StatusLine()
-  set statusline=%#StatusLine#\ %{SL_ModeCurrent()}\ %#StatusLineNC#           " Abbreviated current mode
-  set statusline+=%#PMenu#\ %{SL_FilePath(20)}\ %t\ %#StatusLineNC#            " File full path with truncation + Filename
-  set statusline+=%(\ \[%{SL_FileType()}\]%)%(\ [%R%M]%)%w%q                   " Filetype if it doesn't match extension + Buffer flags
-  set statusline+=%=                                                           " Move to right side
-  set statusline+=%#PMenu#\ %p%%\ [%l/%L\ %c]\%#StatusLine#                    " Cursor location
-endfunction
-call s:StatusLine()
-
-let g:modemap={ 'n'  : 'Normal', 'no' : 'OpPend', 'v'  : 'Visual', 'V'  : 'VsLine', '^V' : 'VBlock', 's'  : 'Select', 'S'  : 'SelLin',
-      \ '^S' : 'SBlock', 'i'  : 'Insert', 'R'  : 'Rplace', 'Rv' : 'VReplc', 'c'  : 'Commnd', 'cv' : 'Vim Ex', 'ce' : 'ExMode',
-      \ 'r'  : 'Prompt', 'rm' : 'More', 'r?' : 'Confrm', '!'  : 'Shell', 't'  : 'Term'}
-
-function! SL_ModeCurrent() abort
-  return toupper(get(g:modemap, mode(), 'VBlock'))
-endfunction
-
-function! SL_FilePath(len) abort
-  let path = '' | let dirs = split(expand('%:p:h'), g:slash)
-  for dir in dirs | let path .= (strpart(dir, 1, 1) == ':') ? dir.g:slash : strpart(dir, 0, 1).g:slash | endfor
-  return strpart(path, 0, len(path)-1).strpart(dirs[len(dirs)-1], 1, 50)
-endfunction
-
-function! SL_FileType() abort
-  return expand('%:e') == &filetype ? 'new' : &filetype
-endfunction
 
 " }}}
 

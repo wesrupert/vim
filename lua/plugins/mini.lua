@@ -1,42 +1,29 @@
 local plugins = {
-  align = {
-    config = function ()
-      require('mini.align').setup()
-    end,
+  align = true,
+  pairs = true,
+  splitjoin = true,
+  statusline = true,
+  indentscope = {
+    enabled = vim.g.vscode ~= 1,
   },
 
   comment = {
-    config = function ()
-      require('mini.comment').setup({
-        mappings = {
-          comment = '<leader>cs',
-          comment_line = '<leader>cc',
-          textobject = 'gc',
-        }
-      })
-    end,
-  },
-
-  indentscope = {
-    config = function ()
-      require('mini.indentscope').setup()
+    opts = {
+      mappings = {
+        comment = '<leader>c',
+        comment_line = '<leader>cc',
+      },
+    },
+    init = function ()
+      vim.keymap.set('o', 'ac', require('mini.comment').textobject, { desc = 'MiniSession-select' })
     end,
   },
 
   sessions = {
     enabled = vim.g.vscode ~= 1,
-    config = function ()
-      require('mini.sessions').setup()
-    end,
     init = function ()
-      vim.keymap.set('n', '<leader>ss', '<cmd>lua MiniSessions.select()<cr>', { desc = 'MiniSession-select' })
-      vim.keymap.set('n', '<leader>sw', '<cmd>lua MiniSessions.write(vim.fn.input("Session Name > "))<cr>', { desc = 'MiniSession-write' })
-    end,
-  },
-
-  splitjoin = {
-    config = function ()
-      require('mini.splitjoin').setup()
+      vim.keymap.set('n', '<leader>ss', require('mini.sessions').select, { desc = 'MiniSession-select' })
+      vim.keymap.set('n', '<leader>sw', function() require('mini.sessions').write(vim.fn.input('Session Name > ')) end, { desc = 'MiniSession-write' })
     end,
   },
 
@@ -62,27 +49,44 @@ local plugins = {
           { section = 'Commands', name = 'Branches', action = 'Telescope git_branches',  },
           { section = 'Commands', name = 'Changed', action = 'Telescope git_status',  },
           { section = 'Commands', name = 'Grep',    action = 'Telescope live_grep',  },
+          { section = 'Commands', name = 'Quit',    action = 'qall',  },
           starter.sections.sessions(5, true),
           starter.sections.recent_files(10, false),
         },
         content_hooks = {
           starter.gen_hook.aligning('center', 'center'),
           starter.gen_hook.adding_bullet(),
-          starter.gen_hook.indexing('all', { 'Sessions', 'Recent files' }),
         },
       })
     end,
   },
 }
 
+local function hasKey(obj, key)
+  if type(obj) == 'table' then
+    return obj[key] ~= nil
+  else
+    return false
+  end
+end
+
 return {
   {
     'echasnovski/mini.nvim',
     config = function()
-      for _, plugin in pairs(plugins) do
+      for k, plugin in pairs(plugins) do
         pcall(function ()
-          if plugin.enabled ~= false and plugin.config ~= nil then
-            plugin.config()
+          if not hasKey(plugin, 'enabled') or plugin.enabled ~= false then
+            if hasKey(plugin, 'config') and type(plugin.config) == 'function' then
+              plugin.config()
+            else
+              local sok, module = pcall(require, 'mini.' .. k)
+              if sok then
+                local opts = nil
+                if hasKey(plugin, 'opts') then opts = plugin.opts end
+                module.setup(opts)
+              end
+            end
           end
         end)
       end
@@ -90,8 +94,10 @@ return {
     init = function ()
       for _, plugin in pairs(plugins) do
         pcall(function ()
-          if plugin.enabled ~= false and plugin.init ~= nil then
-            plugin.init()
+          if not hasKey(plugin, 'enabled') or plugin.enabled ~= false then
+            if hasKey(plugin, 'init') and type(plugin.init) == 'function' then
+              plugin.init()
+            end
           end
         end)
       end

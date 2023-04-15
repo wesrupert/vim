@@ -4,6 +4,7 @@ return {
     dependencies = {
       'andymass/vim-matchup',
       'nvim-treesitter/nvim-treesitter-textobjects',
+      'joosepalviste/nvim-ts-context-commentstring',
     },
     cmd = {
       'TSBufDisable', 'TSBufEnable', 'TSBufToggle', 'TSDisable', 'TSEnable', 'TSToggle',
@@ -15,9 +16,10 @@ return {
     end,
     opts = function()
       return {
-        ensure_installed = { 'vim', 'markdown', 'lua', 'php', 'css', 'javascript', 'typescript', 'vue' },
-        sync_install = true,
-        auto_install = true,
+        ensure_installed = { 'vim', 'markdown', 'lua', 'python', 'html', 'css', 'javascript', 'typescript' },
+        compilers = { 'clang' },
+        sync_install = false,
+        auto_install = false,
         highlight = {
           enable = vim.g.vscode ~= 1,
           additional_vim_regex_highlighting = { 'markdown' },
@@ -27,6 +29,9 @@ return {
         },
         matchup = {
           enable = true,
+        },
+        context_commentstring = {
+          enable = true
         },
         textobjects = {
           select = {
@@ -97,8 +102,32 @@ return {
     end,
     init = function ()
       vim.o.foldlevelstart = 999
+      vim.o.foldlevel = 999
       vim.wo.foldmethod = 'expr'
       vim.wo.foldexpr = 'nvim_treesitter#foldexpr()'
+      vim.g.matchup_matchparen_offscreen = { method = 'popup' }
+    end,
+  },
+  {
+    'nvim-treesitter/nvim-treesitter-context',
+    dependencies = { 'nvim-treesitter/nvim-treesitter' },
+    init = function ()
+      vim.api.nvim_set_hl(0, 'TreesitterContextBottom', { underline = true, sp = 'Grey' })
+    end,
+  },
+  {
+    'drybalka/tree-climber.nvim',
+    dependencies = { 'nvim-treesitter/nvim-treesitter' },
+    init = function ()
+      local keyopts = { noremap = true, silent = true }
+      vim.keymap.set({'n', 'v', 'o'}, ']t', require('tree-climber').goto_next, keyopts)
+      vim.keymap.set({'n', 'v', 'o'}, '[t', require('tree-climber').goto_prev, keyopts)
+      vim.keymap.set({'n', 'v', 'o'}, ']T', require('tree-climber').goto_child, keyopts)
+      vim.keymap.set({'n', 'v', 'o'}, '[T', require('tree-climber').goto_parent, keyopts)
+      vim.keymap.set({'v', 'o'}, 'an', require('tree-climber').select_node, keyopts)
+      vim.keymap.set({'v', 'o'}, 'in', require('tree-climber').select_node, keyopts)
+      vim.keymap.set('n', '<leader>sn', require('tree-climber').swap_next, keyopts)
+      vim.keymap.set('n', '<leader>sN', require('tree-climber').swap_prev, keyopts)
     end,
   },
 }
