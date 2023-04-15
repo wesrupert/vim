@@ -10,18 +10,20 @@ return {{
     'hrsh7th/cmp-nvim-lsp',
     'hrsh7th/cmp-omni',
     'hrsh7th/cmp-path',
+    'onsails/lspkind.nvim',
     'lukas-reineke/cmp-rg',
     { 'l3mon4d3/luasnip', build = 'make install_jsregexp' },
   },
   event = 'InsertEnter',
   opts = function()
-    local cmp = require 'cmp'
-    local luasnip = require 'luasnip'
+    local cmp = require('cmp')
+    local luasnip = require('luasnip')
+    local lspkind = require('lspkind')
 
     local has_words_before = function()
       unpack = unpack or table.unpack
       local line, col = unpack(vim.api.nvim_win_get_cursor(0))
-      return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
+      return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match('%s') == nil
     end
     local border_opts = {
       border = 'single',
@@ -44,9 +46,21 @@ return {{
         behavior = cmp.ConfirmBehavior.Replace,
         select = false,
       },
+      formatting = {
+        format = lspkind.cmp_format({
+          mode = "symbol_text",
+          menu = ({
+            buffer = "[Buffer]",
+            nvim_lsp = "[LSP]",
+            luasnip = "[LuaSnip]",
+            nvim_lua = "[Lua]",
+            latex_symbols = "[Latex]",
+          })
+        }),
+      },
       window = {
-        completion = cmp.config.window.bordered(border_opts),
         documentation = cmp.config.window.bordered(border_opts),
+        completion = cmp.config.window.bordered(border_opts),
       },
       mapping = cmp.mapping.preset.insert {
         ['<c-b>'] = cmp.mapping.scroll_docs(-4),

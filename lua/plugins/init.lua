@@ -3,8 +3,9 @@ local notvscode = vim.g.vscode ~= 1
 return {
   -- Colorschemes
   { 'edeneast/nightfox.nvim', priority = 1000, enabled = notvscode },
-  { 'ellisonleao/gruvbox.nvim', enabled = notvscode },
-  { 'reedes/vim-colors-pencil', enabled = notvscode },
+  { 'ellisonleao/gruvbox.nvim', priority = 1000, enabled = notvscode },
+  { 'reedes/vim-colors-pencil', priority = 1000, enabled = notvscode },
+  { 'catppuccin/nvim', name = 'catppuccin', priority = 1000, enabled = notvscode },
 
   -- Meta plugins
   { 'equalsraf/neovim-gui-shim' },
