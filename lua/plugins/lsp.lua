@@ -1,6 +1,7 @@
 return {
   {
     'williamboman/mason.nvim',
+    enabled = vim.g.vscode ~= 1,
     dependencies = {
       {
         'neovim/nvim-lspconfig',

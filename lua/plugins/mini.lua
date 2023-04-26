@@ -24,6 +24,7 @@ local plugins = {
     init = function ()
       vim.keymap.set('n', '<leader>ss', require('mini.sessions').select, { desc = 'MiniSession-select' })
       vim.keymap.set('n', '<leader>sw', function() require('mini.sessions').write(vim.fn.input('Session Name > ')) end, { desc = 'MiniSession-write' })
+      vim.keymap.set('n', '<leader>su', function() require('mini.sessions').write(require('mini.sessions').get_latest(), { force = true }) end, { desc = 'MiniSession-update' })
     end,
   },
 
@@ -77,15 +78,18 @@ return {
       for k, plugin in pairs(plugins) do
         pcall(function ()
           if not hasKey(plugin, 'enabled') or plugin.enabled ~= false then
+            local opts = nil
+            if hasKey(plugin, 'opts') then
+              local o = plugin.opts
+              if type(o) == 'function' then opts = o() else opts = o end
+            end
+            opts = type(opts) == 'table' and opts or {}
             if hasKey(plugin, 'config') and type(plugin.config) == 'function' then
-              plugin.config()
+              ---@diagnostic disable-next-line LSP is adamant it must be a 0-arg function.
+              plugin.config(opts)
             else
               local sok, module = pcall(require, 'mini.' .. k)
-              if sok then
-                local opts = nil
-                if hasKey(plugin, 'opts') then opts = plugin.opts end
-                module.setup(opts)
-              end
+              if sok then module.setup(opts) end
             end
           end
         end)
