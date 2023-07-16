@@ -4,6 +4,7 @@ return {
   -- Colorschemes
   { 'edeneast/nightfox.nvim', priority = 1000, enabled = notvscode },
   { 'ellisonleao/gruvbox.nvim', priority = 1000, enabled = notvscode },
+  { 'folke/tokyonight.nvim', priority = 1000, enabled = notvscode },
   { 'reedes/vim-colors-pencil', priority = 1000, enabled = notvscode },
   { 'catppuccin/nvim', name = 'catppuccin', priority = 1000, enabled = notvscode },
 
