@@ -25,6 +25,7 @@ return {
   },
   {
     'williamboman/mason-lspconfig.nvim',
+    enabled = vim.g.vscode ~= 1,
     config = function(_, opts)
       require('mason-lspconfig').setup(opts)
       require('mason-lspconfig').setup_handlers({

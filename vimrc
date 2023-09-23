@@ -75,7 +75,7 @@ if has('nvim') && get(g:, 'vscode', 0)
 endif
 
 let g:slash        = has('win32') ? '\' : '/'
-let g:vimhome      = NormPath('$HOME/'.(has('win32') ? 'vimfiles' : '.vim'))
+let g:vimhome      = NormPath('$HOME/.config/nvim')
 let g:temp         = NormPath(g:vimhome.'/tmp')
 let g:scratch      = NormFile('$HOME/.scratch.md')
 let g:vimrc        = NormFile(g:vimhome.'/vimrc')

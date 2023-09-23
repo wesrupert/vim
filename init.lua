@@ -1,6 +1,5 @@
-local vimdir = vim.fn.has('win32') == 1 and '$HOME/vimfiles' or '~/.vim'
+local vimdir = '~/.config/nvim'
 local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
-vim.opt.rtp:prepend('~/.config/nvim')
 vim.opt.rtp:prepend(vimdir)
 vim.opt.rtp:prepend(lazypath)
 vim.g.mapleader = ','

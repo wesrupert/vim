@@ -23,33 +23,6 @@ return {
   { 'junegunn/goyo.vim', enabled = notvscode },
   { 'ggandor/leap.nvim' },
 
-  -- Completion plugins
-  { 'aduros/ai.vim' },
-  {
-    'jackmort/chatgpt.nvim',
-    dependencies = {
-      'muniftanjim/nui.nvim',
-      'nvim-lua/plenary.nvim',
-      'nvim-telescope/telescope.nvim'
-    },
-    enabled = notvscode,
-    event = 'VeryLazy',
-    opts = {
-      keymaps = {
-        submit = '<c-s>',
-      },
-      openai_params = {
-        model = 'gpt-3.5-turbo',
-        frequency_penalty = 0,
-        presence_penalty = 0,
-        max_tokens = 256,
-        temperature = 0.3,
-        top_p = 1,
-        n = 1,
-      },
-    }
-  },
-
   -- Text object plugins
   { 'glts/vim-textobj-comment', dependencies = { 'kana/vim-textobj-user' } },
   { 'kana/vim-textobj-indent', dependencies = { 'kana/vim-textobj-user' } },
