@@ -32,38 +32,65 @@ local plugins = {
     enabled = vim.g.vscode ~= 1,
     config = function ()
       local starter = require('mini.starter')
+      local lazy_status_sok, lazy_status = pcall(require, 'lazy.status')
       starter.setup({
         header = function()
-          local hour = tonumber(vim.fn.strftime('%H'))
-          local day_part = 'evening'
-          if 9 <= hour and hour < 12 then
-            day_part = 'morning'
-          elseif 12 <= hour and hour < 17 then
-            day_part = 'afternoon'
+          local lines
+          local add_line = function(l)
+            if lines == nil then lines = l else lines = lines..'\n'..l end
           end
+
+          local hour = tonumber(vim.fn.strftime('%H'))
+          local day_part = 
+            6 <= hour and hour < 12 and 'morning' or
+            12 <= hour and hour < 17 and 'afternoon' or 'evening'
           local username = vim.loop.os_get_passwd()['username'] or 'USERNAME'
-          return ('Good %s, %s'):format(day_part, username)
+          add_line(('Good %s, %s'):format(day_part, username))
+
+          if lazy_status_sok and lazy_status.has_updates() then
+            add_line('! '..lazy_status.updates()..' plugin updates available')
+          end
+
+          add_line('> '..vim.fn.getcwd())
+
+          return lines
         end,
         items = {
-          { section = 'Commands', name = 'Files',   action = 'Telescope find_files', },
-          { section = 'Commands', name = 'Recent',  action = 'Telescope oldfiles',   },
-          { section = 'Commands', name = 'Branches', action = 'Telescope git_branches',  },
-          { section = 'Commands', name = 'Changed', action = 'Telescope git_status',  },
-          { section = 'Commands', name = 'Grep',    action = 'Telescope live_grep',  },
-          { section = 'Commands', name = 'Quit',    action = 'qall',  },
-          starter.sections.sessions(5, true),
+          { section = 'Telescope',          name = 'F.  Files',                action = 'Telescope find_files' },
+          { section = 'Telescope',          name = 'R.  Recent Files',         action = 'Telescope oldfiles' },
+          { section = 'Telescope',          name = 'B.  Branches (Git)',       action = 'Telescope git_branches' },
+          { section = 'Telescope',          name = 'M.  Modified Files (Git)', action = 'Telescope git_status' },
+          { section = 'Telescope',          name = 'G.  Live Grep',            action = 'Telescope live_grep' },
+          { section = 'Telescope',          name = 'C.  Recent Commands',      action = 'Telescope command_history' },
+          starter.sections.sessions(5,      true),
           starter.sections.recent_files(10, false),
+          { section = 'System',             name = 'S.  Settings',             action = function () vim.cmd('edit '..vim.g.vimrc) end },
+          { section = 'System',             name = 'SL. Settings (local)',     action = function () vim.cmd('edit '..vim.g.vimrc_custom) end},
+          { section = 'System',             name = 'SP. Settings (plugins)',   action = function () vim.cmd('edit '..vim.g.vimrc_plug) end},
+          { section = 'System',             name = 'P.  Plugins',              action = 'Lazy' },
+          { section = 'System',             name = 'L.  LSPs',                 action = 'Mason' },
+          { section = 'System',             name = 'Q.  Quit',                 action = 'qall' },
         },
         content_hooks = {
           starter.gen_hook.aligning('center', 'center'),
+          starter.gen_hook.indexing('section', { 'Telescope', 'System' }),
           starter.gen_hook.adding_bullet(),
         },
       })
+
+      _G.open_starter_if_empty_buffer = function ()
+        local buf_id = vim.api.nvim_get_current_buf()
+        local is_empty = vim.api.nvim_buf_get_name(buf_id) == "" and vim.bo[buf_id].filetype == ''
+        if not is_empty then return end
+        starter.open()
+        -- Sure we need this line?...
+        -- vim.cmd(buf_id .. "bwipeout")
+      end
     end,
   },
 }
 
-local function hasKey(obj, key)
+local function has_key(obj, key)
   if type(obj) == 'table' then
     return obj[key] ~= nil
   else
@@ -77,14 +104,14 @@ return {
     config = function()
       for k, plugin in pairs(plugins) do
         pcall(function ()
-          if not hasKey(plugin, 'enabled') or plugin.enabled ~= false then
+          if not has_key(plugin, 'enabled') or plugin.enabled ~= false then
             local opts = nil
-            if hasKey(plugin, 'opts') then
+            if has_key(plugin, 'opts') then
               local o = plugin.opts
               if type(o) == 'function' then opts = o() else opts = o end
             end
             opts = type(opts) == 'table' and opts or {}
-            if hasKey(plugin, 'config') and type(plugin.config) == 'function' then
+            if has_key(plugin, 'config') and type(plugin.config) == 'function' then
               ---@diagnostic disable-next-line LSP is adamant it must be a 0-arg function.
               plugin.config(opts)
             else
@@ -98,8 +125,8 @@ return {
     init = function ()
       for _, plugin in pairs(plugins) do
         pcall(function ()
-          if not hasKey(plugin, 'enabled') or plugin.enabled ~= false then
-            if hasKey(plugin, 'init') and type(plugin.init) == 'function' then
+          if not has_key(plugin, 'enabled') or plugin.enabled ~= false then
+            if has_key(plugin, 'init') and type(plugin.init) == 'function' then
               plugin.init()
             end
           end

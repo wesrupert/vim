@@ -79,10 +79,12 @@ let g:vimhome      = NormPath('$HOME/.config/nvim')
 let g:temp         = NormPath(g:vimhome.'/tmp')
 let g:scratch      = NormFile('$HOME/.scratch.md')
 let g:vimrc        = NormFile(g:vimhome.'/vimrc')
-let g:viminit      = NormFile(g:vimhome.'/init.lua')
-let g:vimplug      = NormFile(g:vimhome.'/lua/plugins/init.lua')
+let g:vimrc_init   = NormFile(g:vimhome.'/init.lua')
+let g:vimrc_plug   = NormFile(g:vimhome.'/lua/plugins/init.lua')
+let g:vimrc_custom = NormFile(g:vimrc.'.custom')
 let g:vimrc_leader = s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before')
 call Mkdir(g:temp)
+
 
 " Preferences and Settings {{{
 
@@ -232,9 +234,9 @@ noremap <silent> <leader>cd    <cmd>execute 'cd '.expand('%:p:h')<cr><cmd>echo '
 noremap <silent> <leader>rg    <cmd>Grep <cword><cr>
 noremap <silent> <leader>va    <cmd>execute 'e '.g:vimrc_custom<cr>
 noremap <silent> <leader>vb    <cmd>execute 'e '.g:vimrc_leader<cr>
-noremap <silent> <leader>vp    <cmd>execute 'e '.g:vimplug<cr>
+noremap <silent> <leader>vp    <cmd>execute 'e '.g:vimrc_plug<cr>
 noremap <silent> <leader>vr    <cmd>execute 'e '.g:vimrc<cr>
-noremap <silent> <leader>vi    <cmd>execute 'e '.g:viminit<cr>
+noremap <silent> <leader>vi    <cmd>execute 'e '.g:vimrc_init<cr>
 noremap <silent> <leader>vz    <cmd>execute 'source '.g:vimrc<cr>
 
 noremap          Q             <C-Q>
