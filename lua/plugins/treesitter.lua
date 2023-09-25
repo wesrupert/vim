@@ -5,6 +5,7 @@ return {
       'andymass/vim-matchup',
       'nvim-treesitter/nvim-treesitter-textobjects',
       'joosepalviste/nvim-ts-context-commentstring',
+      'windwp/nvim-ts-autotag',
     },
     cmd = {
       'TSBufDisable', 'TSBufEnable', 'TSBufToggle', 'TSDisable', 'TSEnable', 'TSToggle',
@@ -28,6 +29,9 @@ return {
           enable = true,
         },
         matchup = {
+          enable = true,
+        },
+        autotag = {
           enable = true,
         },
         context_commentstring = {

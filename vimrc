@@ -63,13 +63,8 @@ endfunction " }}}
 
 " }}}
 
-if !has('nvim')
-  " Defined in init.lua, as it has to come before lazy.nvim
-  let g:mapleader = ','
-endif
-
-if has('nvim') && get(g:, 'vscode', 0)
-  " VS Code nvim is the most common ShaDa concurrency culprit.
+if get(g:, 'vscode', 0)
+  " VS Code Neovim is the most common ShaDa concurrency culprit.
   " Just use VS Code features instead.
   set shada="NONE"
 endif
@@ -153,11 +148,6 @@ if exists('&packpath')
   if match(&packpath, substitute(g:vimhome, '[\\/]', '[\\\\/]', 'g')) == -1
     let &packpath .= ','.g:vimhome
   endif
-endif
-
-" Legacy plugins
-if !has('nvim') && exists(':packadd')
-  packadd! matchit
 endif
 
 " Configuration
@@ -251,27 +241,6 @@ noremap <silent> gz            <cmd>Goyo<cr>
 noremap <silent> g.            g;
 noremap <silent> g;            <plug>(leap-cross-window)
 
-if has('nvim')
-  noremap <silent> g/ <cmd>Telescope grep_string<cr>
-  noremap <silent> gb <cmd>Telescope buffers<cr>
-  noremap <silent> gc <cmd>Telescope git_bcommits<cr>
-  noremap <silent> gh <cmd>Telescope<cr>
-  noremap <silent> gp <cmd>Telescope find_files<cr>
-  noremap <silent> gP <cmd>Telescope git_status<cr>
-  noremap <silent> z/ <cmd>Telescope search_history<cr>
-  noremap <silent> z; <cmd>Telescope command_history<cr>
-  noremap <silent> zp <cmd>Telescope oldfiles<cr>
-else
-  noremap <silent> g/ <cmd>Rg<cr>
-  noremap <silent> gb <cmd>Buffers<cr>
-  noremap <silent> gc <cmd>BCommits<cr>
-  noremap <silent> gp <cmd>Files<cr>
-  noremap <silent> gP <cmd>GFiles?<cr>
-  noremap <silent> z/ <cmd>History/<cr>
-  noremap <silent> z; <cmd>History:<cr>
-  noremap <silent> zp <cmd>History<cr>
-endif
-
 inoremap <silent> <C-Backspace> <C-W>
 inoremap <silent> <D-Backspace> <C-U>
 inoremap <silent><expr> <tab>   pumvisible() ? "\<C-N>" : "\<tab>"
@@ -305,14 +274,12 @@ if has('clipboard')
   noremap! \V <c-o>"+gP
 endif
 
-if has('nvim')
-  " Terminal commands
-  noremap <leader>t <cmd>Terminal<cr>
-  noremap <leader>T <cmd>terminal<cr>
+" Terminal commands
+noremap <leader>t <cmd>Terminal<cr>
+noremap <leader>T <cmd>terminal<cr>
 
-  tnoremap <c-n> <c-\><c-n>
-  tnoremap <c-w> <c-\><c-n><c-w>
-endif
+tnoremap <c-n> <c-\><c-n>
+tnoremap <c-w> <c-\><c-n><c-w>
 
 " Commands
 command! -nargs=0 Autosave call Autosave(1)
@@ -323,15 +290,13 @@ call s:GenerateCAbbrev('grep', 2, 'Grep' )
 call s:GenerateCAbbrev('lgrep', 2, 'LGrep')
 call s:GenerateCAbbrev('rg', 2, 'Grep' )
 
-if has('nvim')
-  command! -nargs=* Terminal wincmd b | bel split | terminal <args>
-  command! -nargs=* VTerminal wincmd l | bel vsplit | terminal <args>
-  command! -nargs=* ETerminal terminal <args>
-  call s:GenerateCAbbrev('terminal', 2, 'Terminal' )
-  call s:GenerateCAbbrev('sterminal', 3, 'Terminal' )
-  call s:GenerateCAbbrev('vterminal', 3, 'VTerminal' )
-  call s:GenerateCAbbrev('eterminal', 3, 'terminal' )
-endif
+command! -nargs=* Terminal wincmd b | bel split | terminal <args>
+command! -nargs=* VTerminal wincmd l | bel vsplit | terminal <args>
+command! -nargs=* ETerminal terminal <args>
+call s:GenerateCAbbrev('terminal', 2, 'Terminal' )
+call s:GenerateCAbbrev('sterminal', 3, 'Terminal' )
+call s:GenerateCAbbrev('vterminal', 3, 'VTerminal' )
+call s:GenerateCAbbrev('eterminal', 3, 'terminal' )
 
 " }}}
 
@@ -352,12 +317,10 @@ augroup Filetypes | autocmd!
   autocmd FileType gitcommit setlocal tw=72 fo+=t cc=50,+0
 augroup end
 
-if has('nvim')
-  augroup Terminal | autocmd!
-    autocmd TermOpen * startinsert
-    autocmd TermClose * if v:event.status == 0 | bdelete | endif
-  augroup end
-endif
+augroup Terminal | autocmd!
+  autocmd TermOpen * startinsert
+  autocmd TermClose * if v:event.status == 0 | bdelete | endif
+augroup end
 
 augroup QuickExit | autocmd!
   autocmd BufWinEnter * if (&buftype =~ 'help\|quickfix' || &previewwindow) | noremap <buffer> q <C-W>c | endif

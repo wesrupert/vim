@@ -1,11 +1,11 @@
+local notvscode = vim.g.vscode ~= 1
 local plugins = {
   align = true,
-  pairs = true,
+  bracketed = notvscode,
+  pairs = notvscode,
   splitjoin = true,
-  statusline = true,
-  indentscope = {
-    enabled = vim.g.vscode ~= 1,
-  },
+  statusline = notvscode,
+  indentscope = notvscode,
 
   comment = {
     opts = {
@@ -20,7 +20,7 @@ local plugins = {
   },
 
   sessions = {
-    enabled = vim.g.vscode ~= 1,
+    enabled = notvscode,
     init = function ()
       vim.keymap.set('n', '<leader>ss', require('mini.sessions').select, { desc = 'MiniSession-select' })
       vim.keymap.set('n', '<leader>sw', function() require('mini.sessions').write(vim.fn.input('Session Name > ')) end, { desc = 'MiniSession-write' })
@@ -29,7 +29,7 @@ local plugins = {
   },
 
   starter = {
-    enabled = vim.g.vscode ~= 1,
+    enabled = notvscode,
     config = function ()
       local starter = require('mini.starter')
       local lazy_status_sok, lazy_status = pcall(require, 'lazy.status')
@@ -62,8 +62,8 @@ local plugins = {
           { section = 'Telescope',          name = 'M.  Modified Files (Git)', action = 'Telescope git_status' },
           { section = 'Telescope',          name = 'G.  Live Grep',            action = 'Telescope live_grep' },
           { section = 'Telescope',          name = 'C.  Recent Commands',      action = 'Telescope command_history' },
-          starter.sections.sessions(5,      true),
-          starter.sections.recent_files(10, false),
+          starter.sections.sessions(5, true, false),
+          starter.sections.recent_files(10, false, false),
           { section = 'System',             name = 'S.  Settings',             action = function () vim.cmd('edit '..vim.g.vimrc) end },
           { section = 'System',             name = 'SL. Settings (local)',     action = function () vim.cmd('edit '..vim.g.vimrc_custom) end},
           { section = 'System',             name = 'SP. Settings (plugins)',   action = function () vim.cmd('edit '..vim.g.vimrc_plug) end},
@@ -104,7 +104,10 @@ return {
     config = function()
       for k, plugin in pairs(plugins) do
         pcall(function ()
-          if not has_key(plugin, 'enabled') or plugin.enabled ~= false then
+          if
+            plugin == true or
+            (type(plugin) ~= 'boolean' and (not hasKey(plugin, 'enabled') or plugin.enabled == true))
+          then
             local opts = nil
             if has_key(plugin, 'opts') then
               local o = plugin.opts
