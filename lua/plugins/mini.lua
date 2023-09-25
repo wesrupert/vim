@@ -104,10 +104,7 @@ return {
     config = function()
       for k, plugin in pairs(plugins) do
         pcall(function ()
-          if
-            plugin == true or
-            (type(plugin) ~= 'boolean' and (not hasKey(plugin, 'enabled') or plugin.enabled == true))
-          then
+          if plugin == true or (type(plugin) == 'table' and plugin['enabled'] ~= false) then
             local opts = nil
             if has_key(plugin, 'opts') then
               local o = plugin.opts
