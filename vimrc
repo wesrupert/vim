@@ -248,10 +248,8 @@ inoremap <silent><expr> <s-tab> pumvisible() ? "\<C-P>" : "\<s-tab>"
 inoremap <expr> <cr> pumvisible() ? "\<C-Y>" : "\<C-G>u\<cr>"
 
 " System (Ctrl- / Cmd-) commands
-noremap  <silent> \a  <C-C>ggVG
-inoremap <silent> \a  <esc>ggVG
-noremap  <silent> \s  <cmd>update<cr>
-noremap  <silent> \t  <cmd>tabnew<cr>
+noremap  <silent> <leader>a  <C-C>ggVG
+inoremap <silent> <leader>a  <esc>ggVG
 noremap  <silent> <C-S> <cmd>update<cr>
 noremap  <silent> <D-S> <cmd>update<cr>
 
@@ -259,19 +257,14 @@ let explorer = has('win32') ? 'explorer' : 'open'
 execute "noremap  <silent> \\e  <cmd>execute 'silent !".explorer." '.shellescape(expand('%:p:h'))<cr>"
 
 if has('clipboard')
-  noremap  \c "+c
-  noremap  \C "+C
-  noremap  \d "+d
-  noremap  \D "+D
-  noremap  \d "+d
-  noremap  \v "+gp
-  noremap  \V "+gP
-  noremap  \x "+x
-  noremap  \X "+X
-  noremap  \y "+y
-  noremap  \Y "+Y
-  noremap! \v <c-o>"+gp
-  noremap! \V <c-o>"+gP
+  noremap  <leader>p "+gp
+  noremap  <leader>P "+gP
+  noremap  <leader>x "+x
+  noremap  <leader>X "+X
+  noremap  <leader>y "+y
+  noremap  <leader>Y "+Y
+  noremap! <leader>p <c-o>"+gp
+  noremap! <leader>P <c-o>"+gP
 endif
 
 " Terminal commands
