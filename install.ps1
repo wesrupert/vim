@@ -1,8 +1,7 @@
 function Ln {
   param ([string]$target, [string]$path)
-    if (-not (Test-Path -Path $path)) {
-      New-Item -ItemType SymbolicLink -Target $target -Path $path -ErrorAction Stop
-    }
+    if (Test-Path -Path $path) { Remove-Item $path }
+    New-Item -ItemType SymbolicLink -Target $target -Path $path -ErrorAction Stop
 }
 
 Write-Host 'Checking for gcc...'

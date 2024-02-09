@@ -98,7 +98,6 @@ local plugins = {
         },
         content_hooks = {
           starter.gen_hook.aligning('center', 'center'),
-          starter.gen_hook.indexing('section', { 'Files', 'Telescope', 'System' }),
           starter.gen_hook.adding_bullet(),
         },
       })
