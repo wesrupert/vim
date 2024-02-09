@@ -4,6 +4,8 @@ vim.opt.rtp:prepend(vimdir)
 vim.opt.rtp:prepend(lazypath)
 vim.g.mapleader = ','
 
+vim.g.skip_ts_context_commentstring_module = true
+
 if not vim.loop.fs_stat(lazypath) then
   vim.fn.system({
     'git',
