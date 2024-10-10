@@ -1,7 +1,7 @@
 local notvscode = vim.g.vscode ~= 1
 local plugins = {
   align = true,
-  bracketed = notvscode,
+  bracketed = true,
   extra = true,
   files = notvscode,
   indentscope = notvscode,

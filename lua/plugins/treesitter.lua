@@ -3,10 +3,11 @@ local notvscode = vim.g.vscode ~= 1
 return {
   {
     'nvim-treesitter/nvim-treesitter',
+    enabled = notvscode,
     dependencies = {
-      'andymass/vim-matchup',
       'nvim-treesitter/nvim-treesitter-textobjects',
       'joosepalviste/nvim-ts-context-commentstring',
+      'andymass/vim-matchup',
       'windwp/nvim-ts-autotag',
     },
     cmd = {
