@@ -233,14 +233,9 @@ noremap <silent> <leader>vz    <cmd>execute 'source '.g:vimrc<cr>
 noremap          Q             <C-Q>
 noremap          ss            s
 noremap <silent> gV            `[v`]
-noremap <silent> gl            <plug>(leap-forward)
-noremap <silent> gL            <plug>(leap-backward)
-noremap <silent> go            <plug>(leap-forward-x)
-noremap <silent> gO            <plug>(leap-backward-x)
 noremap <silent> gs            <cmd>execute 'e '.g:scratch<cr><cmd>Autosave<cr>
 noremap <silent> gz            <cmd>Goyo<cr>
 noremap <silent> g.            g;
-noremap <silent> g;            <plug>(leap-cross-window)
 
 inoremap <silent> <C-Backspace> <C-W>
 inoremap <silent> <D-Backspace> <C-U>

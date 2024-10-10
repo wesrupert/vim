@@ -1,3 +1,5 @@
+local notvscode = vim.g.vscode ~= 1
+
 return {
   {
     'nvim-treesitter/nvim-treesitter',
@@ -17,12 +19,22 @@ return {
     end,
     opts = function()
       return {
-        ensure_installed = { 'vim', 'markdown', 'lua', 'python', 'html', 'css', 'javascript', 'typescript' },
+        ensure_installed = {
+          'css',
+          'html',
+          'javascript',
+          'lua',
+          'markdown',
+          'python',
+          'typescript',
+          'vim',
+          'vue',
+        },
         compilers = { 'clang' },
         sync_install = false,
         auto_install = false,
         highlight = {
-          enable = vim.g.vscode ~= 1,
+          enable = notvscode,
           additional_vim_regex_highlighting = { 'markdown' },
         },
         indent = {

@@ -16,12 +16,33 @@ return {
 
   -- Architecture plugins
   { 'airblade/vim-rooter' },
+  { 'nvim-tree/nvim-web-devicons' },
   { 'conormcd/matchindent.vim' },
+  {
+    "luckasRanarison/nvim-devdocs",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-telescope/telescope.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
+    opts = {},
+  },
 
   -- Action plugins
   { 'mbbill/undotree', enabled = notvscode },
   { 'junegunn/goyo.vim', enabled = notvscode },
-  { 'ggandor/leap.nvim' },
+  {
+    'ggandor/leap.nvim',
+    init = function()
+      vim.keymap.set({'n'}, 'gl', '<plug>(leap)', { desc = 'Leap' })
+      vim.keymap.set({'x', 'o'}, 'gL', '<plug>(leap-forward)', { desc = 'Leap forward' })
+      vim.keymap.set({'n', 'x', 'o'}, 'gL', '<plug>(leap-backward)', { desc = 'Leap back' })
+      vim.keymap.set({'x', 'o'}, 'gt', '<plug>(leap-forward-till)', { desc = 'Leap until' })
+      vim.keymap.set({'x', 'o'}, 'gT', '<plug>(leap-backward-till)', { desc = 'Leap back until' })
+      vim.keymap.set({'n', 'x', 'o'}, 'gol', '<plug>(leap-from-window)', { desc = 'Leap from window' })
+      vim.keymap.set({'n', 'x', 'o'}, 'goL', '<plug>(leap-cross-window)', { desc = 'Leap cross window' })
+    end,
+  },
 
   -- Text object plugins
   { 'glts/vim-textobj-comment', dependencies = { 'kana/vim-textobj-user' } },
@@ -52,6 +73,14 @@ return {
   { 'cakebaker/scss-syntax.vim' },
   { 'groenewege/vim-less' },
   { 'ipkiss42/xwiki.vim' },
+  {
+    'OXY2DEV/markview.nvim',
+    enabled = notvscode,
+    lazy = false,
+    opts = {
+      initial_state = false,
+    },
+  },
   { 'othree/yajs.vim' },
   { 'pangloss/vim-javascript' },
   {

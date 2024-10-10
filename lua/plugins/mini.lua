@@ -8,35 +8,51 @@ local plugins = {
   pairs = notvscode,
   splitjoin = true,
   statusline = notvscode,
+  trailspace = true,
   visits = true,
 
-  comment = {
+  diff = {
+    enabled = notvscode,
     opts = {
-      mappings = {
-        comment = '<leader>c',
-        comment_line = '<leader>cc',
+      view = {
+        signs = { add = '┃', change = '┃', delete = '┃' },
       },
     },
-    init = function ()
-      vim.keymap.set('o', 'ac', require('mini.comment').textobject, { desc = 'MiniSession-select' })
-    end,
   },
 
   pick = {
     enabled = notvscode,
+    opts = {
+      options = {
+        use_cache = true,
+        content_from_bottom = true,
+      },
+      window = {
+        config = function ()
+          local height = math.floor(0.618 * vim.o.lines)
+          local width = math.floor(0.618 * vim.o.columns)
+          return {
+            anchor = 'NW', height = height, width = width,
+            row = math.floor(0.5 * (vim.o.lines - height)),
+            col = math.floor(0.5 * (vim.o.columns - width)),
+          }
+        end
+      },
+    },
     init = function ()
       vim.keymap.set('n', 'g/', require('mini.pick').builtin.grep_live)
-      vim.keymap.set('n', 'gpb', require('mini.pick').builtin.buffers)
-      vim.keymap.set('n', 'gpp', require('mini.pick').builtin.files)
-      vim.keymap.set('n', 'gpc', require('mini.extra').pickers.git_branches)
-      vim.keymap.set('n', 'gpd', function() require('mini.extra').pickers.lsp({ scope = 'definition' }) end)
-      vim.keymap.set('n', 'gpg', require('mini.extra').pickers.git_hunks)
-      vim.keymap.set('n', 'gpm', require('mini.extra').pickers.marks)
-      vim.keymap.set('n', 'gpo', require('mini.extra').pickers.options)
-      vim.keymap.set('n', 'gpr', function() require('mini.extra').pickers.lsp({ scope = 'references' }) end)
-      vim.keymap.set('n', 'gps', require('mini.extra').pickers.spellsuggest)
-      vim.keymap.set('n', 'gpt', require('mini.extra').pickers.treesitter)
-      vim.keymap.set('n', 'gpz', require('mini.extra').pickers.visit_paths)
+      vim.keymap.set('n', 'goo', require('mini.pick').builtin.files)
+      vim.keymap.set('n', 'gob', require('mini.pick').builtin.buffers)
+      vim.keymap.set('n', 'goc', require('mini.extra').pickers.git_branches)
+      vim.keymap.set('n', 'god', function() require('mini.extra').pickers.lsp({ scope = 'definition' }) end)
+      vim.keymap.set('n', 'god', require('mini.extra').pickers.visit_paths)
+      vim.keymap.set('n', 'gog', require('mini.extra').pickers.git_hunks)
+      vim.keymap.set('n', 'gom', require('mini.extra').pickers.marks)
+      vim.keymap.set('n', 'gor', function() require('mini.extra').pickers.lsp({ scope = 'references' }) end)
+      vim.keymap.set('n', 'gos', require('mini.extra').pickers.spellsuggest)
+      vim.keymap.set('n', 'got', require('mini.extra').pickers.treesitter)
+      vim.keymap.set('n', 'gov', require('mini.extra').pickers.options)
+      vim.keymap.set('n', 'goz', function() require('mini.extra').pickers.visit_paths({ cwd = '' }) end)
       vim.keymap.set('n', 'z/', function() require('mini.extra').pickers.history({ scope = '/' }) end)
       vim.keymap.set('n', 'z;', function() require('mini.extra').pickers.history({ scope = ':' }) end)
     end,
@@ -81,7 +97,7 @@ local plugins = {
         items = {
           { section = 'Files',     name = 'E.  Explorer',             action = 'Pick explorer' },
           { section = 'Files',     name = 'F.  Files',                action = 'Pick files tool="rg"' },
-          { section = 'Files',     name = 'R.  Recent Files',         action = 'Pick visit_paths' },
+          { section = 'Files',     name = 'R.  Recent Files',         action = 'Pick visit_paths cwd=""' },
           { section = 'Files',     name = 'T.  Tracked Files',        action = 'Pick git_files' },
           { section = 'Files',     name = 'B.  Branches (Git)',       action = 'Pick git_branches' },
           { section = 'Files',     name = 'M.  Changes (Git)',        action = 'Pick git_hunks' },
