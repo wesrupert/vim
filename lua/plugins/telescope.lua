@@ -24,5 +24,10 @@ return {
         },
       }
     end,
+    init = function ()
+      -- Careful not to collide with the pickers in mini.pick!
+      local builtin = require('telescope.builtin')
+      vim.keymap.set('n', 'gob', builtin.buffers, { desc = '[Telescope] Buffers' })
+    end,
   },
 }

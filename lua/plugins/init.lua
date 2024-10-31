@@ -2,31 +2,98 @@ local notvscode = vim.g.vscode ~= 1
 
 return {
   -- Colorschemes
+  {
+    'f-person/auto-dark-mode.nvim',
+    opts = {
+      set_dark_mode = function()
+        vim.api.nvim_set_option_value('background', 'dark', {})
+      end,
+      set_light_mode = function()
+        vim.api.nvim_set_option_value('background', 'light', {})
+      end,
+    },
+  },
   { 'edeneast/nightfox.nvim', priority = 1000, enabled = notvscode },
   { 'ellisonleao/gruvbox.nvim', priority = 1000, enabled = notvscode },
   { 'folke/tokyonight.nvim', priority = 1000, enabled = notvscode },
   { 'reedes/vim-colors-pencil', priority = 1000, enabled = notvscode },
-  { 'catppuccin/nvim', name = 'catppuccin', priority = 1000, enabled = notvscode },
+  {
+    'catppuccin/nvim',
+    name = "catppuccin",
+    enabled = notvscode,
+    priority = 1000,
+    opts = {
+      integrations = {
+        cmp = true,
+        leap = true,
+        markdown = true,
+        mason = true,
+        treesitter = true,
+        mini = {
+          enabled = true,
+        },
+        native_lsp = {
+          enabled = true,
+          virtual_text = {
+            errors = { 'italic' },
+            hints = { 'italic' },
+            warnings = { 'italic' },
+            information = { 'italic' },
+            ok = { 'italic' },
+          },
+          underlines = {
+            errors = { 'underline' },
+            hints = { 'underline' },
+            warnings = { 'underline' },
+            information = { 'underline' },
+            ok = { 'underline' },
+          },
+          inlay_hints = {
+            background = true,
+          },
+        },
+        telescope = {
+          enabled = true,
+        },
+      },
+      color_overrides = {
+        latte = {
+          crust = "#474747",
+        },
+      },
+      custom_highlights = function(colors)
+        local u = require("catppuccin.utils.colors")
+        return {
+          CursorLineNr = { bg = u.blend(colors.overlay0, colors.base, 0.75), style = { "bold" } },
+          CursorLine = { bg = u.blend(colors.overlay0, colors.base, 0.45) },
+          LspReferenceText = { bg = colors.surface2 },
+          LspReferenceWrite = { bg = colors.surface2 },
+          LspReferenceRead = { bg = colors.surface2 },
+        }
+      end,
+    },
+  },
 
   -- Meta plugins
   { 'equalsraf/neovim-gui-shim' },
   { 'nvim-lua/plenary.nvim' },
   { 'folke/lsp-colors.nvim', enabled = notvscode },
   { 'tpope/vim-repeat' },
+  {
+    'folke/noice.nvim',
+    -- enabled = notvscode,
+    enabled = false,
+    dependencies = { 'MunifTanjim/nui.nvim' },
+    event = 'VeryLazy',
+    opts = {
+      -- add any options here
+    },
+  },
 
   -- Architecture plugins
   { 'airblade/vim-rooter' },
   { 'nvim-tree/nvim-web-devicons' },
   { 'conormcd/matchindent.vim' },
-  {
-    "luckasRanarison/nvim-devdocs",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-telescope/telescope.nvim",
-      "nvim-treesitter/nvim-treesitter",
-    },
-    opts = {},
-  },
 
   -- Action plugins
   { 'mbbill/undotree', enabled = notvscode },

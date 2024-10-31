@@ -1,3 +1,13 @@
+local function is_in_start_tag()
+  local ts_utils = require('nvim-treesitter.ts_utils')
+  local node = ts_utils.get_node_at_cursor()
+  if not node then
+    return false
+  end
+  local node_to_check = { 'start_tag', 'self_closing_tag', 'directive_attribute' }
+  return vim.tbl_contains(node_to_check, node:type())
+end
+
 return {
   {
     'zbirenbaum/copilot.lua',
@@ -117,7 +127,32 @@ return {
         sources = cmp.config.sources {
           { name = 'copilot' },
           { name = 'nvim_lsp_signature_help' },
-          { name = 'nvim_lsp' },
+          {
+            name = 'nvim_lsp',
+            entry_filter = function(entry, ctx)
+              if ctx.filetype == 'vue' then
+                -- Add prop/emit completion to vue components
+
+                -- Check that we're inside start tag (caching the result)
+                local cached_is_in_start_tag = vim.b[ctx.bufnr]._vue_ts_cached_is_in_start_tag
+                if cached_is_in_start_tag == nil then
+                  vim.b[ctx.bufnr]._vue_ts_cached_is_in_start_tag = is_in_start_tag()
+                end
+                -- If not in start tag, return true
+                if vim.b[ctx.bufnr]._vue_ts_cached_is_in_start_tag == false then
+                  return true
+                end
+                -- rest of the code
+                local cursor_before_line = ctx.cursor_before_line
+                if cursor_before_line:sub(-1) == '@' then -- For events
+                  return entry.completion_item.label:match('^@')
+                elseif cursor_before_line:sub(-1) == ':' then -- For props also exclude events with `:on-` prefix
+                  return entry.completion_item.label:match('^:') and not entry.completion_item.label:match('^:on%-')
+                end
+              end
+              return true
+            end,
+          },
           { name = 'npm', keyword_length = 3 },
           { name = 'omni' },
           { name = 'treesitter' },
@@ -128,6 +163,12 @@ return {
           { name = 'spell' },
         },
       }
+    end,
+    init = function()
+      require('cmp').event:on('menu_closed', function()
+        local bufnr = vim.api.nvim_get_current_buf()
+        vim.b[bufnr]._vue_ts_cached_is_in_start_tag = nil
+      end)
     end,
   }
 }

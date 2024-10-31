@@ -85,11 +85,13 @@ call Mkdir(g:temp)
 
 " GUI settings
 if exists('&guifont')
-  set guifont=Iosevka_Atkinson:h12
+  set guifont=Iosevka_Atkinson:h11
 endif
+let g:neovide_hide_mouse_when_typing = v:true
 let g:neovide_cursor_animate_command_line = v:false
 let g:neovide_remember_window_size = v:false
 let g:neovide_theme = 'auto'
+let g:neovide_floating_corner_radius = 0.5
 
 " Application settings
 syntax on
@@ -100,9 +102,16 @@ set scrolloff=2 sidescrolloff=1
 set splitbelow splitright
 set switchbuf=usetab
 set updatetime=500
+
 if exists('&termguicolors')
+  if !has('gui_running') && &term =~ '^\%(screen\|tmux\)'
+    let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+    let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+  endif
   set termguicolors
 endif
+
+colorscheme catppuccin
 
 " Command bar
 set completeopt=menuone,preview,noinsert,noselect
@@ -361,16 +370,6 @@ function! s:SetDiffLayout()
 endfunction
 
 " }}}
-
-if !get(g:, 'vscode', 0)
-  if 7 < strftime("%H") && strftime("%H") < 17
-    execute 'set background='.get(g:, 'daybackground', 'light')
-    execute 'colorscheme  '.get(g:, 'daytheme', 'pencil')
-  else
-    execute 'set background='.get(g:, 'nightbackground', 'dark')
-    execute 'colorscheme  '.get(g:, 'nighttheme', 'pencil')
-  endif
-endif
 
 let g:vimrc_custom = s:TrySourceFile(g:vimrc.'.custom', g:vimrc.'.after')
 " vim: foldmethod=marker
