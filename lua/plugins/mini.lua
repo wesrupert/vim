@@ -1,62 +1,87 @@
-local notvscode = vim.g.vscode ~= 1
+local util = require('util')
+local user_mini_config = vim.api.nvim_create_augroup('UserMiniConfig', { clear = true })
+
 local plugins = {
-  -- Load mini.extra first, as other minis have dependencies on it.
+  -- Load these first, as other minis have dependencies on it.
   extra = true,
+  icons = true,
+  visits = {
+    init = function ()
+      local mini_visits = require('mini.visits')
+      util.keymap('gov', '[MiniVisits] Add label',    mini_visits.add_label)
+      util.keymap('goV', '[MiniVisits] Remove label', mini_visits.remove_label)
+    end,
+  },
 
   align = true,
-  bracketed = true,
-  files = notvscode,
-  notify = notvscode,
-  pairs = notvscode,
+  files = util.not_vscode,
+  pairs = util.not_vscode,
   splitjoin = true,
-  statusline = notvscode,
   trailspace = true,
-  visits = true,
 
   ai = {
-    enabled = true,
     opts = function ()
       local gen_ai_spec = require('mini.extra').gen_ai_spec
-      require('mini.ai').setup({
+      return {
         custom_textobjects = {
           d = gen_ai_spec.diagnostic(),
           l = gen_ai_spec.line(),
           n = gen_ai_spec.number(),
         },
-      })
+      }
+    end,
+  },
+
+  bracketed = {
+    opts = {
+      treesitter = { suffix = '' },
+    },
+  },
+
+  bufremove = {
+    cond = util.not_vscode,
+    init = function ()
+      util.keymap('<leader>zz', '[MiniBufremove] Save and close buffer', function ()
+        vim.cmd('write')
+        require('mini.bufremove').delete()
+      end)
+      util.keymap('<leader>zq', '[MiniBufremove] Close buffer', require('mini.bufremove').delete)
     end,
   },
 
   diff = {
-    enabled = notvscode,
+    cond = util.not_vscode,
     opts = {
       view = {
         signs = { add = '┃', change = '┃', delete = '┃' },
       },
     },
     init = function ()
-      vim.keymap.set('n', ']g', require('mini.diff').toggle_overlay, { desc = '[MiniDiff] Toggle overlay' })
-      vim.keymap.set('n', '[g', require('mini.diff').toggle_overlay, { desc = '[MiniDiff] Toggle overlay' })
+      local mini_diff = require('mini.diff')
+      util.keymap(']g', '[MiniDiff] Toggle overlay', mini_diff.toggle_overlay)
+      util.keymap('[g', '[MiniDiff] Toggle overlay', mini_diff.toggle_overlay)
     end,
   },
 
-  indentscope = {
-    enabled = notvscode,
+  hipatterns = {
     opts = function ()
       return {
-        symbol = '│',
-        -- draw = {
-        --   delay = 500,
-        --   animation = require('mini.indentscope').gen_animation.none()
-        -- },
-        options = {
-          try_as_border = true,
+        highlighters = {
+          hex_color = require('mini.hipatterns').gen_highlighter.hex_color(),
         },
       }
-    end,
+    end
+  },
+
+  indentscope = {
+    cond = util.not_vscode,
+    opts = {
+      symbol = '│',
+      options = { try_as_border = true },
+    },
     init = function ()
       vim.api.nvim_create_autocmd('ColorScheme', {
-        group = vim.api.nvim_create_augroup('[MiniIndentscope] Update colors', { clear = true }),
+        group = user_mini_config,
         callback = function()
           vim.api.nvim_set_hl(0, 'MiniIndentscopeSymbol', { link = 'Comment', force = true })
         end,
@@ -65,95 +90,145 @@ local plugins = {
   },
 
   pick = {
-    enabled = notvscode,
+    cond = util.not_vscode,
     opts = {
       options = {
         use_cache = true,
-        content_from_bottom = true,
+        mappings = {
+          toggle_info = '<pgdn>',
+          toggle_preview = '<pgup>',
+          delete_word = '<c-bs>',
+        },
       },
       window = {
         config = function ()
-          local height = math.floor(0.618 * vim.o.lines)
-          local width = math.floor(0.618 * vim.o.columns)
+          -- Width/height should fit in the window, at scale of window size between min and max values.
+          local style = { scale = 0.618, width  = { min = 50, max = 100, border = 18 }, height = { min = 10, max = 25,  border = 2  } }
+          local width = math.min(vim.o.columns - 2, math.max(style.width.min, math.min(style.width.max,
+            math.floor(style.scale * (vim.o.columns - (2 * style.width.border)))
+          )))
+          local height = math.min(vim.o.lines - 2, math.max(style.height.min, math.min(style.height.max,
+            math.floor(style.scale * (vim.o.lines - (2 * style.height.border)))
+          )))
           return {
             anchor = 'NW', height = height, width = width,
-            row = math.floor(0.5 * (vim.o.lines - height)),
+            row = height >= vim.o.lines - 2 and 0 or style.height.border,
             col = math.floor(0.5 * (vim.o.columns - width)),
           }
         end
       },
     },
     init = function ()
-      local MiniPick = require('mini.pick')
-      local MiniVisits = require('mini.visits')
+      local mini_extra = require('mini.extra')
+      local mini_pick = require('mini.pick')
+      local mini_visits = require('mini.visits')
 
-      -- Additional visits-plus-files picker, courtesy https://github.com/echasnovski/mini.nvim/discussions/609
-      MiniPick.registry.mrufiles = function ()
-        local visit_paths = MiniVisits.list_paths(nil, { sort = MiniVisits.gen_sort.z() })
-        visit_paths = vim.tbl_map(function (path) return vim.fn.fnamemodify(path, ":.") end, visit_paths)
+      -- Use as the builtin select dialog.
+      vim.ui.select = mini_pick.ui_select
+
+      ---Pick from files, sorted by MRU.
+      ---@param local_opts table|nil Options defining behavior of this particular picker.
+      ---@param opts table|nil Options forwarded to |MiniPick.start()|.
+      ---@see https://github.com/echasnovski/mini.nvim/discussions/609
+      mini_pick.registry.mrufiles = function (local_opts, opts)
+        local cwd = opts and opts.cwd or nil
+        local get_mru = function ()
+          local mru = mini_visits.list_paths(cwd, { sort = mini_visits.gen_sort.z() })
+          mru = vim.tbl_map(function (path) return vim.fn.fnamemodify(path, ":.") end, mru)
+          return mru
+        end
+
+        local visit_paths = get_mru()
         vim.tbl_add_reverse_lookup(visit_paths)
-
-        -- Current file last
         local current_file = vim.fn.expand("%:.")
         if visit_paths[current_file] then
+          -- Current file last
           visit_paths[current_file] = math.huge
         end
 
-        MiniPick.builtin.files(nil, {
+        mini_pick.builtin.files(local_opts or nil, {
           source = {
             name = "Files (MRU)",
-            match = function(stritems, indices, query)
-              local filtered = MiniPick.default_match(stritems, indices, query, { sync = true }) or {}
-              local get_weight = function (item) return visit_paths[stritems[item]] or math.huge end
-              table.sort(filtered, function(item1, item2) return get_weight(item1) < get_weight(item2) end)
-              return filtered
+            cwd = cwd,
+            match = function(items, indices, query)
+              local get_weight = function (idx) return visit_paths[items[idx]] or math.huge end
+              local matched = query == ''
+                and vim.tbl_filter(function (idx) return visit_paths[items[idx]] == nil end, indices)
+                or mini_pick.default_match(items, indices, query, { sync = true })
+              table.sort(matched, function(idx1, idx2) return get_weight(idx1) < get_weight(idx2) end)
+              return matched
             end,
           },
         })
       end
 
-      -- Careful not to collide with the pickers in telescope.nvim!
-      vim.keymap.set('n', '<c-p>', require('mini.pick').registry.mrufiles, { desc = '[MiniPick] Recent files (cwd)' })
-      vim.keymap.set('n', 'goo', function() require('mini.extra').pickers.visit_paths({ cwd = '' }) end, { desc = '[MiniPick] Recent files' })
-      vim.keymap.set('n', 'goO', require('mini.visits').add_label, { desc = '[MiniVisits] Add label' })
-      vim.keymap.set('n', 'goX', require('mini.visits').remove_label, { desc = '[MiniVisits] Remove label' })
-      vim.keymap.set('n', 'gop', require('mini.extra').pickers.visit_paths, { desc = '[MiniPick] Recent files (cwd)' })
-      vim.keymap.set('n', 'goc', require('mini.extra').pickers.git_branches, { desc = '[MiniPick] Git branches' })
-      vim.keymap.set('n', 'god', function() require('mini.extra').pickers.lsp({ scope = 'definition' }) end, { desc = '[MiniPick] LSP definitions' })
-      vim.keymap.set('n', 'gof', require('mini.extra').pickers.explorer, { desc = '[MiniPick] File system' })
-      vim.keymap.set('n', 'gog', require('mini.extra').pickers.git_hunks, { desc = '[MiniPick] Git hunks' })
-      vim.keymap.set('n', 'goj', function() require('mini.extra').pickers.list({ scope = 'jump' }) end, { desc = '[MiniPick] Jumplist' })
-      vim.keymap.set('n', 'goC', function() require('mini.extra').pickers.list({ scope = 'jump' }) end, { desc = '[MiniPick] Changelist' })
-      vim.keymap.set('n', 'goQ', function() require('mini.extra').pickers.list({ scope = 'location-list' }) end, { desc = '[MiniPick] Location list' })
-      vim.keymap.set('n', 'gok', require('mini.extra').pickers.keymaps, { desc = '[MiniPick] Keymaps' })
-      vim.keymap.set('n', 'goq', function() require('mini.extra').pickers.list({ scope = 'quickfix' }) end, { desc = '[MiniPick] Quickfix' })
-      vim.keymap.set('n', 'goQ', function() require('mini.extra').pickers.list({ scope = 'location-list' }) end, { desc = '[MiniPick] Location list' })
-      vim.keymap.set('n', 'gom', require('mini.extra').pickers.marks, { desc = '[MiniPick] Marks' })
-      vim.keymap.set('n', 'gor', function() require('mini.extra').pickers.lsp({ scope = 'references' }) end, { desc = '[MiniPick] LSP references' })
-      vim.keymap.set('n', 'gos', require('mini.extra').pickers.spellsuggest, { desc = '[MiniPick] Spellcheck' })
-      vim.keymap.set('n', 'got', require('mini.extra').pickers.treesitter, { desc = '[MiniPick] Treesitter nodes' })
-      vim.keymap.set('n', 'gov', require('mini.extra').pickers.options, { desc = '[MiniPick] Options' })
-      vim.keymap.set('n', 'g/', require('mini.pick').builtin.grep_live, { desc = '[MiniPick] Find' })
-      vim.keymap.set('n', 'z/', function() require('mini.extra').pickers.history({ scope = '/' }) end, { desc = '[MiniPick] Recent searches' })
-      vim.keymap.set('n', 'z;', function() require('mini.extra').pickers.history({ scope = ':' }) end, { desc = '[MiniPick] Recent commands' })
+      mini_pick.registry.manage_buffers = function (local_opts, opts)
+        local wipeout = function ()
+          vim.api.nvim_buf_delete(mini_pick.get_picker_matches().current.bufnr, {})
+          -- Relaunch to remove from items
+          mini_pick.registry.manage_buffers(local_opts, opts)
+        end
+        local merged_opts = vim.tbl_deep_extend('keep', { mappings = { wipeout = { char = '<c-d>', func = wipeout } } }, opts or {})
+        mini_pick.builtin.buffers(local_opts, merged_opts)
+      end
+
+      util.keymap('<c-p>', '[MiniPick] Files (cwd)',   mini_pick.registry.mrufiles)
+      util.keymap('<a-p>', '[MiniPick] Recent files',  function() mini_extra.pickers.visit_paths({ cwd = '' }) end)
+      util.keymap('<c-;>', '[MiniPick] Commands',      function() mini_extra.pickers.history({ scope = ':' }) end)
+      util.keymap('<c-e>', '[MiniPick] Explorer',      mini_extra.pickers.explorer)
+      util.keymap('<c-b>', '[MiniPick] Buffers',       mini_pick.registry.manage_buffers)
+      util.keymap('<c-/>', '[MiniPick] Find',          mini_pick.builtin.grep_live)
+      util.keymap('<a-/>', '[MiniPick] Searches',      function() mini_extra.pickers.history({ scope = '/' }) end)
+      util.keymap('<c-g>', '[MiniPick] Git hunks',     mini_extra.pickers.git_hunks)
+      util.keymap('<a-g>', '[MiniPick] Git branches',  mini_extra.pickers.git_branches)
+      util.keymap('<a-t>', '[MiniPick] Treesitter',    mini_extra.pickers.treesitter)
+      util.keymap('<a-o>', '[MiniPick] Jumplist',      function() mini_extra.pickers.list({ scope = 'jump' }) end)
+      util.keymap('<a-u>', '[MiniPick] Changelist',    function() mini_extra.pickers.list({ scope = 'change' }) end)
+      util.keymap('<a-q>', '[MiniPick] Location list', function() mini_extra.pickers.list({ scope = 'location-list' }) end)
+      util.keymap('<c-q>', '[MiniPick] Quickfix',      function() mini_extra.pickers.list({ scope = 'quickfix' }) end)
+      util.keymap('<a-k>', '[MiniPick] Keymaps',       mini_extra.pickers.keymaps)
+      util.keymap("<c-'>", '[MiniPick] Marks',         mini_extra.pickers.marks)
+      util.keymap('<c-s>', '[MiniPick] Spellcheck',    mini_extra.pickers.spellsuggest)
+      util.keymap('<c-,>', '[MiniPick] Options',       mini_extra.pickers.options)
     end,
   },
 
   sessions = {
-    enabled = notvscode,
+    cond = util.not_vscode,
+    config = function ()
+      local mini_sessions = require('mini.sessions')
+      mini_sessions.setup({
+        autoread = true,
+        autowrite = true,
+        hooks = {
+          post = {
+            read = function (ev) vim.g.mini_sessions_current = ev.name end,
+            write = function (ev) vim.g.mini_sessions_current = ev.name end,
+            delete = function (ev)
+              if vim.g.mini_sessions_current == ev.name then vim.g.mini_sessions_current = nil end
+            end
+          },
+        },
+      })
+    end,
     init = function ()
-      vim.keymap.set('n', '<leader>ss', require('mini.sessions').select, { desc = '[MiniSession] Select' })
-      vim.keymap.set('n', '<leader>sw', function() require('mini.sessions').write(vim.fn.input('Session Name > ')) end, { desc = '[MiniSession] Write' })
-      vim.keymap.set('n', '<leader>su', function() require('mini.sessions').write(require('mini.sessions').get_latest(), { force = true }) end, { desc = '[MiniSession] Update' })
+      local mini_sessions = require('mini.sessions')
+      vim.o.sessionoptions = 'curdir,folds,help,tabpages,winsize,terminal'
+      util.keymap('<leader>ss', '[MiniSession] Select', mini_sessions.select)
+      util.keymap('<leader>sw', '[MiniSession] Update', function ()
+        mini_sessions.write(vim.g.mini_sessions_current or vim.fn.input('Session Name: '))
+      end)
+      util.keymap('<leader>sW', '[MiniSession] Write',  function () mini_sessions.write(vim.fn.input('Session Name: ')) end)
     end,
   },
 
   starter = {
-    enabled = notvscode,
+    cond = util.not_vscode,
     config = function ()
       local starter = require('mini.starter')
       local lazy_status_sok, lazy_status = pcall(require, 'lazy.status')
       starter.setup({
+        autoopen = false,
         header = function()
           local lines
           local add_line = function(l)
@@ -199,62 +274,81 @@ local plugins = {
           starter.gen_hook.adding_bullet(),
         },
       })
-
-      _G.open_starter_if_empty_buffer = function ()
-        local buf_id = vim.api.nvim_get_current_buf()
-        local is_empty = vim.api.nvim_buf_get_name(buf_id) == "" and vim.bo[buf_id].filetype == ''
-        if not is_empty then return end
-        starter.open()
-      end
+    end,
+    init = function ()
+      util.keymap('<a-n>', '[MiniStarter] Open', require('mini.starter').open)
     end,
   },
 }
-
-local function has_key(obj, key)
-  if type(obj) == 'table' then
-    return obj[key] ~= nil
-  else
-    return false
-  end
-end
 
 return {
   {
     'echasnovski/mini.nvim',
     config = function()
-      for k, plugin in pairs(plugins) do
+      local print_mini = function (m, ...) print('[Mini.'..m..'] ', ...) end
+      local loaded = {}
+
+      for k, p in pairs(plugins) do
+        -- Set up modules (load opts and run config)
         xpcall(function ()
-          if plugin == true or (type(plugin) == 'table' and plugin['enabled'] ~= false) then
-            local opts = nil
-            if has_key(plugin, 'opts') then
-              local o = plugin.opts
-              if type(o) == 'function' then opts = o() else opts = o end
+          local plugin_ok, plugin = util.maybe_pcall(p)
+          if not plugin_ok then return end
+
+          local plugin_is_table = type(plugin) == 'table'
+          if plugin_is_table and util.has_key(plugin, 'cond') then
+            local cond_ok = util.maybe_pcall(plugin.cond)
+            if not cond_ok then return end
+          end
+
+
+          -- Get opts
+          local opts = {}
+          if util.has_key(plugin, 'opts') then
+            local opts_ok, opts_result = util.maybe_pcall(plugin.opts)
+            if not opts_ok or type(opts_result) ~= 'table' then
+              print_mini(k, 'Error loading opts', opts_result)
+              return
             end
-            opts = type(opts) == 'table' and opts or {}
-            if has_key(plugin, 'config') and type(plugin.config) == 'function' then
-              ---@diagnostic disable-next-line LSP is adamant it must be a 0-arg function.
-              plugin.config(opts)
-            else
-              local sok, module = pcall(require, 'mini.' .. k)
-              if sok then module.setup(opts) else print('Mini module ' .. k .. ' not found.') end
+            opts = opts_result
+          end
+
+          -- Setup module
+          if util.has_key(plugin, 'config') then
+            local config_ok, config_result = util.maybe_pcall(plugin.config, opts)
+            if not config_ok then
+              print_mini(k, 'Error loading config', config_result)
+              return
             end
-            if has_key(plugin, 'init') and type(plugin.init) == 'function' then
-              plugin.init()
+          else
+            local module_ok, module_result = pcall(require, 'mini.' .. k)
+            if not module_ok then
+              print_mini(k, 'Error importing module', module_result)
+              return
+            end
+            local setup_ok, setup_result = pcall(module_result.setup, opts)
+            if not setup_ok then
+              print_mini(k, 'Error running setup', setup_result)
+              return
+            end
+          end
+
+          -- Setup complete, add to post-setup init modules
+          loaded[k] = plugin
+        end, function(err) print(err) end)
+      end
+
+      -- Run post-install scripts
+      for k, p in pairs(loaded) do
+        xpcall(function ()
+          if util.has_key(p, 'init') then
+            local init_ok, init_result = util.maybe_pcall(p.init)
+            if not init_ok then
+              print_mini(k, 'Error running init', init_result)
+              return
             end
           end
         end, function(err) print(err) end)
       end
     end,
-    -- init = function ()
-    --   for _, plugin in pairs(plugins) do
-    --     xpcall(function ()
-    --       if not has_key(plugin, 'enabled') or plugin.enabled ~= false then
-    --         if has_key(plugin, 'init') and type(plugin.init) == 'function' then
-    --           plugin.init()
-    --         end
-    --       end
-    --     end, function(err) print(err) end)
-    --   end
-    -- end
   },
 }

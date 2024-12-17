@@ -1,9 +1,8 @@
-local notvscode = vim.g.vscode ~= 1
+local util = require('util')
 
 return {
   {
     'nvim-treesitter/nvim-treesitter',
-    enabled = notvscode,
     dependencies = {
       'nvim-treesitter/nvim-treesitter-textobjects',
       'joosepalviste/nvim-ts-context-commentstring',
@@ -35,7 +34,7 @@ return {
         sync_install = false,
         auto_install = false,
         highlight = {
-          enable = notvscode,
+          enable = util.not_vscode,
           additional_vim_regex_highlighting = { 'markdown' },
         },
         indent = {
@@ -65,14 +64,14 @@ return {
               ['ac'] = '@class.outer',
             },
             selection_modes = {
-              ['@function.inner'] = 'V', -- linewise
-              ['@function.outer'] = 'V', -- linewise
-              ['@parameter.inner'] = 'v', -- charwise
-              ['@parameter.outer'] = 'v', -- charwise
-              ['@block.inner'] = 'V', -- blockwise
-              ['@block.outer'] = 'V', -- blockwise
-              ['@class.inner'] = 'V', -- blockwise
-              ['@class.outer'] = 'V', -- blockwise
+              ['@function.inner'] = 'V', -- line-wise
+              ['@function.outer'] = 'V', -- line-wise
+              ['@parameter.inner'] = 'v', -- char-wise
+              ['@parameter.outer'] = 'v', -- char-wise
+              ['@block.inner'] = 'V', -- block-wise
+              ['@block.outer'] = 'V', -- block-wise
+              ['@class.inner'] = 'V', -- block-wise
+              ['@class.outer'] = 'V', -- block-wise
             },
           },
           move = {
@@ -122,29 +121,47 @@ return {
       vim.o.foldlevel = 999
       vim.wo.foldmethod = 'expr'
       vim.wo.foldexpr = 'nvim_treesitter#foldexpr()'
-      vim.g.matchup_matchparen_offscreen = { method = 'popup' }
     end,
   },
   {
     'nvim-treesitter/nvim-treesitter-context',
     dependencies = { 'nvim-treesitter/nvim-treesitter' },
+    cond = util.not_vscode,
+    opts = {
+      on_attach = function ()
+        -- Disable when lspsaga breadcrumb is enabled
+        return not pcall(require, 'lspsaga.symbol.winbar')
+      end
+    },
     init = function ()
       vim.api.nvim_set_hl(0, 'TreesitterContextBottom', { underline = true, sp = 'Grey' })
+      vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter', 'LspAttach' }, {
+        group = vim.api.nvim_create_augroup('UserTreesitterConfig', { clear = true }),
+        callback = function()
+          local ts_context = require('treesitter-context')
+          local enabled = ts_context.enabled()
+          local lspsaga_winbar_loaded, lspsaga_winbar = pcall(require, 'lspsaga.symbol.winbar')
+          local should_enable = not lspsaga_winbar_loaded or lspsaga_winbar.get_bar() == nil
+          if should_enable and not enabled then
+            ts_context.enable()
+          elseif not should_enable and enabled then
+            ts_context.disable()
+          end
+        end,
+      })
     end,
   },
   {
     'drybalka/tree-climber.nvim',
     dependencies = { 'nvim-treesitter/nvim-treesitter' },
     init = function ()
-      local keyopts = { noremap = true, silent = true }
-      vim.keymap.set({'n', 'v', 'o'}, ']t', require('tree-climber').goto_next, keyopts)
-      vim.keymap.set({'n', 'v', 'o'}, '[t', require('tree-climber').goto_prev, keyopts)
-      vim.keymap.set({'n', 'v', 'o'}, ']T', require('tree-climber').goto_child, keyopts)
-      vim.keymap.set({'n', 'v', 'o'}, '[T', require('tree-climber').goto_parent, keyopts)
-      vim.keymap.set({'v', 'o'}, 'an', require('tree-climber').select_node, keyopts)
-      vim.keymap.set({'v', 'o'}, 'in', require('tree-climber').select_node, keyopts)
-      vim.keymap.set('n', '<leader>sn', require('tree-climber').swap_next, keyopts)
-      vim.keymap.set('n', '<leader>sN', require('tree-climber').swap_prev, keyopts)
+      local tree_climber = require('tree-climber')
+      util.keymap(']T',         '[TreeSitter] Jump child',        tree_climber.goto_child,  { 'n', 'v', 'o' })
+      util.keymap('[T',         '[TreeSitter] Jump parent',       tree_climber.goto_parent, { 'n', 'v', 'o' })
+      util.keymap('an',         '[TreeSitter] Select node',       tree_climber.select_node, { 'v', 'o' })
+      util.keymap('in',         '[TreeSitter] Select inner node', tree_climber.select_node, { 'v', 'o' })
+      util.keymap('<leader>sn', '[TreeSitter] Swap next node',    tree_climber.swap_next)
+      util.keymap('<leader>sN', '[TreeSitter] Swap prev node',    tree_climber.swap_prev)
     end,
   },
 }

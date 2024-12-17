@@ -20,11 +20,13 @@ function! Mkdir(path) " {{{
   return 0
 endfunction " }}}
 
-function! Grep(local, ...) " {{{
+function! Grep(local, open, ...) " {{{
   let search = get(a:000, len(a:000)-1, '')
   let @/ = search
   silent execute (a:local ? 'l' : '').'grep! '.join(a:000, ' ')
-  execute (a:local ? 'l' : 'c').'open'
+  if a:open
+    execute (a:local ? 'l' : 'c').'open'
+  end
 endfunction " }}}
 
 function! NormFile(path) " {{{
@@ -72,7 +74,6 @@ endif
 let g:slash        = has('win32') ? '\' : '/'
 let g:vimhome      = NormPath('$HOME/.config/nvim')
 let g:temp         = NormPath(g:vimhome.'/tmp')
-let g:scratch      = NormFile('$HOME/.scratch.md')
 let g:vimrc        = NormFile(g:vimhome.'/vimrc')
 let g:vimrc_init   = NormFile(g:vimhome.'/init.lua')
 let g:vimrc_plug   = NormFile(g:vimhome.'/lua/plugins/init.lua')
@@ -85,13 +86,13 @@ call Mkdir(g:temp)
 
 " GUI settings
 if exists('&guifont')
-  set guifont=Iosevka_Atkinson:h11
+  set guifont=Iosevka_Atkinson,Symbols_Nerd_Font:h11
 endif
 let g:neovide_hide_mouse_when_typing = v:true
 let g:neovide_cursor_animate_command_line = v:false
-let g:neovide_remember_window_size = v:false
 let g:neovide_theme = 'auto'
-let g:neovide_floating_corner_radius = 0.5
+let g:neovide_floating_shadow = v:false
+let g:neovide_floating_corner_radius = 0.25
 
 " Application settings
 syntax on
@@ -116,6 +117,7 @@ colorscheme catppuccin
 " Command bar
 set completeopt=menuone,preview,noinsert,noselect
 set gdefault ignorecase infercase smartcase
+set wildmenu wildoptions=fuzzy,pum wildmode=list:lastused:full
 set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc,.class
 set wildignore+=*.pyc,*.class,*.sln,*.Master,*.csproj,*.csproj.user,*.cache,*.dll,*.pdb,*.min.*
 set wildignore+=*.tar.*,*.swp,*.bak
@@ -146,13 +148,6 @@ let g:programming_languages = g:ui_languages +
 
 " Plugins {{{
 
-" From https://github.com/vscode-neovim/vscode-neovim/issues/415#issuecomment-715533865
-function! LoadIf(cond, ...)
-  let opts = get(a:000, 0, {})
-  return a:cond ? opts : extend(opts, { 'on': [], 'for': [] })
-endfunction
-
-
 " Update packpath
 if exists('&packpath')
   if match(&packpath, substitute(g:vimhome, '[\\/]', '[\\\\/]', 'g')) == -1
@@ -161,60 +156,13 @@ if exists('&packpath')
 endif
 
 " Configuration
-
-if exists("*nvim_create_buf") && exists("*nvim_open_win")
-  let $FZF_DEFAULT_OPTS = '--reverse --border --height 100%'
-  if has('windows')
-    let $FZF_DEFAULT_COMMAND='rg --files --hidden --follow'
-  else
-    let $FZF_DEFAULT_COMMAND='rg --files --hidden --follow 2>/dev/null'
-  endif
-  let g:fzf_layout = { 'window': 'call FloatingFZF()' }
-  function! FloatingFZF()
-    let buf = nvim_create_buf(v:false, v:true)
-    call setbufvar(buf, '&signcolumn', 'no')
-
-    let width = float2nr(&columns * 6 / 10)
-    let height = min([max([float2nr(&lines/2), 20]), &lines-4])
-    let x = float2nr((&columns - width) / 2)
-    let y = (tabpagenr('$') > 1 && !exists('&guitabline')) ? 1 : 0
-
-    let opts = { 'relative': 'editor', 'row': y, 'col': x, 'width': width, 'height': height }
-    call nvim_open_win(buf, v:true, opts)
-  endfunction
-endif
-
 let g:markdown_fenced_languages = g:programming_languages
-
 let g:rooter_cd_cmd = 'lcd'
 let g:rooter_silent_chdir = 1
 augroup RooterPost | autocmd!
   autocmd User RooterChDir try | cd src | catch | endtry
 augroup end
 
-let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes) + [
-      \   {'buns': ['{ ', ' }'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': ['{']},
-      \   {'buns': ['[ ', ' ]'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': [']']},
-      \   {'buns': ['( ', ' )'], 'nesting': 1, 'match_syntax': 1, 'kind': ['add', 'replace'], 'action': ['add'], 'input': [')']},
-      \   {'buns': ['{\s*', '\s*}'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['{', '}']},
-      \   {'buns': ['\[\s*', '\s*\]'], 'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['[', ']']},
-      \   {'buns': ['(\s*', '\s*)'],   'nesting': 1, 'regex': 1, 'match_syntax': 1, 'kind': ['delete', 'replace', 'textobj'], 'action': ['delete'], 'input': ['(', ')']},
-      \   { 'buns' : ['TagInput(1)', 'TagInput(0)'], 'expr' : 1, 'filetype': ['html'], 'kind' : ['add', 'replace'], 'action' : ['add'], 'input' : ['t'], },
-      \ ]
-
-function! TagInput(is_head) abort
-  if a:is_head
-    let s:TagLast = input('Tag: ')
-    if s:TagLast !=# ''
-      let tag = printf('<%s>', s:TagLast)
-    else
-      throw 'OperatorSandwichCancel'
-    endif
-  else
-    let tag = printf('</%s>', matchstr(s:TagLast, '^\a[^[:blank:]>/]*'))
-  endif
-  return tag
-endfunction
 
 " }}}
 
@@ -223,10 +171,11 @@ endfunction
 noremap          ;             :
 noremap          :             ;
 
-noremap <silent> <C-H>         <C-W>h
-noremap <silent> <C-J>         <C-W>j
-noremap <silent> <C-K>         <C-W>k
-noremap <silent> <C-L>         <C-W>l
+noremap <silent> <c-w>t        <cmd>tabnew<cr>
+noremap <silent> <c-h>         <c-w>h
+noremap <silent> <c-j>         <c-w>j
+noremap <silent> <c-k>         <c-w>k
+noremap <silent> <c-l>         <c-w>l
 noremap <silent> <leader>/     <cmd>nohlsearch<cr>
 noremap <silent> <leader>[     <cmd>setlocal wrap!<cr><cmd>setlocal wrap?<cr>
 noremap <silent> <leader>c,    <cmd>cd ..<cr><cmd>echo ':cd '.getcwd()<cr>
@@ -239,11 +188,8 @@ noremap <silent> <leader>vr    <cmd>execute 'e '.g:vimrc<cr>
 noremap <silent> <leader>vi    <cmd>execute 'e '.g:vimrc_init<cr>
 noremap <silent> <leader>vz    <cmd>execute 'source '.g:vimrc<cr>
 
-noremap          Q             <C-Q>
-noremap          ss            s
+noremap          Q             <c-q>
 noremap <silent> gV            `[v`]
-noremap <silent> gs            <cmd>execute 'e '.g:scratch<cr><cmd>Autosave<cr>
-noremap <silent> gz            <cmd>Goyo<cr>
 noremap <silent> g.            g;
 
 inoremap <silent> <C-Backspace> <C-W>
@@ -253,28 +199,19 @@ inoremap <silent><expr> <s-tab> pumvisible() ? "\<C-P>" : "\<s-tab>"
 inoremap <expr> <cr> pumvisible() ? "\<C-Y>" : "\<C-G>u\<cr>"
 
 " System (Ctrl- / Cmd-) commands
-noremap  <silent> <leader>a  <C-C>ggVG
+noremap  <silent> <leader>a  <c-c>ggVG
 inoremap <silent> <leader>a  <esc>ggVG
-noremap  <silent> <C-S> <cmd>update<cr>
-noremap  <silent> <D-S> <cmd>update<cr>
-
-let explorer = has('win32') ? 'explorer' : 'open'
-execute "noremap  <silent> \\e  <cmd>execute 'silent !".explorer." '.shellescape(expand('%:p:h'))<cr>"
+noremap  <silent> <c-s> <cmd>update<cr>
+noremap  <silent> <d-s> <cmd>update<cr>
 
 if has('clipboard')
-  noremap  <leader>p "+gp
-  noremap  <leader>P "+gP
+  noremap  <leader>v "+gp
+  noremap  <leader>V "+gP
   noremap  <leader>x "+x
   noremap  <leader>X "+X
   noremap  <leader>y "+y
   noremap  <leader>Y "+Y
-  noremap! <leader>p <c-o>"+gp
-  noremap! <leader>P <c-o>"+gP
 endif
-
-" Terminal commands
-noremap <leader>t <cmd>Terminal<cr>
-noremap <leader>T <cmd>terminal<cr>
 
 tnoremap <c-n> <c-\><c-n>
 tnoremap <c-w> <c-\><c-n><c-w>
@@ -282,10 +219,14 @@ tnoremap <c-w> <c-\><c-n><c-w>
 " Commands
 command! -nargs=0 Autosave call Autosave(1)
 command! -nargs=0 NoAutosave call Autosave(0)
-command! -nargs=+ -complete=file_in_path Grep call Grep(0, <f-args>)
-command! -nargs=+ -complete=file_in_path LGrep call Grep(1, <f-args>)
+command! -nargs=+ -complete=file_in_path Grep call Grep(0, 0, <f-args>)
+command! -nargs=+ -complete=file_in_path OGrep call Grep(0, 1, <f-args>)
+command! -nargs=+ -complete=file_in_path LGrep call Grep(1, 0, <f-args>)
+command! -nargs=+ -complete=file_in_path OLGrep call Grep(1, 1, <f-args>)
 call s:GenerateCAbbrev('grep', 2, 'Grep' )
+call s:GenerateCAbbrev('ogrep', 2, 'OGrep' )
 call s:GenerateCAbbrev('lgrep', 2, 'LGrep')
+call s:GenerateCAbbrev('olgrep', 3, 'OLGrep')
 call s:GenerateCAbbrev('rg', 2, 'Grep' )
 
 command! -nargs=* Terminal wincmd b | bel split | terminal <args>
@@ -311,12 +252,12 @@ augroup end
 
 augroup Filetypes | autocmd!
   autocmd BufNew,BufReadPre *.xaml,*.targets,*.props setf xml
-  autocmd BufNew,BufReadPost keymap.c syn match QmkKcAux /_\{7}\|X\{7}\|__MIS__/ | hi! link QmkKcAux LineNr
+  autocmd BufNew,BufReadPost *.c,*.h syn match QmkKcAux /_\{7}\|X\{7}\|__MIS__/ | hi! link QmkKcAux LineNr
   autocmd FileType gitcommit setlocal tw=72 fo+=t cc=50,+0
 augroup end
 
 augroup Terminal | autocmd!
-  autocmd TermOpen * startinsert
+  autocmd TermOpen,TermEnter * startinsert
   autocmd TermClose * if v:event.status == 0 | bdelete | endif
 augroup end
 
@@ -347,12 +288,10 @@ if has('persistent_undo') && Mkdir(g:temp.'undo')
   let &undodir = fnamemodify(g:backupdir, ':h:h').g:slash.'undo'
 endif
 
-let g:fzf_history_dir = fnamemodify(g:backupdir, ':h:h').g:slash.'fzf'.g:slash.'history'
-silent call Mkdir(g:fzf_history_dir)
-
 " }}}
 
 " Diff Settings {{{
+
 set diffopt=filler,internal,algorithm:histogram,indent-heuristic
 
 augroup DiffLayout | autocmd!

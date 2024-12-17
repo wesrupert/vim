@@ -1,3 +1,5 @@
+local util = require('util')
+
 local function is_in_start_tag()
   local ts_utils = require('nvim-treesitter.ts_utils')
   local node = ts_utils.get_node_at_cursor()
@@ -11,26 +13,70 @@ end
 return {
   {
     'zbirenbaum/copilot.lua',
-    enabled = vim.g.vscode ~= 1,
+    cond = util.not_vscode,
     cmd = 'Copilot',
     event = 'InsertEnter',
     opts = {
-      suggestion = {
-        hide_during_completion = false,
+      filetypes = {
+        lua = false,
+        vim = false,
+        sh = false,
+        json = false,
+        markdown = false,
       },
-      copilot_node_command = '/home/wes/.local/share/mise/installs/node/latest/bin/node',
+      suggestion = { enabled = false },
+      panel = { enabled = false },
+    },
+  },
+  {
+    {
+      'copilotc-nvim/copilotchat.nvim',
+      dependencies = { 'zbirenbaum/copilot.lua', 'nvim-lua/plenary.nvim' },
+      opts = {
+        -- See Configuration section for options
+      },
+      init = function ()
+        util.keymap('<a-c>', '[Copilot] Toggle chat', [[<cmd>CopilotChatToggle<cr>]])
+      end,
     },
   },
   {
     'zbirenbaum/copilot-cmp',
-    enabled = vim.g.vscode ~= 1,
+    cond = util.not_vscode,
     dependencies = { 'zbirenbaum/copilot.lua' },
     event = 'InsertEnter',
     opts = {},
   },
   {
+    'saghen/blink.cmp',
+    version = 'v0.*',
+    cond = util.not_vscode,
+    dependencies = { 'giuxtaposition/blink-cmp-copilot' },
+    lazy = false, -- lazy loading handled internally
+    opts = {
+      -- keymap = { preset = 'super-tab' },
+      keymap = { preset = 'enter' },
+      default = { 'lsp', 'path', 'snippets', 'buffer', 'copilot' },
+      providers = {
+        copilot = {
+          name = 'copilot',
+          module = 'blink-cmp-copilot',
+          score_offset = 100,
+          async = true,
+        },
+      },
+      appearance = {
+        use_nvim_cmp_as_default = true,
+        nerd_font_variant = 'normal'
+      },
+      signature = { enabled = true } -- experimental, maybe disable
+    },
+    -- opts_extend = { 'sources.default' }
+  },
+  {
     'hrsh7th/nvim-cmp',
-    enabled = vim.g.vscode ~= 1,
+    -- cond = util.not_vscode,
+    cond = false,
     dependencies = {
       'david-kunz/cmp-npm',
       'f3fora/cmp-spell',
@@ -57,10 +103,12 @@ return {
         local line, col = unpack(vim.api.nvim_win_get_cursor(0))
         return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match('%s') == nil
       end
+
       local border_opts = {
         border = 'single',
         winhighlight = 'Normal:Normal,FloatBorder:FloatBorder,CursorLine:Visual,Search:None',
       }
+
       return {
         enabled = function()
           if vim.api.nvim_get_option_value('buftype', { buf = 0 }) == 'prompt' then return false end
@@ -83,14 +131,21 @@ return {
         },
         formatting = {
           format = lspkind.cmp_format({
-            mode = "symbol_text",
-            menu = ({
-              buffer = "[Buffer]",
-              nvim_lsp = "[LSP]",
-              luasnip = "[LuaSnip]",
-              nvim_lua = "[Lua]",
-              latex_symbols = "[Latex]",
-            })
+            mode = 'text',
+            menu = {
+              buffer = '[Buffer]',
+              nvim_lsp = '[LSP]',
+              luasnip = '[LuaSnip]',
+              nvim_lua = '[Lua]',
+              latex_symbols = '[Latex]',
+              npm = '[NPM]',
+              omni = '[Omnifunc]',
+              treesitter = '[TS]',
+              rg = '[Grep]',
+              calc = '[Calc]',
+              path = '[Dir]',
+              spell = '[Spell]',
+            }
           }),
         },
         window = {
@@ -105,7 +160,11 @@ return {
           ['<cr>'] = cmp.mapping.confirm({ select = true }),
           ['<tab>'] = cmp.mapping(function(fallback)
             if cmp.visible() then
-              cmp.select_next_item()
+              if #cmp.get_entries() == 1 then
+                cmp.confirm({ select = true })
+              else
+                cmp.select_next_item()
+              end
             elseif luasnip.expand_or_locally_jumpable() then
               luasnip.expand_or_jump()
             elseif has_words_before() then
@@ -125,10 +184,11 @@ return {
           end, { 'i', 's' }),
         },
         sources = cmp.config.sources {
-          { name = 'copilot' },
-          { name = 'nvim_lsp_signature_help' },
+          { name = 'copilot', priority = 1000 },
+          { name = 'nvim_lsp_signature_help', priority = 999 },
           {
             name = 'nvim_lsp',
+            priority = 800,
             entry_filter = function(entry, ctx)
               if ctx.filetype == 'vue' then
                 -- Add prop/emit completion to vue components
@@ -153,14 +213,14 @@ return {
               return true
             end,
           },
-          { name = 'npm', keyword_length = 3 },
-          { name = 'omni' },
-          { name = 'treesitter' },
-          { name = 'rg' },
-          { name = 'buffer' },
-          { name = 'path' },
-          { name = 'calc' },
-          { name = 'spell' },
+          { name = 'npm', priority = 400, keyword_length = 3 },
+          { name = 'omni', priority = 400 },
+          { name = 'treesitter', priority = 400 },
+          { name = 'rg', priority = 400, keyword_length = 3 },
+          { name = 'calc', priority = 400 },
+          { name = 'path', priority = 400, keyword_length = 3 },
+          { name = 'buffer', priority = 250, keyword_length = 3 },
+          { name = 'spell', priority = 200, keyword_length = 3 },
         },
       }
     end,

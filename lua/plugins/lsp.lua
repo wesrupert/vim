@@ -1,125 +1,103 @@
-local notvscode = vim.g.vscode ~= 1
-
--- TODO: Fix incompatibility with breadcrumb
-function WinHasPopups(winnr)
-  local tabnr = winnr and vim.api.nvim_win_get_tabpage(winnr) or 0
-  for _, winid in pairs(vim.api.nvim_tabpage_list_wins(tabnr)) do
-    if vim.api.nvim_win_get_config(winid).zindex then
-      return true
-    end
-  end
-  return false
-end
-
-function WinClosePopups(winnr)
-  local tabnr = winnr and vim.api.nvim_win_get_tabpage(winnr) or 0
-  for _, winid in pairs(vim.api.nvim_tabpage_list_wins(tabnr)) do
-    local config = vim.api.nvim_win_get_config(winid)
-    if (config.relative ~= '' and config.win == winnr) then
-      vim.api.nvim_win_close(winid, false)
-    end
-  end
-  return false
-end
-
-function CodeActionMakeParams(kind)
-  local params = vim.lsp.util.make_range_params()
-  params.context = {}
-  params.context.diagnostics = vim.lsp.diagnostic.get_line_diagnostics()
-  params.context.triggerKind = vim.lsp.protocol.CodeActionTriggerKind.Invoked
-  if kind then params.context.only = { kind } end
-  return params
-end
-
-function CodeActionGetAvailable()
-  local buf = vim.api.nvim_get_current_buf()
-  local params = CodeActionMakeParams()
-  print(params)
-  local response = vim.lsp.buf_request_sync(buf, 'textDocument/codeAction', params, 3000)
-  local code_actions = {}
-  local code_actions_hash = {}
-  for _, client_response in pairs(response or {}) do
-    for _, action in pairs(client_response.result or {}) do
-      local kind = action.command and ':' .. action.command or action.kind
-      if kind and not code_actions_hash[kind] then
-        code_actions_hash[kind] = true
-        table.insert(code_actions, kind)
-      end
-    end
-  end
-  return code_actions
-end
-
-function CodeActionExecute(cmdargs, silent)
-  local action_name = cmdargs and cmdargs.args or cmdargs
-  if not (action_name) then
-    vim.notify('No code action specified', vim.log.levels.ERROR)
-    return
-  end
-  local buf = vim.api.nvim_get_current_buf()
-
-  local is_command = string.sub(action_name, 1, 1) == ':'
-  if is_command then action_name = string.sub(action_name, 2) end
-
-  local params = CodeActionMakeParams((not is_command) and action_name or nil)
-  print(params)
-  local response = vim.lsp.buf_request_sync(buf, 'textDocument/codeAction', params, 3000)
-
-  -- Find appropriate code action, and ensure there are not multiple commands that may be ambiguous
-  local code_action
-  for _, client_response in pairs(response or {}) do
-    for _, action in pairs(client_response.result or {}) do
-      if is_command then
-        if action.command == action_name then
-          if code_action then
-            vim.notify('Multiple code actions found, please specify one', vim.log.levels.WARN)
-            return
-          end
-          code_action = action
-        end
-      elseif action.edit then
-        if code_action then
-          vim.notify('Multiple code actions found, please specify one', vim.log.levels.WARN)
-          return
-        end
-        code_action = action.edit
-      end
-    end
-  end
-
-  if not code_action then
-    vim.notify('No code action ' .. (is_command and 'command' or 'edit') .. ' found that matches "' .. action_name .. '"', vim.log.levels.ERROR)
-    return
-  end
-
-  if is_command then
-    vim.lsp.buf_request(buf, 'workspace/executeCommand', code_action)
-  else
-    vim.lsp.util.apply_workspace_edit(code_action, vim.bo[buf].fileencoding)
-  end
-
-  if not silent then vim.notify('Applied "' .. action_name .. '" code action', vim.log.levels.INFO) end
-end
+local util = require('util')
+local user_lsp_config_group = vim.api.nvim_create_augroup('UserLspConfig', { clear = true })
 
 return {
-  { 'neovim/nvim-lspconfig' },
+  {
+    'neovim/nvim-lspconfig',
+    dependencies = { 'saghen/blink.cmp' },
+    config = function(_, opts)
+      local blink = require('blink.cmp')
+      local lspconfig = require('lspconfig')
+      for server, config in pairs(opts.servers) do
+        config.capabilities = blink.get_lsp_capabilities(config.capabilities)
+        lspconfig[server].setup(config)
+      end
+    end,
+  },
+  {
+    'nvimdev/lspsaga.nvim',
+    cond = util.not_vscode,
+    dependencies = { 'neovim/nvim-lspconfig' },
+    opts = {
+      diagnostic = {
+        auto_preview = true,
+        diagnostic_only_current = true,
+      },
+      code_action = {
+        show_server_name = true,
+      },
+      lightbulb = {
+        sign = false,
+      },
+      scroll_preview = {
+        scroll_down = '<c-j>',
+        scroll_up = '<c-k>',
+      },
+      symbol_in_winbar = {
+        show_file = false,
+      },
+      outline = {
+        auto_close = false,
+        keys = {
+          jump = '<cr>',
+          toggle_or_jump = '<space>',
+          quit = 'q',
+        },
+      },
+    },
+    init = function ()
+      local lspsaga_command = require('lspsaga.command')
+      local lspsaga_call = function (cmd, args) return function () lspsaga_command.load_command(cmd, { args }) end end
+
+      vim.diagnostic.config({ virtual_text = false })
+
+      vim.api.nvim_create_autocmd('LspAttach', {
+        group = user_lsp_config_group,
+        callback = function(ev)
+          util.keymap('gD',         '[LSP+] Peek definition',       lspsaga_call('peek_definition'),           nil, ev.buf)
+          util.keymap('[d',         '[LSP+] Previous issue',        lspsaga_call('diagnostic_jump_prev'),      nil, ev.buf)
+          util.keymap(']d',         '[LSP+] Next issue',            lspsaga_call('diagnostic_jump_next'),      nil, ev.buf)
+          util.keymap('K',          '[LSP+] Hover information',     lspsaga_call('hover_doc'),                 nil, ev.buf)
+          util.keymap('<leader>gd', '[LSP+] Find references',       lspsaga_call('finder', 'tyd+ref+def+imp'), nil, ev.buf)
+          util.keymap('<leader>de', '[LSP+] Diagnostics at cursor', lspsaga_call('show_cursor_diagnostics'),   nil, ev.buf)
+          util.keymap('<leader>do', '[LSP+] Toggle outline',        lspsaga_call('outline'),                   nil, ev.buf)
+          util.keymap('<c-`>',      '[LSP+] Toggle terminal',       lspsaga_call('term_toggle'),               nil, ev.buf)
+          util.keymap('<leader>da', '[LSP+] Show code actions',     lspsaga_call('code_action'),               { 'n', 'v' }, ev.buf)
+        end,
+      })
+
+      -- Add to term mapping outside of LspAttach, since it is a separate buffer
+      util.keymap('<c-`>', '[LSP+] Toggle terminal', lspsaga_call('term_toggle'), { 't' })
+
+      vim.api.nvim_create_autocmd('LspAttach', {
+        group = user_lsp_config_group,
+        callback = function(ev)
+          local client = vim.lsp.get_client_by_id(ev.data.client_id)
+          if client.name == 'null-ls' then
+            util.keymap('zg', '[CSpell] Add to user dictionary', lspsaga_call('code_action'))
+            util.keymap('zG', '[CSpell] Add to local dictionary', lspsaga_call('code_action'))
+          end
+        end,
+      })
+    end,
+  },
   {
     'williamboman/mason.nvim',
-    enabled = notvscode,
+    cond = util.not_vscode,
     dependencies = { 'neovim/nvim-lspconfig' },
     build = ':MasonUpdate',
     opts = {},
   },
   {
     'williamboman/mason-lspconfig.nvim',
-    enabled = notvscode,
+    cond = util.not_vscode,
     dependencies = { 'williamboman/mason.nvim', 'pmizio/typescript-tools.nvim' },
     opts = {
       handlers = {
         eslint = function(server_name)
           require('lspconfig')[server_name].setup({})
         end,
-        typos_lsp = function (server_name)
+        typos_lsp = function(server_name)
           require('lspconfig')[server_name].setup({
             init_options = {
               diagnosticSeverity = "Info",
@@ -184,36 +162,22 @@ return {
       require('mason-lspconfig').setup(opts)
     end,
     init = function()
-      local user_lsp_config_group = vim.api.nvim_create_augroup('UserLspConfig', { clear = true })
+      util.keymap('<leader>dh', '[LSP] Toggle inlay hints', function ()
+        vim.b.inlay_hint_enabled = not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 })
+        vim.lsp.inlay_hint.enable(vim.b.inlay_hint_enabled, { bufnr = 0 })
+        print('[LSP] Inlay hints ' .. (vim.b.inlay_hint_enabled and 'enabled' or 'disabled'))
+      end)
 
       vim.api.nvim_create_autocmd('LspAttach', {
         group = user_lsp_config_group,
         callback = function(ev)
-          vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = '[LSP] Previous issue' })
-          vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = '[LSP] Next issue' })
-          vim.keymap.set('n', 'K', vim.lsp.buf.hover, { buffer = ev.buf, desc = '[LSP] Hover information' })
-          vim.keymap.set('n', '<leader>de', vim.diagnostic.open_float, { desc = '[LSP] Issue details' })
-          vim.keymap.set('n', '<leader>dq', vim.diagnostic.setloclist, { desc = '[LSP] Open issues' })
-
-          vim.keymap.set({ 'n', 'v' }, '<leader>da', vim.lsp.buf.code_action, { buffer = ev.buf, desc = '[LSP] Show code actions' })
-          vim.keymap.set('n', '<leader>df', function() vim.lsp.buf.format { async = true } end, { buffer = ev.buf, desc = '[LSP] Format current line' })
-          vim.keymap.set('n', '<leader>dh', function()
-            local should_enable = not vim.lsp.inlay_hint.is_enabled({ bufnr = ev.buf })
-            vim.lsp.inlay_hint.enable(should_enable, { bufnr = ev.buf })
-            print('[LSP] Inlay hints ' .. (should_enable and 'enabled' or 'disabled'))
-          end, { buffer = ev.buf, desc = '[LSP] Toggle inlay hints' })
-
-          vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { buffer = ev.buf, desc = '[LSP] Go to definition' })
-          vim.keymap.set('n', '<leader>dD', vim.lsp.buf.declaration, { buffer = ev.buf, desc = '[LSP] Go to declaration' })
-          vim.keymap.set('n', '<leader>di', vim.lsp.buf.implementation, { buffer = ev.buf, desc = '[LSP] Go to implementation' })
-          vim.keymap.set('n', '<leader>dr', vim.lsp.buf.references, { buffer = ev.buf, desc = '[LSP] Go to references' })
-          vim.keymap.set('n', '<leader>dt', vim.lsp.buf.type_definition, { buffer = ev.buf, desc = '[LSP] Go to type' })
-          vim.keymap.set('n', '<leader>dk', vim.lsp.buf.signature_help, { buffer = ev.buf, desc = '[LSP] Show signature_help' })
-
-          vim.keymap.set('n', '<leader>wl', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, { buffer = ev.buf, desc = '[LSP] Workspace info' })
-          vim.keymap.set('n', '<leader>wa', vim.lsp.buf.add_workspace_folder, { buffer = ev.buf, desc = '[LSP] Add folder to workspace' })
-          vim.keymap.set('n', '<leader>wx', vim.lsp.buf.remove_workspace_folder, { buffer = ev.buf, desc = '[LSP] Remove folder from workspace' })
-          vim.keymap.set('n', '<leader>wr', vim.lsp.buf.rename, { buffer = ev.buf, desc = '[LSP] Rename workspace' })
+          util.keymap('gd', '[LSP] Go to definition', vim.lsp.buf.definition, nil, ev.buf)
+          util.keymap('<leader>wl', '[LSP] Workspace info',
+            function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, nil, ev.buf)
+          util.keymap('<leader>wa', '[LSP] Add folder to workspace', vim.lsp.buf.add_workspace_folder, nil, ev.buf)
+          util.keymap('<leader>wx', '[LSP] Remove folder from workspace', vim.lsp.buf.remove_workspace_folder, nil,
+            ev.buf)
+          util.keymap('<leader>wr', '[LSP] Rename workspace', vim.lsp.buf.rename, nil, ev.buf)
         end,
       })
 
@@ -233,78 +197,49 @@ return {
         end,
       })
 
-      -- Code action quick command
+      -- Automatic inlay hints
+      -- Enable inlay hints for the given client/buffer, unless an inlay_hint_enabled env variable is false.
+      -- TODO: Figure out why the hell some servers don't automatically reload hints on workspace load
       vim.api.nvim_create_autocmd('LspAttach', {
         group = user_lsp_config_group,
-        callback = function(ev)
+        callback = function (ev)
+          if not util.get_setting('inlay_hint_enabled', true, ev.buf) then return end
+          if vim.lsp.inlay_hint.is_enabled({ bufnr = ev.buf }) then return end
           local client = vim.lsp.get_client_by_id(ev.data.client_id)
-          if client.supports_method('textDocument/codeAction') then
-            -- Add CodeAction command if it hasn't been added by another LSP.
-            if not vim.api.nvim_buf_get_commands(ev.buf, {}).CodeAction then
-              vim.api.nvim_buf_create_user_command(ev.buf, 'CodeAction', CodeActionExecute, {
-                desc = 'Execute code action by name',
-                nargs = 1,
-                complete = CodeActionGetAvailable,
-              })
-            end
-          end
+          if not client.supports_method('textDocument/inlayHint') and not client.server_capabilities.inlayHintProvider then return end
+          vim.b[ev.buf].inlay_hint_enabled = true
+          vim.lsp.inlay_hint.enable(true, { bufnr = ev.buf })
         end,
       })
-
-      -- -- Automatic inlay hints
-      -- vim.api.nvim_create_autocmd('LspAttach', {
-      --   group = user_lsp_config_group,
-      --   callback = function(ev)
-      --     local client = vim.lsp.get_client_by_id(ev.data.client_id)
-      --     if client.supports_method('textDocument/hover') then
-      --       vim.lsp.inlay_hint.enable(true, { bufnr = ev.buf })
-      --     end
-      --   end,
-      -- })
-
-      -- -- Hover information on cursor hold
-      -- local user_lsp_hover_group = vim.api.nvim_create_augroup('UserLspHover', { clear = true })
-      -- vim.api.nvim_create_autocmd('LspAttach', {
-      --   group = user_lsp_config_group,
-      --   callback = function(ev)
-      --     local client = vim.lsp.get_client_by_id(ev.data.client_id)
-      --     if client.supports_method('textDocument/hover') then
-      --       vim.api.nvim_create_autocmd('CursorHold', {
-      --         desc = '[LSP] Hover information',
-      --         buffer = ev.buf,
-      --         group = user_lsp_hover_group,
-      --         callback = function ()
-      --           local winnr = vim.api.nvim_get_current_win()
-      --           local cur_pos = vim.api.nvim_win_get_cursor(winnr)
-      --           local last_pos = vim.w[winnr]._lsp_auto_hover_last_pos
-      --           if (last_pos ~= nil and cur_pos[1] == last_pos[1] and cur_pos[2] == last_pos[2]) then return end
-      --           -- if (WinHasPopups(winnr)) then return end
-      --           vim.w[winnr]._lsp_auto_hover_last_pos = cur_pos
-      --           pcall(vim.lsp.buf.hover)
-      --         end,
-      --       })
-      --       vim.api.nvim_create_autocmd('CursorMoved', {
-      --         desc = '[LSP] Hover information clear anchor',
-      --         buffer = ev.buf,
-      --         group = user_lsp_hover_group,
-      --         callback = function ()
-      --           local winnr = vim.api.nvim_get_current_win()
-      --           vim.w[winnr]._lsp_auto_hover_last_pos = nil
-      --         end,
-      --       })
-      --       vim.keymap.set('n', '<esc>', function ()
-      --         local winnr = vim.api.nvim_get_current_win()
-      --         WinClosePopups(winnr)
-      --       end, { buffer = ev.buf, desc = '[LSP] Dismiss hover' })
-      --     end
-      --   end,
-      -- })
+    end,
+  },
+  {
+    'nvimtools/none-ls.nvim',
+    dependencies = {
+      'mason.nvim',
+      'nvimtools/none-ls-extras.nvim',
+      'davidmh/cspell.nvim',
+    },
+    opts = {
+      config_file_preferred_name = 'cspell.json',
+      cspell_config_dirs = { '~/.config/' },
+    },
+    config = function (_, opts)
+      local none_ls = require('null-ls')
+      local cspell = require('cspell')
+      none_ls.setup({
+        sources = {
+          cspell.diagnostics.with({ config = opts }),
+          cspell.code_actions.with({ config = opts }),
+        },
+      })
     end,
   },
   {
     'pmizio/typescript-tools.nvim',
     dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig', 'williamboman/mason.nvim' },
     config = function()
+      local api = require('typescript-tools.api')
       local registry = require('mason-registry')
       local root = registry.get_package('vue-language-server'):get_install_path()
       require('typescript-tools').setup({
@@ -314,6 +249,7 @@ return {
           tsserver_plugins = {
             '@vue/typescript-plugin',
           },
+          expose_as_code_action = 'all',
           tsserver_max_memory = 8096,
           tsserver_file_preferences = {
             importModuleSpecifierPreference = 'non-relative',
@@ -327,20 +263,12 @@ return {
             includeInlayEnumMemberValueHints = true,
           },
         },
+        handlers = {
+          ['textDocument/publishDiagnostics'] = api.filter_diagnostics({
+            7016, -- TS7016: 'Could not find a declaration file for module'
+          }),
+        },
       })
-    end,
-  },
-  {
-    'rmagatti/goto-preview',
-    event = 'BufEnter',
-    opts = {
-      default_mappings = true,
-      post_open_hook = function ()
-        vim.keymap.set('n', 'q', ':q<cr>', { noremap = true, buffer = true, desc = 'Quick exit' })
-      end,
-    },
-    config = function(_, opts)
-      require('goto-preview').setup(opts)
     end,
   },
   {
@@ -351,7 +279,7 @@ return {
     },
     opts = { lsp = { auto_attach = true } },
     init = function()
-      vim.keymap.set('n', '<leader>n', function() require('nvim-navbuddy').open() end, { desc = 'Open navbuddy' })
+      vim.keymap.set('n', '<c-n>', function() require('nvim-navbuddy').open() end, { desc = 'Open navbuddy' })
     end,
   },
 }
