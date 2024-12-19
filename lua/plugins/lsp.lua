@@ -4,164 +4,75 @@ local user_lsp_config_group = vim.api.nvim_create_augroup('UserLspConfig', { cle
 return {
   {
     'neovim/nvim-lspconfig',
-    dependencies = { 'saghen/blink.cmp' },
-    config = function(_, opts)
-      local blink = require('blink.cmp')
-      local lspconfig = require('lspconfig')
-      for server, config in pairs(opts.servers) do
-        config.capabilities = blink.get_lsp_capabilities(config.capabilities)
-        lspconfig[server].setup(config)
-      end
-    end,
-  },
-  {
-    'nvimdev/lspsaga.nvim',
-    cond = util.not_vscode,
-    dependencies = { 'neovim/nvim-lspconfig' },
     opts = {
-      diagnostic = {
-        auto_preview = true,
-        diagnostic_only_current = true,
+      inlay_hints = {
+        max_length = 32,
       },
-      code_action = {
-        show_server_name = true,
-      },
-      lightbulb = {
-        sign = false,
-      },
-      scroll_preview = {
-        scroll_down = '<c-j>',
-        scroll_up = '<c-k>',
-      },
-      symbol_in_winbar = {
-        show_file = false,
-      },
-      outline = {
-        auto_close = false,
-        keys = {
-          jump = '<cr>',
-          toggle_or_jump = '<space>',
-          quit = 'q',
+      servers = {
+        eslint = {},
+        lua_ls = {
+          settings = {
+            Lua = { diagnostics = { globals = { 'vim' } } },
+          },
+        },
+        vimls = {
+          settings = {
+            Lua = { diagnostics = { globals = { 'vim' } } },
+          },
+        },
+        volar = {
+          init_options = {
+            vue = {
+              server = { maxOldSpaceSize = 8096 },
+              complete = {
+                casing = { status = false },
+              },
+              inlayHints = {
+                destructuredProps = true,
+                inlineHandlerLeading = true,
+                missingProps = true,
+                optionsWrapper = true,
+                vBindShorthand = true,
+              },
+              updateImportsOnFileMove = { enabled = true },
+            },
+          },
         },
       },
     },
-    init = function ()
-      local lspsaga_command = require('lspsaga.command')
-      local lspsaga_call = function (cmd, args) return function () lspsaga_command.load_command(cmd, { args }) end end
-
-      vim.diagnostic.config({ virtual_text = false })
-
-      vim.api.nvim_create_autocmd('LspAttach', {
-        group = user_lsp_config_group,
-        callback = function(ev)
-          util.keymap('gD',         '[LSP+] Peek definition',       lspsaga_call('peek_definition'),           nil, ev.buf)
-          util.keymap('[d',         '[LSP+] Previous issue',        lspsaga_call('diagnostic_jump_prev'),      nil, ev.buf)
-          util.keymap(']d',         '[LSP+] Next issue',            lspsaga_call('diagnostic_jump_next'),      nil, ev.buf)
-          util.keymap('K',          '[LSP+] Hover information',     lspsaga_call('hover_doc'),                 nil, ev.buf)
-          util.keymap('<leader>gd', '[LSP+] Find references',       lspsaga_call('finder', 'tyd+ref+def+imp'), nil, ev.buf)
-          util.keymap('<leader>de', '[LSP+] Diagnostics at cursor', lspsaga_call('show_cursor_diagnostics'),   nil, ev.buf)
-          util.keymap('<leader>do', '[LSP+] Toggle outline',        lspsaga_call('outline'),                   nil, ev.buf)
-          util.keymap('<c-`>',      '[LSP+] Toggle terminal',       lspsaga_call('term_toggle'),               nil, ev.buf)
-          util.keymap('<leader>da', '[LSP+] Show code actions',     lspsaga_call('code_action'),               { 'n', 'v' }, ev.buf)
-        end,
-      })
-
-      -- Add to term mapping outside of LspAttach, since it is a separate buffer
-      util.keymap('<c-`>', '[LSP+] Toggle terminal', lspsaga_call('term_toggle'), { 't' })
-
-      vim.api.nvim_create_autocmd('LspAttach', {
-        group = user_lsp_config_group,
-        callback = function(ev)
-          local client = vim.lsp.get_client_by_id(ev.data.client_id)
-          if client.name == 'null-ls' then
-            util.keymap('zg', '[CSpell] Add to user dictionary', lspsaga_call('code_action'))
-            util.keymap('zG', '[CSpell] Add to local dictionary', lspsaga_call('code_action'))
+    config = function (_, opts)
+      if opts.inlay_hints and opts.inlay_hints.max_length then
+        -- HACK: Workaround for truncating long LSP (ahem, *TypeScript*) inlay hints.
+        -- TODO: Remove this if https://github.com/neovim/neovim/issues/27240 gets addressed.
+        -- @see https://github.com/MariaSolOs/dotfiles/blob/88646ab9/.config/nvim/lua/lsp.lua#L275-L292
+        local max_length = opts.inlay_hints.max_length
+        local overflow_char = opts.inlay_hints.overflow_char or '… '
+        local overflow_length =  overflow_char:len()
+        local inlay_hint_protocol = vim.lsp.protocol.Methods.textDocument_inlayHint
+        local inlay_hint_handler = vim.lsp.handlers[inlay_hint_protocol]
+        vim.lsp.handlers[inlay_hint_protocol] = function (err, result, ctx, config)
+          if vim.islist(result) then
+            result = vim.iter(result)
+              :map(function (hint)
+                if hint.label:len() > max_length then
+                  hint.label = hint.label:sub(1, max_length - overflow_length) .. overflow_char
+                end
+                return hint
+              end)
+              :totable()
           end
-        end,
-      })
+          inlay_hint_handler(err, result, ctx, config)
+        end
+      end
+
+      local lspconfig = require('lspconfig')
+      local blink_ok, blink = pcall(require, 'blink.cmp')
+      for server, config in pairs(opts.servers) do
+        if blink_ok then config.capabilities = blink.get_lsp_capabilities(config.capabilities) end
+        lspconfig[server].setup(config)
+      end
     end,
-  },
-  {
-    'williamboman/mason.nvim',
-    cond = util.not_vscode,
-    dependencies = { 'neovim/nvim-lspconfig' },
-    build = ':MasonUpdate',
-    opts = {},
-  },
-  {
-    'williamboman/mason-lspconfig.nvim',
-    cond = util.not_vscode,
-    dependencies = { 'williamboman/mason.nvim', 'pmizio/typescript-tools.nvim' },
-    opts = {
-      handlers = {
-        eslint = function(server_name)
-          require('lspconfig')[server_name].setup({})
-        end,
-        typos_lsp = function(server_name)
-          require('lspconfig')[server_name].setup({
-            init_options = {
-              diagnosticSeverity = "Info",
-            },
-          })
-        end,
-        lua_ls = function(server_name)
-          require('lspconfig')[server_name].setup({
-            settings = {
-              Lua = {
-                diagnostics = {
-                  globals = {
-                    'vim',
-                  },
-                },
-              },
-            },
-          })
-        end,
-        vimls = function(server_name)
-          require('lspconfig')[server_name].setup({
-            settings = {
-              Lua = {
-                diagnostics = {
-                  globals = {
-                    'vim',
-                  },
-                },
-              },
-            },
-          })
-        end,
-        volar = function(server_name)
-          require('lspconfig')[server_name].setup({
-            init_options = {
-              vue = {
-                complete = {
-                  casing = {
-                    status = false,
-                  },
-                },
-                inlayHints = {
-                  destructuredProps = true,
-                  inlineHandlerLeading = true,
-                  missingProps = true,
-                  optionsWrapper = true,
-                  vBindShorthand = true,
-                },
-                updateImportsOnFileMove = {
-                  enabled = true,
-                },
-                server = {
-                  maxOldSpaceSize = 8096,
-                },
-              },
-            },
-          })
-        end,
-      },
-    },
-    config = function(_, opts)
-      require('mason-lspconfig').setup(opts)
-    end,
-    init = function()
+    init = function ()
       util.keymap('<leader>dh', '[LSP] Toggle inlay hints', function ()
         vim.b.inlay_hint_enabled = not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 })
         vim.lsp.inlay_hint.enable(vim.b.inlay_hint_enabled, { bufnr = 0 })
@@ -270,6 +181,114 @@ return {
         },
       })
     end,
+  },
+  {
+    'folke/lazydev.nvim',
+    ft = 'lua',
+    config = true,
+  },
+  {
+    'wesrupert/lspsaga.nvim',
+    branch = 'fix/codeaction/home',
+    cond = util.not_vscode,
+    dependencies = { 'neovim/nvim-lspconfig' },
+    opts = {
+      diagnostic = {
+        auto_preview = true,
+        diagnostic_only_current = false,
+      },
+      code_action = {
+        show_server_name = true,
+      },
+      lightbulb = {
+        sign = false,
+      },
+      scroll_preview = {
+        scroll_down = '<c-j>',
+        scroll_up = '<c-k>',
+      },
+      symbol_in_winbar = {
+        show_file = false,
+      },
+      outline = {
+        auto_close = false,
+        keys = {
+          jump = '<cr>',
+          toggle_or_jump = '<space>',
+          quit = 'q',
+        },
+      },
+    },
+    init = function ()
+      local lspsaga_command = require('lspsaga.command')
+      local lspsaga_call = function (cmd, args) return function () lspsaga_command.load_command(cmd, { args }) end end
+
+      vim.api.nvim_create_autocmd('LspAttach', {
+        group = user_lsp_config_group,
+        callback = function(ev)
+          util.keymap('gD',         '[LSP+] Peek definition',       lspsaga_call('peek_definition'),           nil, ev.buf)
+          util.keymap('[d',         '[LSP+] Previous issue',        lspsaga_call('diagnostic_jump_prev'),      nil, ev.buf)
+          util.keymap(']d',         '[LSP+] Next issue',            lspsaga_call('diagnostic_jump_next'),      nil, ev.buf)
+          util.keymap('K',          '[LSP+] Hover information',     lspsaga_call('hover_doc'),                 nil, ev.buf)
+          util.keymap('<leader>gd', '[LSP+] Find references',       lspsaga_call('finder', 'tyd+ref+def+imp'), nil, ev.buf)
+          util.keymap('<leader>de', '[LSP+] Diagnostics at cursor', lspsaga_call('show_cursor_diagnostics'),   nil, ev.buf)
+          util.keymap('<leader>do', '[LSP+] Toggle outline',        lspsaga_call('outline'),                   nil, ev.buf)
+          util.keymap('<c-`>',      '[LSP+] Toggle terminal',       lspsaga_call('term_toggle'),               nil, ev.buf)
+          util.keymap('<leader>da', '[LSP+] Show code actions',     lspsaga_call('code_action'),               { 'n', 'v' }, ev.buf)
+        end,
+      })
+
+      -- Add to term mapping outside of LspAttach, since it is a separate buffer
+      util.keymap('<c-`>', '[LSP+] Toggle terminal', lspsaga_call('term_toggle'), { 't' })
+
+      vim.api.nvim_create_autocmd('LspAttach', {
+        group = user_lsp_config_group,
+        callback = function(ev)
+          local client = vim.lsp.get_client_by_id(ev.data.client_id)
+          if client.name == 'null-ls' then
+            util.keymap('zg', '[CSpell] Add to user dictionary', lspsaga_call('code_action'))
+            util.keymap('zG', '[CSpell] Add to local dictionary', lspsaga_call('code_action'))
+          end
+        end,
+      })
+    end
+  },
+  {
+    'williamboman/mason.nvim',
+    cond = util.not_vscode,
+    dependencies = { 'neovim/nvim-lspconfig' },
+    build = ':MasonUpdate',
+    config = true,
+  },
+  {
+    'williamboman/mason-lspconfig.nvim',
+    cond = util.not_vscode,
+    dependencies = { 'williamboman/mason.nvim', 'pmizio/typescript-tools.nvim', 'saghen/blink.cmp' },
+    config = true,
+  },
+  {
+    'rachartier/tiny-inline-diagnostic.nvim',
+    event = 'LspAttach',
+    priority = 1000,
+    opts = {
+      preset = 'powerline',
+      options = {
+        multiple_diag_under_cursor = true,
+        format = function (diagnostic)
+          return ' ' .. diagnostic.message .. ' │ ' .. diagnostic.source
+        end
+      },
+    },
+    config = true,
+    init = function ()
+      vim.diagnostic.config({ virtual_text = false })
+    end,
+  },
+  {
+    'catgoose/vue-goto-definition.nvim',
+    event = 'BufReadPre',
+    ft = { 'vue', 'typescript' },
+    config = true,
   },
   {
     'smiteshp/nvim-navbuddy',

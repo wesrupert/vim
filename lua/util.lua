@@ -4,11 +4,14 @@ local util = {}
 util.not_vscode = vim.g.vscode ~= 1
 
 ---Handle a value that may be a function, or return the value itself alongside its truthy state.
----@param maybe_func any
----@param ... unknown
+---@generic T
+---@generic A
+---@generic R
+---@param maybe_func T|(fun(...: A): T, ...: R)
+---@param ... A
 ---@return boolean success
----@return any result
----@return any ...
+---@return T result
+---@return R ...
 ---@see pcall
 function util.maybe_pcall(maybe_func, ...)
   if type(maybe_func) == 'function' then return pcall(maybe_func, ...) end

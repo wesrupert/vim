@@ -1,6 +1,13 @@
 local util = require('util')
 local user_mini_config = vim.api.nvim_create_augroup('UserMiniConfig', { clear = true })
 
+---@class MiniConfig
+---@field cond boolean|(fun(): boolean)|nil
+---@field opts table|(fun(): table)|nil
+---@field config (fun(opts: table))|nil
+---@field init (fun(opts: table))|nil
+
+---@type { [string]: boolean|MiniConfig }
 local plugins = {
   -- Load these first, as other minis have dependencies on it.
   extra = true,
@@ -13,11 +20,16 @@ local plugins = {
     end,
   },
 
+  -- Default configs
+
   align = true,
   files = util.not_vscode,
-  pairs = util.not_vscode,
-  splitjoin = true,
+  jump = true,
+  jump2d = true,
+  move = true,
   trailspace = true,
+
+  -- Custom configs
 
   ai = {
     opts = function ()
@@ -87,6 +99,16 @@ local plugins = {
         end,
       })
     end,
+  },
+
+  operators = {
+    opts = {
+      evaluate = { prefix = 'g=' },
+      exchange = { prefix = 'g<tab>' },
+      multiply = { prefix = 'g+' },
+      replace  = { prefix = 'gr' },
+      sort     = { prefix = 'gos' },
+    },
   },
 
   pick = {
@@ -219,6 +241,24 @@ local plugins = {
         mini_sessions.write(vim.g.mini_sessions_current or vim.fn.input('Session Name: '))
       end)
       util.keymap('<leader>sW', '[MiniSession] Write',  function () mini_sessions.write(vim.fn.input('Session Name: ')) end)
+    end,
+  },
+
+  splitjoin = {
+    config = function ()
+      local splitjoin = require('mini.splitjoin')
+      local hook_opts = { brackets = { '%b{}' } }
+      splitjoin.setup({
+        split = {
+          hooks_post = { splitjoin.gen_hook.add_trailing_separator(hook_opts) },
+        },
+        join = {
+          hooks_post= {
+            splitjoin.gen_hook.del_trailing_separator(hook_opts),
+            splitjoin.gen_hook.pad_brackets(hook_opts),
+          },
+        },
+      })
     end,
   },
 

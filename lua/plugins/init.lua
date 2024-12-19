@@ -66,24 +66,82 @@ return {
   },
 
   -- Meta plugins
+  { 'tpope/vim-repeat' },
   { 'equalsraf/neovim-gui-shim' },
   { 'nvim-lua/plenary.nvim' },
+  { 'airblade/vim-rooter' },
+  { 'nvim-tree/nvim-web-devicons' },
   { 'folke/lsp-colors.nvim', cond = util.not_vscode },
-  { 'tpope/vim-repeat' },
   {
-    'folke/snacks.nvim',
+    'nvim-focus/focus.nvim',
+    cond = util.not_vscode,
+    opts = {
+      autoresize = {
+        minheight = 10,
+        minwidth = 40,
+      },
+    },
+    init = function ()
+      -- Disable auto-resize in windows that aren't "editor" windows.
+      local user_focus_group = vim.api.nvim_create_augroup('UserFocusConfig', { clear = true })
+      local ignore_buftypes = { 'nofile', 'nowrite', 'prompt', 'popup' }
+      local ignore_filetypes = { 'TelescopePrompt', 'toggleterm', 'trouble', 'undotree', 'qf' }
+      vim.api.nvim_create_autocmd({ 'WinNew', 'WinEnter' }, {
+        desc = '[Focus] Disable auto-resize on configured buftypes',
+        group = user_focus_group,
+        callback = function () vim.w.focus_disable = (not vim.bo.buftype) or vim.tbl_contains(ignore_buftypes, vim.bo.buftype) end,
+      })
+      vim.api.nvim_create_autocmd({ 'BufNew', 'BufReadPre' }, {
+        desc = '[Focus] Disable auto-resize on configured buftypes',
+        group = user_focus_group,
+        callback = function (ev) vim.b[ev.buf].focus_disable = vim.tbl_contains(ignore_buftypes, vim.bo[ev.buf].buftype) end,
+      })
+      vim.api.nvim_create_autocmd('FileType', {
+        desc = '[Focus] Disable auto-resize on configured filetypes',
+        group = user_focus_group,
+        callback = function (ev) vim.b[ev.buf].focus_disable = vim.tbl_contains(ignore_filetypes, vim.bo[ev.buf].buftype) end,
+      })
+
+      util.keymap('<leader>rr', '[Focus] Toggle maximized', [[<cmd>FocusMaxOrEqual<cr>]])
+      util.keymap('<leader>rx', '[Focus] Pin window', function ()
+        if vim.w.focus_disable ~= true then
+          vim.w.focus_disable = true
+          vim.notify('[Focus] Pinned window')
+        else
+          vim.w.focus_disable = false
+          vim.notify('[Focus] Unpinned window')
+        end
+      end)
+      util.keymap(']r', '[Focus] Enable auto-resize', function ()
+          vim.g.focus_disable = false
+          vim.notify('[Focus] Auto-resize enabled')
+      end)
+      util.keymap('[r', '[Focus] Disable auto-resize', function ()
+          vim.g.focus_disable = true
+          vim.notify('[Focus] Auto-resize disabled')
+      end)
+    end,
+  },
+  {
+    'wesrupert/snacks.nvim',
+    branch = 'feat/notifier/skip',
     cond = util.not_vscode,
     priority = 1000,
     lazy = false,
     opts = {
+      bufdelete = { enabled = true },
       git = { enabled = true },
       gitbrowse = { enabled = true },
-      lazygit = { enabled = true },
       statuscolumn = { enabled = true },
       notifier = {
         enabled = true,
         style = 'fancy',
-        skip = function (msg) return msg.msg == 'No information available' end,
+        skip = function (msg)
+          if msg.msg == 'No information available' then return true end
+          if msg.msg:match([[^Error in decoration provider]]) then return true end
+          if msg.msg:match([[^# Config Change Detected. Reloading...]]) then return true end
+          return false
+        end,
       },
     },
     init = function ()
@@ -98,10 +156,14 @@ return {
       util.keymap('goX',        '[Snacks] Open branch on remote', function ()
         vim.ui.input({ prompt = 'Choose a branch: ', default = 'master' }, function(branch)
           snacks.gitbrowse.open({
-            url_patterns = { ["github.com"] = { branch = '/tree/'..branch, file = '/blob/'..branch..'/{file}#L{line}' } }
+            url_patterns = { ['github.com'] = { branch = '/tree/'..branch, file = '/blob/'..branch..'/{file}#L{line}' } }
           })
         end)
       end)
+
+      util.keymap ('<leader>bd', '[Snacks] Delete buffer', function () snacks.bufdelete() end)
+      vim.api.nvim_create_user_command('BD', function () snacks.bufdelete() end, {})
+      vim.api.nvim_create_user_command('BOnly', snacks.bufdelete.other, {})
     end,
   },
   {
@@ -109,7 +171,7 @@ return {
     event = 'VeryLazy',
     cond = util.not_vscode,
     opts = {
-      preset = 'modern',
+      preset = 'helix',
       keys = {
         scroll_down = '<c-j>',
         scroll_up = '<c-k>',
@@ -306,10 +368,6 @@ return {
     event = 'VeryLazy',
     config = true,
   },
-
-  -- Architecture plugins
-  { 'airblade/vim-rooter' },
-  { 'nvim-tree/nvim-web-devicons' },
   { 'conormcd/matchindent.vim' },
   {
     'tummetott/reticle.nvim',
@@ -327,9 +385,10 @@ return {
     end
   },
   {
-    'nvim-lualine/lualine.nvim',
+    'wesrupert/lualine.nvim',
+    branch = 'feat/altfile',
     cond = util.not_vscode,
-    dependencies = {'nvim-tree/nvim-web-devicons', 'yavorski/lualine-macro-recording.nvim' },
+    dependencies = { 'nvim-tree/nvim-web-devicons', 'yavorski/lualine-macro-recording.nvim' },
     opts = function ()
       return {
         sections = {
@@ -342,7 +401,7 @@ return {
         tabline = {
           lualine_a = { function () return '  '.. (vim.g.mini_sessions_current or '') end },
           lualine_b = { { 'tabs', mode = 2, use_mode_colors = true } },
-          lualine_x = { { 'altfile', path = 1 } },
+          lualine_x = { { 'altfile', path = 1, symbols = { separator = '󰘵 ' } } },
           lualine_z = { { 'filename', path = 1 } },
         },
       }
@@ -350,7 +409,38 @@ return {
   },
 
   -- Action plugins
-  { 'mbbill/undotree', cond = util.not_vscode },
+  {
+    'mbbill/undotree',
+    cond = util.not_vscode,
+    config = function ()
+      vim.g.undotree_TreeNodeShape   = ''
+      vim.g.undotree_TreeReturnShape = '╮'
+      vim.g.undotree_TreeVertShape   = '│'
+      vim.g.undotree_TreeSplitShape  = '╯'
+    end,
+    init = function ()
+      util.keymap('<leader>u', '[Undotree] Toggle', [[<cmd>UndotreeToggle<cr>]])
+
+      -- Hotfix window management if focus.nvim is present
+      vim.api.nvim_create_autocmd('VimEnter', {
+        group = vim.api.nvim_create_augroup('UserFocusConfig', { clear = true }),
+        callback = function ()
+          local rebind_undotree_command = function (name)
+            vim.api.nvim_del_user_command(name)
+            vim.api.nvim_create_user_command(name, function ()
+              local focus_ok, focus = pcall(require, 'focus')
+              if focus_ok then focus.focus_disable() end
+              vim.cmd([[call undotree#]] .. name .. [[()]])
+              if focus_ok then focus.focus_enable() end
+            end, { desc = '[Undotree] Patched ' .. name })
+          end
+          rebind_undotree_command('UndotreeShow')
+          rebind_undotree_command('UndotreeToggle')
+          return false
+        end,
+      })
+    end,
+  },
   {
     'folke/zen-mode.nvim',
     cond = util.not_vscode,
@@ -362,18 +452,6 @@ return {
     },
     init = function ()
       util.keymap('gz', '[Zen mode] Toggle', require('zen-mode').toggle)
-    end,
-  },
-  {
-    'ggandor/leap.nvim',
-    init = function()
-      util.keymap('gl', '[Leap] Leap',              '<plug>(leap)')
-      util.keymap('gl', '[Leap] Forward',           '<plug>(leap-forward)',       { 'x', 'o' })
-      util.keymap('gL', '[Leap] Backward',          '<plug>(leap-backward)',      { 'n', 'x', 'o' })
-      util.keymap('gt', '[Leap] Forward until',     '<plug>(leap-forward-till)',  { 'x', 'o' })
-      util.keymap('gT', '[Leap] Backward until',    '<plug>(leap-backward-till)', { 'x', 'o' })
-      util.keymap('gw', '[Leap] Leap from window',  '<plug>(leap-from-window)',   { 'n', 'x', 'o' })
-      util.keymap('gW', '[Leap] Leap cross window', '<plug>(leap-cross-window)',  { 'n', 'x', 'o' })
     end,
   },
 
@@ -397,7 +475,6 @@ return {
     end,
   },
   { 'kylechui/nvim-surround', event = 'VeryLazy', config = true },
-  { 'vim-scripts/bufonly.vim', cond = util.not_vscode },
 
   -- Filetype plugins
   { 'herringtondarkholme/yats.vim' },

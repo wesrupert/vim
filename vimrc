@@ -199,10 +199,8 @@ inoremap <silent><expr> <s-tab> pumvisible() ? "\<C-P>" : "\<s-tab>"
 inoremap <expr> <cr> pumvisible() ? "\<C-Y>" : "\<C-G>u\<cr>"
 
 " System (Ctrl- / Cmd-) commands
+noremap  <silent> <c-a>  <c-c>ggVG
 noremap  <silent> <leader>a  <c-c>ggVG
-inoremap <silent> <leader>a  <esc>ggVG
-noremap  <silent> <c-s> <cmd>update<cr>
-noremap  <silent> <d-s> <cmd>update<cr>
 
 if has('clipboard')
   noremap  <leader>v "+gp
