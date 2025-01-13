@@ -172,13 +172,10 @@ return {
     cond = util.not_vscode,
     opts = {
       preset = 'helix',
-      keys = {
-        scroll_down = '<c-j>',
-        scroll_up = '<c-k>',
-      },
     },
     init = function ()
-      util.keymap('<leader>k', '[Which-Key] Show keymaps for buffer', function() require('which-key').show({ global = false }) end)
+      util.keymap('<leader>k', '[Which-Key] Show keymaps', require('which-key').show)
+      util.keymap('<leader>K', '[Which-Key] Show keymaps for buffer', function() require('which-key').show({ global = false }) end)
     end,
   },
   {

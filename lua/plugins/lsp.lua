@@ -6,6 +6,7 @@ return {
     'neovim/nvim-lspconfig',
     opts = {
       inlay_hints = {
+        pad = true,
         max_length = 32,
       },
       servers = {
@@ -57,6 +58,7 @@ return {
                 if hint.label:len() > max_length then
                   hint.label = hint.label:sub(1, max_length - overflow_length) .. overflow_char
                 end
+                if opts.inlay_hints.pad then hint.label = ' ' .. hint.label .. ' ' end
                 return hint
               end)
               :totable()
@@ -246,8 +248,8 @@ return {
         callback = function(ev)
           local client = vim.lsp.get_client_by_id(ev.data.client_id)
           if client.name == 'null-ls' then
-            util.keymap('zg', '[CSpell] Add to user dictionary', lspsaga_call('code_action'))
-            util.keymap('zG', '[CSpell] Add to local dictionary', lspsaga_call('code_action'))
+            util.keymap('zg', '[Lsp+] Show code actions', lspsaga_call('code_action'))
+            util.keymap('zG', '[Lsp+] Show code actions', lspsaga_call('code_action'))
           end
         end,
       })

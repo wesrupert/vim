@@ -27,6 +27,7 @@ local plugins = {
   jump = true,
   jump2d = true,
   move = true,
+  snippets = true,
   trailspace = true,
 
   -- Custom configs
@@ -210,8 +211,8 @@ local plugins = {
       util.keymap('<c-q>', '[MiniPick] Quickfix',      function() mini_extra.pickers.list({ scope = 'quickfix' }) end)
       util.keymap('<a-k>', '[MiniPick] Keymaps',       mini_extra.pickers.keymaps)
       util.keymap("<c-'>", '[MiniPick] Marks',         mini_extra.pickers.marks)
-      util.keymap('<c-s>', '[MiniPick] Spellcheck',    mini_extra.pickers.spellsuggest)
       util.keymap('<c-,>', '[MiniPick] Options',       mini_extra.pickers.options)
+      util.keymap('z=',    '[MiniPick] Spellcheck',    mini_extra.pickers.spellsuggest)
     end,
   },
 
@@ -236,11 +237,12 @@ local plugins = {
     init = function ()
       local mini_sessions = require('mini.sessions')
       vim.o.sessionoptions = 'curdir,folds,help,tabpages,winsize,terminal'
-      util.keymap('<leader>ss', '[MiniSession] Select', mini_sessions.select)
-      util.keymap('<leader>sw', '[MiniSession] Update', function ()
+      util.keymap('<c-s>', '[MiniSession] Select', mini_sessions.select)
+      util.keymap('<leader>se', '[MiniSession] Select', mini_sessions.select)
+      util.keymap('<leader>sw', '[MiniSession] Write',  function () mini_sessions.write(vim.fn.input('Session Name: ')) end)
+      util.keymap('<leader>ss', '[MiniSession] Update', function ()
         mini_sessions.write(vim.g.mini_sessions_current or vim.fn.input('Session Name: '))
       end)
-      util.keymap('<leader>sW', '[MiniSession] Write',  function () mini_sessions.write(vim.fn.input('Session Name: ')) end)
     end,
   },
 

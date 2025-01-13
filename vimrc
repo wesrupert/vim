@@ -88,16 +88,11 @@ call Mkdir(g:temp)
 if exists('&guifont')
   set guifont=Iosevka_Atkinson,Symbols_Nerd_Font:h11
 endif
-let g:neovide_hide_mouse_when_typing = v:true
-let g:neovide_cursor_animate_command_line = v:false
-let g:neovide_theme = 'auto'
-let g:neovide_floating_shadow = v:false
-let g:neovide_floating_corner_radius = 0.25
 
 " Application settings
 syntax on
 filetype plugin indent on
-set guioptions=!egk
+"set guioptions=!egk
 set mouse=a
 set scrolloff=2 sidescrolloff=1
 set splitbelow splitright

@@ -1,47 +1,47 @@
 local util = require('util')
-
-local function is_in_start_tag()
-  local ts_utils = require('nvim-treesitter.ts_utils')
-  local node = ts_utils.get_node_at_cursor()
-  if not node then
-    return false
-  end
-  local node_to_check = { 'start_tag', 'self_closing_tag', 'directive_attribute' }
-  return vim.tbl_contains(node_to_check, node:type())
-end
+local blink_tag = '*'
 
 return {
   {
     'saghen/blink.cmp',
     cond = util.not_vscode,
     dependencies = { 'giuxtaposition/blink-cmp-copilot' },
-    build = 'cargo build --release',
+    version = blink_tag and blink_tag or nil,
+    build =  not blink_tag and 'cargo build --release' or nil,
     lazy = false, -- lazy loading handled internally
     opts = function ()
+      -- HACK: Workaround until custom kinds are supported.
+      -- https://github.com/Saghen/blink.cmp/issues/590
       local blink_types = require('blink.cmp.types')
+      local create_kind_transforms = 0
+      local create_kind_transform = function (name)
+        create_kind_transforms = create_kind_transforms + 1
+        local kind_idx = create_kind_transforms
+        local completion_kinds = blink_types.CompletionItemKind
+        return function (_, items)
+          if not items or not #items then return end
+          local idx = #completion_kinds + kind_idx
+          completion_kinds[idx] = name
+          for _, item in ipairs(items) do item.kind = idx end
+          return items
+        end
+      end
+
       return {
         keymap = {
           preset = 'enter',
           cmdline = { preset = 'super-tab' },
         },
+        snippets = { preset = 'mini_snippets' },
         sources = {
-          default = { 'copilot', 'lsp', 'lazydev', 'path', 'snippets', 'luasnip', 'buffer' },
+          default = { 'copilot', 'lsp', 'lazydev', 'path', 'snippets', 'buffer' },
           providers = {
             copilot = {
               name = 'Copilot',
               module = 'blink-cmp-copilot',
               async = true,
               score_offset = 100,
-              transform_items = function (_, items)
-                if not items or not #items then return end
-                local completion_kinds = blink_types.CompletionItemKind
-                local kind_idx = #completion_kinds + 1
-                completion_kinds[kind_idx] = 'Copilot'
-                for _, item in ipairs(items) do
-                  item.kind = kind_idx
-                end
-                return items
-              end,
+              transform_items = create_kind_transform('Copilot'),
             },
             lazydev = {
               name = 'NeoVim',
@@ -59,17 +59,9 @@ return {
             show_on_trigger_character = false,
             show_on_x_blocked_trigger_characters = { ',', "'", '"', '`', '(', '{' },
           },
-          documentation = {
-            auto_show = true,
-            auto_show_delay_ms = 50,
-            window = {
-              border = 'rounded',
-              winhighlight = 'Normal:Normal,FloatBorder:FloatBorder,CursorLine:BlinkCmpDocCursorLine,Search:None',
-            },
-          },
-          ghost_text = { enabled = true },
           menu = {
             border = 'rounded',
+            winblend = vim.o.pumblend,
             winhighlight = 'Normal:Normal,FloatBorder:FloatBorder,CursorLine:BlinkCmpMenuSelection,Search:None',
             draw = {
               gap = 2,
@@ -84,6 +76,16 @@ return {
               local height = (vim.o.cmdheight == 0) and 1 or vim.o.cmdheight
               return { vim.o.lines - height, 0 }
             end,
+          },
+          ghost_text = { enabled = true },
+          documentation = {
+            auto_show = true,
+            auto_show_delay_ms = 50,
+            window = {
+              border = 'rounded',
+              winblend = vim.o.pumblend,
+              winhighlight = 'Normal:Normal,FloatBorder:FloatBorder,CursorLine:BlinkCmpDocCursorLine,Search:None',
+            },
           },
         },
         appearance = {
@@ -124,7 +126,6 @@ return {
             TypeParameter = '',
           },
         },
-        signature = { enabled = true },
       }
     end,
     opts_extend = { 'sources.default' },
