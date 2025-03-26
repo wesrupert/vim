@@ -167,10 +167,10 @@ noremap          ;             :
 noremap          :             ;
 
 noremap <silent> <c-w>t        <cmd>tabnew<cr>
-noremap <silent> <c-h>         <c-w>h
-noremap <silent> <c-j>         <c-w>j
-noremap <silent> <c-k>         <c-w>k
-noremap <silent> <c-l>         <c-w>l
+noremap <silent> <c-y>         <c-w>h
+noremap <silent> <c-h>         <c-w>j
+noremap <silent> <c-a>         <c-w>k
+noremap <silent> <c-e>         <c-w>l
 noremap <silent> <leader>/     <cmd>nohlsearch<cr>
 noremap <silent> <leader>[     <cmd>setlocal wrap!<cr><cmd>setlocal wrap?<cr>
 noremap <silent> <leader>c,    <cmd>cd ..<cr><cmd>echo ':cd '.getcwd()<cr>
@@ -194,7 +194,6 @@ inoremap <silent><expr> <s-tab> pumvisible() ? "\<C-P>" : "\<s-tab>"
 inoremap <expr> <cr> pumvisible() ? "\<C-Y>" : "\<C-G>u\<cr>"
 
 " System (Ctrl- / Cmd-) commands
-noremap  <silent> <c-a>  <c-c>ggVG
 noremap  <silent> <leader>a  <c-c>ggVG
 
 if has('clipboard')

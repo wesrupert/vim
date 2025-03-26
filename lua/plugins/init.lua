@@ -7,13 +7,37 @@ return {
     opts = {
       set_dark_mode = function()
         vim.api.nvim_set_option_value('background', 'dark', {})
+        if vim.g.nightheme then vim.cmd('colorscheme ' .. vim.g.nightheme) end
       end,
       set_light_mode = function()
         vim.api.nvim_set_option_value('background', 'light', {})
+        if vim.g.daytheme then vim.cmd('colorscheme ' .. vim.g.daytheme) end
       end,
     },
   },
-  { 'edeneast/nightfox.nvim', priority = 1000, cond = util.not_vscode },
+  {
+    'edeneast/nightfox.nvim',
+    priority = 1000,
+    cond = util.not_vscode,
+    opts = {
+      options = {
+        styles = {
+          keywords = 'italic',
+          conditionals = 'italic',
+          comments = 'italic',
+        },
+        modules = {
+          blink = true,
+          mini = true,
+          lsp_saga = true,
+          lsp_trouble = true,
+          notify = true,
+          telescope = true,
+          whichkey = true,
+        },
+      },
+    },
+  },
   {
     'catppuccin/nvim',
     name = 'catppuccin',
@@ -73,58 +97,7 @@ return {
   { 'nvim-tree/nvim-web-devicons' },
   { 'folke/lsp-colors.nvim', cond = util.not_vscode },
   {
-    'nvim-focus/focus.nvim',
-    cond = util.not_vscode,
-    opts = {
-      autoresize = {
-        minheight = 10,
-        minwidth = 40,
-      },
-    },
-    init = function ()
-      -- Disable auto-resize in windows that aren't "editor" windows.
-      local user_focus_group = vim.api.nvim_create_augroup('UserFocusConfig', { clear = true })
-      local ignore_buftypes = { 'nofile', 'nowrite', 'prompt', 'popup' }
-      local ignore_filetypes = { 'TelescopePrompt', 'toggleterm', 'trouble', 'undotree', 'qf' }
-      vim.api.nvim_create_autocmd({ 'WinNew', 'WinEnter' }, {
-        desc = '[Focus] Disable auto-resize on configured buftypes',
-        group = user_focus_group,
-        callback = function () vim.w.focus_disable = (not vim.bo.buftype) or vim.tbl_contains(ignore_buftypes, vim.bo.buftype) end,
-      })
-      vim.api.nvim_create_autocmd({ 'BufNew', 'BufReadPre' }, {
-        desc = '[Focus] Disable auto-resize on configured buftypes',
-        group = user_focus_group,
-        callback = function (ev) vim.b[ev.buf].focus_disable = vim.tbl_contains(ignore_buftypes, vim.bo[ev.buf].buftype) end,
-      })
-      vim.api.nvim_create_autocmd('FileType', {
-        desc = '[Focus] Disable auto-resize on configured filetypes',
-        group = user_focus_group,
-        callback = function (ev) vim.b[ev.buf].focus_disable = vim.tbl_contains(ignore_filetypes, vim.bo[ev.buf].buftype) end,
-      })
-
-      util.keymap('<leader>rr', '[Focus] Toggle maximized', [[<cmd>FocusMaxOrEqual<cr>]])
-      util.keymap('<leader>rx', '[Focus] Pin window', function ()
-        if vim.w.focus_disable ~= true then
-          vim.w.focus_disable = true
-          vim.notify('[Focus] Pinned window')
-        else
-          vim.w.focus_disable = false
-          vim.notify('[Focus] Unpinned window')
-        end
-      end)
-      util.keymap(']r', '[Focus] Enable auto-resize', function ()
-          vim.g.focus_disable = false
-          vim.notify('[Focus] Auto-resize enabled')
-      end)
-      util.keymap('[r', '[Focus] Disable auto-resize', function ()
-          vim.g.focus_disable = true
-          vim.notify('[Focus] Auto-resize disabled')
-      end)
-    end,
-  },
-  {
     'wesrupert/snacks.nvim',
-    branch = 'feat/notifier/skip',
     cond = util.not_vscode,
     priority = 1000,
     lazy = false,
@@ -138,14 +111,25 @@ return {
         style = 'fancy',
         skip = function (msg)
           if msg.msg == 'No information available' then return true end
-          if msg.msg:match([[^Error in decoration provider]]) then return true end
-          if msg.msg:match([[^# Config Change Detected. Reloading...]]) then return true end
+          if msg.msg:match([[Error in decoration provider]]) then return true end
+          if msg.msg:match([[Config Change Detected. Reloading...]]) then return true end
           return false
         end,
+      },
+      picker = {
+        matcher = {
+          cwd_bonus = true,
+          frecency = true,
+          history_bonus = true,
+        },
+        jump = { reuse_win = true },
+        kind_icons = vim.tbl_map(function (v) return v .. ' ' end, util.kind_icons),
       },
     },
     init = function ()
       local snacks = require('snacks')
+      local user_snacks_group = vim.api.nvim_create_augroup('UserSnacksConfig', { clear = true })
+
       vim.print = snacks.debug.inspect -- Override print to use snacks for `:=` command
       util.keymap('<leader>m',  '[Snacks] Show messages',         snacks.notifier.show_history)
       util.keymap('<leader>gb', '[Snacks] Blame current line',    snacks.git.blame_line)
@@ -164,6 +148,34 @@ return {
       util.keymap ('<leader>bd', '[Snacks] Delete buffer', function () snacks.bufdelete() end)
       vim.api.nvim_create_user_command('BD', function () snacks.bufdelete() end, {})
       vim.api.nvim_create_user_command('BOnly', snacks.bufdelete.other, {})
+
+      util.keymap('<c-p>', '[Snacks] Files (cwd)',   snacks.picker.smart)
+      util.keymap('<a-p>', '[Snacks] Recent files',  snacks.picker.recent)
+      util.keymap('<c-;>', '[Snacks] Commands',      snacks.picker.command_history)
+      util.keymap('<a-e>', '[Snacks] Explorer',      snacks.picker.explorer)
+      util.keymap('<a-b>', '[Snacks] Buffers',       snacks.picker.buffers)
+      util.keymap('<c-/>', '[Snacks] Find',          snacks.picker.grep)
+      util.keymap('<a-/>', '[Snacks] Searches',      snacks.picker.search_history)
+      util.keymap('<c-g>', '[Snacks] Git hunks',     snacks.picker.git_diff)
+      util.keymap('<a-g>', '[Snacks] Git branches',  snacks.picker.git_branches)
+      util.keymap('<a-t>', '[Snacks] Treesitter',    snacks.picker.treesitter)
+      util.keymap('<a-o>', '[Snacks] Jumplist',      snacks.picker.jumps)
+      util.keymap('<a-u>', '[Snacks] Changelist',    snacks.picker.undo)
+      util.keymap('<a-q>', '[Snacks] Location list', snacks.picker.loclist)
+      util.keymap('<c-q>', '[Snacks] Quickfix',      snacks.picker.qflist)
+      util.keymap('<c-k>', '[Snacks] Keymaps',       snacks.picker.keymaps)
+      util.keymap("<c-'>", '[Snacks] Marks',         snacks.picker.marks)
+      util.keymap('z=',    '[Snacks] Spellcheck',    snacks.picker.spelling)
+
+      vim.api.nvim_create_autocmd('LspAttach', {
+        group = user_snacks_group,
+        callback = function(ev)
+          util.keymap('<leader>dc', '[Snacks] LSP Config',     snacks.picker.lsp_config,      nil, ev.buf)
+          util.keymap('<leader>dg', '[Snacks] LSP Definition', snacks.picker.lsp_definitions, nil, ev.buf)
+          util.keymap('<leader>dR', '[Snacks] LSP References', snacks.picker.lsp_references,  nil, ev.buf)
+          util.keymap('<leader>dS', '[Snacks] LSP Symbols',    snacks.picker.lsp_symbols,     nil, ev.buf)
+        end,
+      })
     end,
   },
   {
@@ -180,11 +192,32 @@ return {
   },
   {
     'folke/trouble.nvim',
+    dependencies = { 'folke/snacks.nvim' },
     cond = util.not_vscode,
     event = 'VeryLazy',
     config = true,
     opts = {
       focus = true,
+    },
+    specs = {
+      'folke/snacks.nvim',
+      opts = function(_, opts)
+        return vim.tbl_deep_extend('force', opts or {}, {
+          picker = {
+            actions = require('trouble.sources.snacks').actions,
+            win = {
+              input = {
+                keys = {
+                  ['<c-t>'] = {
+                    'trouble_open',
+                    mode = { 'n', 'i' },
+                  },
+                },
+              },
+            },
+          },
+        })
+      end,
     },
     init = function ()
       local trouble = require('trouble')
@@ -192,9 +225,8 @@ return {
       local trouble_close_on_leave = util.use_get_setting('trouble_close_on_leave', false)
       local trouble_quickfix_takeover = util.use_get_setting('trouble_quickfix_takeover', true)
 
-
-      util.keymap('<leader>dd', '[Trouble] Diagnostics', function () trouble.toggle('diagnostics') end)
-      util.keymap('<leader>dD', '[Trouble] Buffer diagnostics', function () trouble.open({ mode = 'diagnostics', filter = { buf = 0 } }) end)
+      util.keymap('<leader>dd', '[Trouble] Buffer diagnostics', function () trouble.open({ mode = 'diagnostics', filter = { buf = 0 } }) end)
+      util.keymap('<leader>dD', '[Trouble] Diagnostics', function () trouble.toggle('diagnostics') end)
       util.keymap('<leader>ds', '[Trouble] Symbols', function () trouble.toggle({ mode = 'symbols', focus = false }) end)
       util.keymap('<leader>dr', '[Trouble] References', function () trouble.toggle({ mode = 'lsp', focus = false, win = { position = 'right' } }) end)
       util.keymap('<leader>dq', '[Trouble] Quickfix List', function () trouble.toggle('qflist') end)
@@ -306,10 +338,10 @@ return {
     init = function ()
       local trouble = require('trouble')
       local todo_comments = require('todo-comments')
-      util.keymap('<leader>t', '[Trouble] Todos', function () trouble.toggle('todo') end)
-      util.keymap('<leader>T', '[Trouble] Buffer todos', function () trouble.toggle({ mode = 'todo', filter = { buf = 0 } }) end)
       util.keymap(']t', '[Todos] Jump next', todo_comments.jump_next)
       util.keymap('[t', '[Todos] Jump prev', todo_comments.jump_prev)
+      util.keymap('<leader>t', '[Trouble] Buffer todos', function () trouble.toggle({ mode = 'todo', filter = { buf = 0 } }) end)
+      util.keymap('<leader>T', '[Trouble] Todos', function () trouble.toggle('todo') end)
     end
   },
   {
@@ -396,7 +428,7 @@ return {
           lualine_x = {},
         },
         tabline = {
-          lualine_a = { function () return '  '.. (vim.g.mini_sessions_current or '') end },
+          lualine_a = { function () return util.kind_icons.NeoVim .. '  '.. (vim.g.mini_sessions_current or '') end },
           lualine_b = { { 'tabs', mode = 2, use_mode_colors = true } },
           lualine_x = { { 'altfile', path = 1, symbols = { separator = '󰘵 ' } } },
           lualine_z = { { 'filename', path = 1 } },
@@ -417,25 +449,6 @@ return {
     end,
     init = function ()
       util.keymap('<leader>u', '[Undotree] Toggle', [[<cmd>UndotreeToggle<cr>]])
-
-      -- Hotfix window management if focus.nvim is present
-      vim.api.nvim_create_autocmd('VimEnter', {
-        group = vim.api.nvim_create_augroup('UserFocusConfig', { clear = true }),
-        callback = function ()
-          local rebind_undotree_command = function (name)
-            vim.api.nvim_del_user_command(name)
-            vim.api.nvim_create_user_command(name, function ()
-              local focus_ok, focus = pcall(require, 'focus')
-              if focus_ok then focus.focus_disable() end
-              vim.cmd([[call undotree#]] .. name .. [[()]])
-              if focus_ok then focus.focus_enable() end
-            end, { desc = '[Undotree] Patched ' .. name })
-          end
-          rebind_undotree_command('UndotreeShow')
-          rebind_undotree_command('UndotreeToggle')
-          return false
-        end,
-      })
     end,
   },
   {
@@ -483,9 +496,7 @@ return {
     'OXY2DEV/markview.nvim',
     cond = util.not_vscode,
     lazy = false,
-    opts = {
-      initial_state = false,
-    },
+    opts = { },
   },
   { 'othree/yajs.vim' },
   { 'pangloss/vim-javascript' },

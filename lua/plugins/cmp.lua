@@ -28,10 +28,7 @@ return {
       end
 
       return {
-        keymap = {
-          preset = 'enter',
-          cmdline = { preset = 'super-tab' },
-        },
+        keymap = { preset = 'enter' },
         snippets = { preset = 'mini_snippets' },
         sources = {
           default = { 'copilot', 'lsp', 'lazydev', 'path', 'snippets', 'buffer' },
@@ -90,41 +87,7 @@ return {
         },
         appearance = {
           nerd_font_variant = 'normal',
-          kind_icons = {
-            Copilot = '',
-            NeoVim = '',
-
-            Text = '󰉿',
-            Method = '󰊕',
-            Function = '󰊕',
-            Constructor = '󰒓',
-
-            Variable = '',
-            Field = '',
-            Property = '',
-
-            Class = '',
-            Struct = '',
-            Interface = '',
-            Module = '󰅩',
-
-            Unit = '󰪚',
-            Value = '󰦨',
-            Enum = '',
-            EnumMember = '',
-
-            Keyword = '',
-            Constant = '',
-
-            Snippet = '󱄽',
-            Color = '󰏘',
-            File = '',
-            Reference = '',
-            Folder = '',
-            Event = '',
-            Operator = '',
-            TypeParameter = '',
-          },
+          kind_icons = util.tbl_copy(util.kind_icons),
         },
       }
     end,
@@ -133,8 +96,7 @@ return {
   {
     'zbirenbaum/copilot.lua',
     cond = util.not_vscode,
-    -- cmd = 'Copilot',
-    -- event = 'InsertEnter',
+    event = 'InsertEnter',
     opts = {
       filetypes = {
         lua = false,

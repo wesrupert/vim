@@ -8,9 +8,13 @@ return {
       inlay_hints = {
         pad = true,
         max_length = 32,
+        disabled_filetypes = { 'vue' },
       },
       servers = {
+        clangd = {},
         eslint = {},
+        html = {},
+        jsonls = {},
         lua_ls = {
           settings = {
             Lua = { diagnostics = { globals = { 'vim' } } },
@@ -48,22 +52,30 @@ return {
         -- @see https://github.com/MariaSolOs/dotfiles/blob/88646ab9/.config/nvim/lua/lsp.lua#L275-L292
         local max_length = opts.inlay_hints.max_length
         local overflow_char = opts.inlay_hints.overflow_char or '… '
+        local overflow_pad = opts.inlay_hints.pad
         local overflow_length =  overflow_char:len()
         local inlay_hint_protocol = vim.lsp.protocol.Methods.textDocument_inlayHint
+        local trim_label = function (label)
+          if label:len() <= max_length then return label end
+          local trimmed = label:sub(1, max_length - overflow_length) .. overflow_char
+          return overflow_pad and (' ' .. trimmed .. ' ') or trimmed
+        end
         local inlay_hint_handler = vim.lsp.handlers[inlay_hint_protocol]
-        vim.lsp.handlers[inlay_hint_protocol] = function (err, result, ctx, config)
+        vim.lsp.handlers[inlay_hint_protocol] = function (err, result, ctx)
           if vim.islist(result) then
             result = vim.iter(result)
               :map(function (hint)
-                if hint.label:len() > max_length then
-                  hint.label = hint.label:sub(1, max_length - overflow_length) .. overflow_char
+                if vim.islist(hint.label) then
+                  vim.iter(hint.label):each(function (item) item.value = trim_label(item.value) end)
+                else
+                  -- TODO: Remove if new syntax is made permanent after nightly
+                  hint.label = trim_label(hint.label)
                 end
-                if opts.inlay_hints.pad then hint.label = ' ' .. hint.label .. ' ' end
                 return hint
               end)
               :totable()
           end
-          inlay_hint_handler(err, result, ctx, config)
+          inlay_hint_handler(err, result, ctx)
         end
       end
 
@@ -73,8 +85,7 @@ return {
         if blink_ok then config.capabilities = blink.get_lsp_capabilities(config.capabilities) end
         lspconfig[server].setup(config)
       end
-    end,
-    init = function ()
+
       util.keymap('<leader>dh', '[LSP] Toggle inlay hints', function ()
         vim.b.inlay_hint_enabled = not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 })
         vim.lsp.inlay_hint.enable(vim.b.inlay_hint_enabled, { bufnr = 0 })
@@ -99,7 +110,7 @@ return {
         group = user_lsp_config_group,
         callback = function(ev)
           local client = vim.lsp.get_client_by_id(ev.data.client_id)
-          if client.name == 'eslint' then
+          if client and client.name == 'eslint' then
             vim.api.nvim_create_autocmd('BufWritePre', {
               group = user_lsp_config_group,
               buffer = ev.buf,
@@ -113,6 +124,16 @@ return {
       -- Automatic inlay hints
       -- Enable inlay hints for the given client/buffer, unless an inlay_hint_enabled env variable is false.
       -- TODO: Figure out why the hell some servers don't automatically reload hints on workspace load
+      vim.api.nvim_create_autocmd({ 'BufNew', 'BufRead', 'Filetype' }, {
+        group = user_lsp_config_group,
+        callback = function (ev)
+          local disabled_filetypes = opts.inlay_hints.disabled_filetypes
+          if disabled_filetypes and vim.tbl_contains(disabled_filetypes, vim.bo.filetype) then
+            vim.b.inlay_hint_enabled = false
+            vim.lsp.inlay_hint.enable(false, { bufnr = ev.buf })
+          end
+        end,
+      })
       vim.api.nvim_create_autocmd('LspAttach', {
         group = user_lsp_config_group,
         callback = function (ev)
@@ -142,7 +163,12 @@ return {
       local cspell = require('cspell')
       none_ls.setup({
         sources = {
-          cspell.diagnostics.with({ config = opts }),
+          cspell.diagnostics.with({
+            config = opts,
+            diagnostics_postprocess = function (event)
+              event.severity = vim.diagnostic.severity.INFO
+            end,
+          }),
           cspell.code_actions.with({ config = opts }),
         },
       })
@@ -151,6 +177,7 @@ return {
   {
     'pmizio/typescript-tools.nvim',
     dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig', 'williamboman/mason.nvim' },
+    cond = util.not_vscode,
     config = function()
       local api = require('typescript-tools.api')
       local registry = require('mason-registry')

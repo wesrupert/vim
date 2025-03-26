@@ -3,6 +3,96 @@ local util = {}
 ---True iff vim is not running inside the VSCodeNeovim extension.
 util.not_vscode = vim.g.vscode ~= 1
 
+---List of kind icons for LSP/file/etc icons.
+util.kind_icons = {
+  NeoVim        = '',
+  Copilot       = '',
+
+  Array         = '',
+  Boolean       = '󰨙',
+  Null          = '',
+  Number        = '󰎠',
+  Object        = '',
+  String        = '',
+  Text          = '󰉿',
+
+  Class         = '',
+  Constant      = '',
+  Control       = '',
+  Enum          = '',
+  EnumMember    = '',
+  Interface     = '',
+  Key           = '',
+  Keyword       = '',
+  Module        = '󰅩',
+  Package       = '',
+  Struct        = '',
+  Value         = '󰦨',
+
+  Constructor   = '󰒓',
+  Field         = '',
+  Function      = '󰊕',
+  Method        = '󰊕',
+  Namespace     = '󰦮',
+  Property      = '',
+  Variable      = '',
+
+  Snippet       = '󱄽',
+  Color         = '󰏘',
+  File          = '',
+  Reference     = '',
+  Event         = '',
+  Operator      = '',
+  TypeParameter = '',
+  Unit          = '󰪚',
+
+  Folder        = '',
+  Collapsed     = '',
+  Unknown       = '',
+}
+
+---@alias SpecialFlag "indent"|"resize"
+
+---@type table<string, SpecialFlag[]>
+local special_buftypes  = {
+  nofile                = { 'resize'  },
+  nowrite               = { 'resize'  },
+  prompt                = { 'resize', 'indent' },
+  popup                 = { 'resize', 'indent' },
+  terminal              = {           'indent' },
+}
+
+---@type table<string, SpecialFlag[]>
+local special_filetypes = {
+  snacks_picker_list    = { 'resize', 'indent' },
+  TelescopePrompt       = { 'resize', 'indent' },
+  toggleterm            = { 'resize', 'indent' },
+  trouble               = { 'resize', 'indent' },
+  undotree              = { 'resize', 'indent' },
+  qf                    = { 'resize', 'indent' },
+}
+
+---Get special buffer and file types corresponding to the given flag.
+---@param flag? SpecialFlag If provided, only return special values related to the given property
+---@return string[] buftypes, string[] filetypes The special buftypes and filetypes matching the provided flag
+function util.get_special_types(flag)
+  local buftypes = {}
+  for buftype, flags in pairs(special_buftypes) do
+    for _, f in ipairs(flags) do
+      if (not flag or flag == f) then table.insert(buftypes, buftype) end
+    end
+  end
+
+  local filetypes = {}
+  for filetype, flags in pairs(special_filetypes) do
+    for _, f in ipairs(flags) do
+      if (not flag or flag == f) then table.insert(filetypes, filetype) end
+    end
+  end
+
+  return buftypes, filetypes
+end
+
 ---Handle a value that may be a function, or return the value itself alongside its truthy state.
 ---@generic T
 ---@generic A
@@ -18,14 +108,21 @@ function util.maybe_pcall(maybe_func, ...)
   return (maybe_func and true or false), maybe_func
 end
 
+---Create a copy of a table.
+---@param table table
+---@return table table The copy
+function util.tbl_copy(table)
+  return vim.tbl_extend('keep', {}, table)
+end
+
 ---Get the value for the given setting with the narrowest context.
 ---Checks: window -> tab -> buffer -> global -> provided default
 ---@generic T : any
 ---@param key string The setting to check
 ---@param default T The default value, if the setting is undefined in all contexts
----@param [buf] number If provided, use the given buffer number instead of checking current
----@param [tab] number If provided, use the given tab number instead of checking current
----@param [win] number If provided, use the given window number instead of checking current
+---@param buf? number If provided, use the given buffer number instead of checking current
+---@param tab? number If provided, use the given tab number instead of checking current
+---@param win? number If provided, use the given window number instead of checking current
 ---@return T
 function util.get_setting(key, default, buf, tab, win)
   -- 1. Window

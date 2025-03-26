@@ -93,6 +93,16 @@ local plugins = {
       options = { try_as_border = true },
     },
     init = function ()
+      local ignore_buftypes, ignore_filetypes = util.get_special_types('indent')
+      vim.api.nvim_create_autocmd({ 'BufNew', 'BufRead', 'TermEnter', 'Filetype' }, {
+        group = user_mini_config,
+        callback = function()
+          if vim.tbl_contains(ignore_buftypes, vim.bo.buftype)
+            or vim.tbl_contains(ignore_filetypes, vim.bo.filetype) then
+            vim.b.miniindentscope_disable = true
+          end
+        end,
+      })
       vim.api.nvim_create_autocmd('ColorScheme', {
         group = user_mini_config,
         callback = function()
@@ -110,110 +120,6 @@ local plugins = {
       replace  = { prefix = 'gr' },
       sort     = { prefix = 'gos' },
     },
-  },
-
-  pick = {
-    cond = util.not_vscode,
-    opts = {
-      options = {
-        use_cache = true,
-        mappings = {
-          toggle_info = '<pgdn>',
-          toggle_preview = '<pgup>',
-          delete_word = '<c-bs>',
-        },
-      },
-      window = {
-        config = function ()
-          -- Width/height should fit in the window, at scale of window size between min and max values.
-          local style = { scale = 0.618, width  = { min = 50, max = 100, border = 18 }, height = { min = 10, max = 25,  border = 2  } }
-          local width = math.min(vim.o.columns - 2, math.max(style.width.min, math.min(style.width.max,
-            math.floor(style.scale * (vim.o.columns - (2 * style.width.border)))
-          )))
-          local height = math.min(vim.o.lines - 2, math.max(style.height.min, math.min(style.height.max,
-            math.floor(style.scale * (vim.o.lines - (2 * style.height.border)))
-          )))
-          return {
-            anchor = 'NW', height = height, width = width,
-            row = height >= vim.o.lines - 2 and 0 or style.height.border,
-            col = math.floor(0.5 * (vim.o.columns - width)),
-          }
-        end
-      },
-    },
-    init = function ()
-      local mini_extra = require('mini.extra')
-      local mini_pick = require('mini.pick')
-      local mini_visits = require('mini.visits')
-
-      -- Use as the builtin select dialog.
-      vim.ui.select = mini_pick.ui_select
-
-      ---Pick from files, sorted by MRU.
-      ---@param local_opts table|nil Options defining behavior of this particular picker.
-      ---@param opts table|nil Options forwarded to |MiniPick.start()|.
-      ---@see https://github.com/echasnovski/mini.nvim/discussions/609
-      mini_pick.registry.mrufiles = function (local_opts, opts)
-        local cwd = opts and opts.cwd or nil
-        local get_mru = function ()
-          local mru = mini_visits.list_paths(cwd, { sort = mini_visits.gen_sort.z() })
-          mru = vim.tbl_map(function (path) return vim.fn.fnamemodify(path, ":.") end, mru)
-          return mru
-        end
-
-        local visit_paths = get_mru()
-        vim.tbl_add_reverse_lookup(visit_paths)
-        local current_file = vim.fn.expand("%:.")
-        if visit_paths[current_file] then
-          -- Current file last
-          visit_paths[current_file] = math.huge
-        end
-
-        mini_pick.builtin.files(local_opts or nil, {
-          source = {
-            name = "Files (MRU)",
-            cwd = cwd,
-            match = function(items, indices, query)
-              local get_weight = function (idx) return visit_paths[items[idx]] or math.huge end
-              local matched = query == ''
-                and vim.tbl_filter(function (idx) return visit_paths[items[idx]] == nil end, indices)
-                or mini_pick.default_match(items, indices, query, { sync = true })
-              table.sort(matched, function(idx1, idx2) return get_weight(idx1) < get_weight(idx2) end)
-              return matched
-            end,
-          },
-        })
-      end
-
-      mini_pick.registry.manage_buffers = function (local_opts, opts)
-        local wipeout = function ()
-          vim.api.nvim_buf_delete(mini_pick.get_picker_matches().current.bufnr, {})
-          -- Relaunch to remove from items
-          mini_pick.registry.manage_buffers(local_opts, opts)
-        end
-        local merged_opts = vim.tbl_deep_extend('keep', { mappings = { wipeout = { char = '<c-d>', func = wipeout } } }, opts or {})
-        mini_pick.builtin.buffers(local_opts, merged_opts)
-      end
-
-      util.keymap('<c-p>', '[MiniPick] Files (cwd)',   mini_pick.registry.mrufiles)
-      util.keymap('<a-p>', '[MiniPick] Recent files',  function() mini_extra.pickers.visit_paths({ cwd = '' }) end)
-      util.keymap('<c-;>', '[MiniPick] Commands',      function() mini_extra.pickers.history({ scope = ':' }) end)
-      util.keymap('<c-e>', '[MiniPick] Explorer',      mini_extra.pickers.explorer)
-      util.keymap('<c-b>', '[MiniPick] Buffers',       mini_pick.registry.manage_buffers)
-      util.keymap('<c-/>', '[MiniPick] Find',          mini_pick.builtin.grep_live)
-      util.keymap('<a-/>', '[MiniPick] Searches',      function() mini_extra.pickers.history({ scope = '/' }) end)
-      util.keymap('<c-g>', '[MiniPick] Git hunks',     mini_extra.pickers.git_hunks)
-      util.keymap('<a-g>', '[MiniPick] Git branches',  mini_extra.pickers.git_branches)
-      util.keymap('<a-t>', '[MiniPick] Treesitter',    mini_extra.pickers.treesitter)
-      util.keymap('<a-o>', '[MiniPick] Jumplist',      function() mini_extra.pickers.list({ scope = 'jump' }) end)
-      util.keymap('<a-u>', '[MiniPick] Changelist',    function() mini_extra.pickers.list({ scope = 'change' }) end)
-      util.keymap('<a-q>', '[MiniPick] Location list', function() mini_extra.pickers.list({ scope = 'location-list' }) end)
-      util.keymap('<c-q>', '[MiniPick] Quickfix',      function() mini_extra.pickers.list({ scope = 'quickfix' }) end)
-      util.keymap('<a-k>', '[MiniPick] Keymaps',       mini_extra.pickers.keymaps)
-      util.keymap("<c-'>", '[MiniPick] Marks',         mini_extra.pickers.marks)
-      util.keymap('<c-,>', '[MiniPick] Options',       mini_extra.pickers.options)
-      util.keymap('z=',    '[MiniPick] Spellcheck',    mini_extra.pickers.spellsuggest)
-    end,
   },
 
   sessions = {
