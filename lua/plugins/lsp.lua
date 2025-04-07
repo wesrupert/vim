@@ -5,11 +5,7 @@ return {
   {
     'neovim/nvim-lspconfig',
     opts = {
-      inlay_hints = {
-        pad = true,
-        max_length = 32,
-        disabled_filetypes = { 'vue' },
-      },
+      inlay_hints = { pad = true, max_length = 32 },
       servers = {
         clangd = {},
         eslint = {},
@@ -219,7 +215,8 @@ return {
   {
     'wesrupert/lspsaga.nvim',
     branch = 'fix/codeaction/home',
-    cond = util.not_vscode,
+    -- cond = util.not_vscode,
+    cond = false and util.not_vscode,
     dependencies = { 'neovim/nvim-lspconfig' },
     opts = {
       diagnostic = {
@@ -255,15 +252,14 @@ return {
       vim.api.nvim_create_autocmd('LspAttach', {
         group = user_lsp_config_group,
         callback = function(ev)
-          util.keymap('gD',         '[LSP+] Peek definition',       lspsaga_call('peek_definition'),           nil, ev.buf)
           util.keymap('[d',         '[LSP+] Previous issue',        lspsaga_call('diagnostic_jump_prev'),      nil, ev.buf)
           util.keymap(']d',         '[LSP+] Next issue',            lspsaga_call('diagnostic_jump_next'),      nil, ev.buf)
           util.keymap('K',          '[LSP+] Hover information',     lspsaga_call('hover_doc'),                 nil, ev.buf)
-          util.keymap('<leader>gd', '[LSP+] Find references',       lspsaga_call('finder', 'tyd+ref+def+imp'), nil, ev.buf)
-          util.keymap('<leader>de', '[LSP+] Diagnostics at cursor', lspsaga_call('show_cursor_diagnostics'),   nil, ev.buf)
-          util.keymap('<leader>do', '[LSP+] Toggle outline',        lspsaga_call('outline'),                   nil, ev.buf)
+          util.keymap('gD',         '[LSP+] Peek definition',       lspsaga_call('peek_definition'),           nil, ev.buf)
+          util.keymap('grr',        '[LSP+] Find references',       lspsaga_call('finder', 'tyd+ref+def+imp'), nil, ev.buf)
+          util.keymap('gra',        '[LSP+] Show code actions',     lspsaga_call('code_action'),               nil, ev.buf)
+          util.keymap('gO',         '[LSP+] Toggle outline',        lspsaga_call('outline'),                   nil, ev.buf)
           util.keymap('<c-`>',      '[LSP+] Toggle terminal',       lspsaga_call('term_toggle'),               nil, ev.buf)
-          util.keymap('<leader>da', '[LSP+] Show code actions',     lspsaga_call('code_action'),               { 'n', 'v' }, ev.buf)
         end,
       })
 
@@ -274,7 +270,7 @@ return {
         group = user_lsp_config_group,
         callback = function(ev)
           local client = vim.lsp.get_client_by_id(ev.data.client_id)
-          if client.name == 'null-ls' then
+          if client and client.name == 'null-ls' then
             util.keymap('zg', '[Lsp+] Show code actions', lspsaga_call('code_action'))
             util.keymap('zG', '[Lsp+] Show code actions', lspsaga_call('code_action'))
           end

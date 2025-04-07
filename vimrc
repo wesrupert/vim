@@ -110,9 +110,10 @@ endif
 colorscheme catppuccin
 
 " Command bar
-set completeopt=menuone,preview,noinsert,noselect
+set completeopt=menuone,preview,noinsert,noselect,fuzzy
 set gdefault ignorecase infercase smartcase
 set wildmenu wildoptions=fuzzy,pum wildmode=list:lastused:full
+set messagesopt=wait:2000,history:500
 set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc,.class
 set wildignore+=*.pyc,*.class,*.sln,*.Master,*.csproj,*.csproj.user,*.cache,*.dll,*.pdb,*.min.*
 set wildignore+=*.tar.*,*.swp,*.bak

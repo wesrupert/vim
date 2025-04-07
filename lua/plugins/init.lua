@@ -195,7 +195,6 @@ return {
     dependencies = { 'folke/snacks.nvim' },
     cond = util.not_vscode,
     event = 'VeryLazy',
-    config = true,
     opts = {
       focus = true,
     },
@@ -435,6 +434,42 @@ return {
         },
       }
     end,
+  },
+  {
+    {
+      'Bekaboo/dropbar.nvim',
+      dependencies = {
+        'nvim-telescope/telescope-fzf-native.nvim',
+        build = 'make',
+      },
+      opts = {
+        bar = {
+          sources = function(buf, _)
+            local sources = require('dropbar.sources')
+            local utils = require('dropbar.utils')
+            if vim.bo[buf].ft == 'markdown' then
+              return { sources.markdown }
+            elseif vim.bo[buf].ft == 'vue' then
+              return { sources.lsp } -- Treesitter messes up the script/style tag symbols
+            elseif vim.bo[buf].buftype == 'terminal' then
+              return { sources.terminal }
+            end
+            return { utils.source.fallback({ sources.lsp, sources.treesitter }) }
+          end,
+        },
+        icons = { kinds = { symbols = vim.tbl_map(function (v) return v .. ' ' end, util.kind_icons) } },
+      },
+      config = function (_, opts)
+        local dropbar = require('dropbar')
+        local dropbar_api = require('dropbar.api')
+        dropbar.setup(opts)
+
+        vim.ui.select = require('dropbar.utils.menu').select
+        util.keymap('g;', '[Dropbar] Pick symbols in winbar', dropbar_api.pick)
+        util.keymap('[;', '[Dropbar] Go to start of current context', dropbar_api.goto_context_start)
+        util.keymap('];', '[Dropbar] Select next context', dropbar_api.select_next_context)
+      end,
+    }
   },
 
   -- Action plugins

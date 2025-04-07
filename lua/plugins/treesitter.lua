@@ -107,10 +107,12 @@ return {
             swap_next = {
               ['<leader>sf'] = '@function.outer',
               ['<leader>sa'] = '@parameter.inner',
+              ['<leader>sb'] = '@block.inner',
             },
             swap_previous = {
               ['<leader>sF'] = '@function.outer',
               ['<leader>sA'] = '@parameter.inner',
+              ['<leader>sB'] = '@block.inner',
             },
           },
         },

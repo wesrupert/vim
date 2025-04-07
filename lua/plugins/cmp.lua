@@ -9,88 +9,69 @@ return {
     version = blink_tag and blink_tag or nil,
     build =  not blink_tag and 'cargo build --release' or nil,
     lazy = false, -- lazy loading handled internally
-    opts = function ()
-      -- HACK: Workaround until custom kinds are supported.
-      -- https://github.com/Saghen/blink.cmp/issues/590
-      local blink_types = require('blink.cmp.types')
-      local create_kind_transforms = 0
-      local create_kind_transform = function (name)
-        create_kind_transforms = create_kind_transforms + 1
-        local kind_idx = create_kind_transforms
-        local completion_kinds = blink_types.CompletionItemKind
-        return function (_, items)
-          if not items or not #items then return end
-          local idx = #completion_kinds + kind_idx
-          completion_kinds[idx] = name
-          for _, item in ipairs(items) do item.kind = idx end
-          return items
-        end
-      end
-
-      return {
-        keymap = { preset = 'enter' },
-        snippets = { preset = 'mini_snippets' },
-        sources = {
-          default = { 'copilot', 'lsp', 'lazydev', 'path', 'snippets', 'buffer' },
-          providers = {
-            copilot = {
-              name = 'Copilot',
-              module = 'blink-cmp-copilot',
-              async = true,
-              score_offset = 100,
-              transform_items = create_kind_transform('Copilot'),
-            },
-            lazydev = {
-              name = 'NeoVim',
-              module = 'lazydev.integrations.blink',
-              score_offset = 50,
-              fallbacks = { 'lsp' },
-            },
-            lsp = {
-              score_offset = 50,
-            },
+    opts = {
+      keymap = { preset = 'enter' },
+      snippets = { preset = 'mini_snippets' },
+      sources = {
+        default = { 'copilot', 'lsp', 'lazydev', 'path', 'snippets', 'buffer' },
+        providers = {
+          copilot = {
+            name = 'Copilot',
+            module = 'blink-cmp-copilot',
+            async = true,
+            score_offset = 100,
+          },
+          lazydev = {
+            name = 'NeoVim',
+            module = 'lazydev.integrations.blink',
+            score_offset = 50,
+            fallbacks = { 'lsp' },
+          },
+          lsp = {
+            score_offset = 50,
           },
         },
-        completion = {
-          trigger = {
-            show_on_trigger_character = false,
-            show_on_x_blocked_trigger_characters = { ',', "'", '"', '`', '(', '{' },
+      },
+      completion = {
+        keyword = { range = 'full' },
+        trigger = {
+          show_on_trigger_character = false,
+          show_on_x_blocked_trigger_characters = { ',', "'", '"', '`', '(', '{' },
+        },
+        menu = {
+          border = 'rounded', -- TODO @winborder: Remove after Noice updates
+          winblend = vim.o.pumblend,
+          winhighlight = 'Normal:Normal,FloatBorder:FloatBorder,CursorLine:BlinkCmpMenuSelection,Search:None',
+          draw = {
+            gap = 2,
+            columns = { { 'label', 'label_description', gap = 1 }, { 'kind_icon', 'kind',  gap = 1 } },
+            treesitter = { 'copilot', 'lazydev', 'lsp' },
           },
-          menu = {
-            border = 'rounded',
+          cmdline_position = function ()
+            if vim.g.ui_cmdline_pos ~= nil then
+              local pos = vim.g.ui_cmdline_pos -- (1, 0)-indexed
+              return { pos[1], pos[2] }
+            end
+            local height = (vim.o.cmdheight == 0) and 1 or vim.o.cmdheight
+            return { vim.o.lines - height, 0 }
+          end,
+        },
+        ghost_text = { enabled = true },
+        documentation = {
+          auto_show = true,
+          auto_show_delay_ms = 50,
+          window = {
+            border = 'rounded', -- TODO @winborder: Remove after Noice updates
             winblend = vim.o.pumblend,
-            winhighlight = 'Normal:Normal,FloatBorder:FloatBorder,CursorLine:BlinkCmpMenuSelection,Search:None',
-            draw = {
-              gap = 2,
-              columns = { { 'label', 'label_description', gap = 1 }, { 'kind_icon', 'kind',  gap = 1 } },
-              treesitter = { 'copilot', 'lazydev', 'lsp' },
-            },
-            cmdline_position = function ()
-              if vim.g.ui_cmdline_pos ~= nil then
-                local pos = vim.g.ui_cmdline_pos -- (1, 0)-indexed
-                return { pos[1], pos[2] }
-              end
-              local height = (vim.o.cmdheight == 0) and 1 or vim.o.cmdheight
-              return { vim.o.lines - height, 0 }
-            end,
-          },
-          ghost_text = { enabled = true },
-          documentation = {
-            auto_show = true,
-            auto_show_delay_ms = 50,
-            window = {
-              border = 'rounded',
-              winblend = vim.o.pumblend,
-              winhighlight = 'Normal:Normal,FloatBorder:FloatBorder,CursorLine:BlinkCmpDocCursorLine,Search:None',
-            },
+            winhighlight = 'Normal:Normal,FloatBorder:FloatBorder,CursorLine:BlinkCmpDocCursorLine,Search:None',
           },
         },
-        appearance = {
-          nerd_font_variant = 'normal',
-          kind_icons = util.tbl_copy(util.kind_icons),
-        },
-      }
-    end,
+      },
+      appearance = {
+        nerd_font_variant = 'normal',
+        kind_icons = util.tbl_copy(util.kind_icons),
+      },
+    },
     opts_extend = { 'sources.default' },
   },
   {
