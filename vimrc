@@ -86,13 +86,13 @@ call Mkdir(g:temp)
 
 " GUI settings
 if exists('&guifont')
-  set guifont=Iosevka_Atkinson,Symbols_Nerd_Font:h11
+  set guifont=Atkinson_Hyperlegible_Mono,Symbols_Nerd_Font:h13
 endif
 
 " Application settings
 syntax on
 filetype plugin indent on
-"set guioptions=!egk
+set title
 set mouse=a
 set scrolloff=2 sidescrolloff=1
 set splitbelow splitright
@@ -297,7 +297,7 @@ function! s:SetDiffLayout()
   augroup end
   execute 'vertical resize '.((&columns * get(g:, 'diff_width', 50)) / 100)
   wincmd l | call setpos('.', [0, 1, 1, 0])
-  set equalalways nohidden bufhidden=delete guioptions+=lr
+  set equalalways nohidden bufhidden=delete
   noremap q :qa<cr>
 endfunction
 

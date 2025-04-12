@@ -416,12 +416,16 @@ return {
     'wesrupert/lualine.nvim',
     branch = 'feat/altfile',
     cond = util.not_vscode,
-    dependencies = { 'nvim-tree/nvim-web-devicons', 'yavorski/lualine-macro-recording.nvim' },
+    dependencies = {
+      'nvim-tree/nvim-web-devicons',
+      'yavorski/lualine-macro-recording.nvim',
+      'andrem222/copilot-lualine',
+    },
     opts = function ()
       return {
         sections = {
           lualine_a = { 'mode', 'macro_recording' },
-          lualine_x = { 'filetype' },
+          lualine_x = { { 'copilot', symbols = { spinners = 'dots' } }, 'filetype' },
         },
         inactive_sections = {
           lualine_x = {},

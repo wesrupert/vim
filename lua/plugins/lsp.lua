@@ -11,6 +11,7 @@ return {
         eslint = {},
         html = {},
         jsonls = {},
+        tailwindcss = {},
         lua_ls = {
           settings = {
             Lua = { diagnostics = { globals = { 'vim' } } },
@@ -299,8 +300,10 @@ return {
       preset = 'powerline',
       options = {
         multiple_diag_under_cursor = true,
-        format = function (diagnostic)
-          return ' ' .. diagnostic.message .. ' │ ' .. diagnostic.source
+        format = function (d)
+          if type(d) ~= 'table' then return d end
+          if not d.message or not d.source then return d end
+          return ' ' .. d.message .. ' │ ' .. d.source
         end
       },
     },

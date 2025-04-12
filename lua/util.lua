@@ -3,6 +3,12 @@ local util = {}
 ---True iff vim is not running inside the VSCodeNeovim extension.
 util.not_vscode = vim.g.vscode ~= 1
 
+util.dirs = {
+  home = vim.fn.expand('$HOME'),
+  code = vim.fn.expand('$HOME/Code'),
+  work = vim.fn.expand('$HOME/Code/work'),
+}
+
 ---List of kind icons for LSP/file/etc icons.
 util.kind_icons     = {
   NeoVim            = '',

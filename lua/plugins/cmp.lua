@@ -79,15 +79,14 @@ return {
     cond = util.not_vscode,
     event = 'InsertEnter',
     opts = {
-      filetypes = {
-        lua = false,
-        vim = false,
-        sh = false,
-        json = false,
-        markdown = false,
-      },
       suggestion = { enabled = false },
       panel = { enabled = false },
+      should_attach = function (_, bufname)
+        if not vim.bo.buflisted then return false end
+        if vim.bo.buftype ~= "" then return false end
+        if string.sub(bufname, 1, #util.dirs.work) ~= util.dirs.work then return false end
+        return true
+      end,
     },
   },
   {
@@ -96,7 +95,7 @@ return {
       cond = util.not_vscode,
       dependencies = { 'zbirenbaum/copilot.lua', 'nvim-lua/plenary.nvim' },
       opts = {
-        -- See Configuration section for options
+        model = 'gpt-4o',
       },
       init = function ()
         util.keymap('<a-c>', '[Copilot] Toggle chat', [[<cmd>CopilotChatToggle<cr>]])
