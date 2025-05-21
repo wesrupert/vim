@@ -1,16 +1,18 @@
-local util = {}
+local M = {}
 
----True iff vim is not running inside the VSCodeNeovim extension.
-util.not_vscode = vim.g.vscode ~= 1
-
-util.dirs = {
+M.dirs = {
   home = vim.fn.expand('$HOME'),
   code = vim.fn.expand('$HOME/Code'),
   work = vim.fn.expand('$HOME/Code/work'),
 }
 
 ---List of kind icons for LSP/file/etc icons.
-util.kind_icons     = {
+M.kind_icons     = {
+  Error             = '',
+  Warn              = '',
+  Info              = '',
+  Hint              = '',
+
   NeoVim            = '',
   Copilot           = '',
 
@@ -99,6 +101,18 @@ util.kind_icons     = {
   MarkdownH6        = '󰉰',
 }
 
+M.diagnostic_icons = {
+  [vim.diagnostic.severity.ERROR] = M.kind_icons.Error,
+  [vim.diagnostic.severity.WARN] = M.kind_icons.Warn,
+  [vim.diagnostic.severity.INFO] = M.kind_icons.Info,
+  [vim.diagnostic.severity.HINT] = M.kind_icons.Hint,
+}
+
+M.kind_names = {
+  ['Lua Diagnostics.'] = 'lua',
+  ['Lua Syntax Check.'] = 'lua',
+}
+
 ---@alias SpecialFlag "indent"|"resize"
 
 ---@type table<string, SpecialFlag[]>
@@ -123,7 +137,7 @@ local special_filetypes = {
 ---Get special buffer and file types corresponding to the given flag.
 ---@param flag? SpecialFlag If provided, only return special values related to the given property
 ---@return string[] buftypes, string[] filetypes The special buftypes and filetypes matching the provided flag
-function util.get_special_types(flag)
+function M.get_special_types(flag)
   local buftypes = {}
   for buftype, flags in pairs(special_buftypes) do
     for _, f in ipairs(flags) do
@@ -151,17 +165,88 @@ end
 ---@return T result
 ---@return R ...
 ---@see pcall
-function util.maybe_pcall(maybe_func, ...)
+function M.maybe_pcall(maybe_func, ...)
   if type(maybe_func) == 'function' then return pcall(maybe_func, ...) end
   return (maybe_func and true or false), maybe_func
+end
+
+
+-- Fast implementation to check if a table is a list
+---@param t table
+function M.is_list(t)
+  local i = 0
+  ---@diagnostic disable-next-line: no-unknown
+  for _ in pairs(t) do
+    i = i + 1
+    if t[i] == nil then
+      return false
+    end
+  end
+  return true
+end
+
+local function can_merge(v)
+  return type(v) == "table" and (vim.tbl_isempty(v) or not M.is_list(v))
+end
+
+--- Merges the values similar to vim.tbl_deep_extend with the **force** behavior,
+--- but the values can be any type, in which case they override the values on the left.
+--- Values will me merged in-place in the first left-most table. If you want the result to be in
+--- a new table, then simply pass an empty table as the first argument `vim.merge({}, ...)`
+--- Supports clearing values by setting a key to `vim.NIL`
+---@generic T
+---@param ... T
+---@return T
+function M.merge(...)
+  local ret = select(1, ...)
+  if ret == vim.NIL then
+    ret = nil
+  end
+  for i = 2, select("#", ...) do
+    local value = select(i, ...)
+    if can_merge(ret) and can_merge(value) then
+      for k, v in pairs(value) do
+        ret[k] = M.merge(ret[k], v)
+      end
+    elseif value == vim.NIL then
+      ret = nil
+    elseif value ~= nil then
+      ret = value
+    end
+  end
+  return ret
 end
 
 ---Create a copy of a table.
 ---@param table table
 ---@return table table The copy
-function util.tbl_copy(table)
-  return vim.tbl_extend('keep', {}, table)
+function M.tbl_copy(table)
+  return M.merge({}, table)
 end
+
+--- Removes empty lines from the beginning and end.
+---@param lines table list of lines to trim
+---@return table trimmed list of lines
+function M.trim_empty_lines(lines)
+  local start = 1
+  for i = 1, #lines do
+    if lines[i] ~= nil and #lines[i] > 0 then
+      start = i
+      break
+    end
+  end
+  local finish = 1
+  for i = #lines, 1, -1 do
+    if lines[i] ~= nil and #lines[i] > 0 then
+      finish = i
+      break
+    end
+  end
+  return vim.list_slice(lines, start, finish)
+end
+
+---@type table<string, boolean>
+local queried_settings = {}
 
 ---Get the value for the given setting with the narrowest context.
 ---Checks: window -> tab -> buffer -> global -> provided default
@@ -172,56 +257,64 @@ end
 ---@param tab? number If provided, use the given tab number instead of checking current
 ---@param win? number If provided, use the given window number instead of checking current
 ---@return T
-function util.get_setting(key, default, buf, tab, win)
-  -- 1. Window
-  local win_value = vim.tbl_get(vim.w, win or vim.api.nvim_get_current_win(), key)
+function M.get_setting(key, default, buf, tab, win)
+  queried_settings[key] = true -- Set key for reporting
+
+  local win_value = vim.tbl_get(vim.w, win or 0, key)
   if win_value ~= nil then return win_value end
 
-  -- 2. Tab
-  local tab_value = vim.tbl_get(vim.t, tab or vim.api.nvim_get_current_tabpage(), key)
+  local tab_value = vim.tbl_get(vim.t, tab or 0, key)
   if tab_value ~= nil then return tab_value end
 
-  -- 3. Buf
-  local buf_value = vim.tbl_get(vim.b, buf or vim.api.nvim_get_current_buf(), key)
+  local buf_value = vim.tbl_get(vim.b, buf or 0, key)
   if buf_value ~= nil then return buf_value end
 
-  -- 4. Global
   local global_value = vim.tbl_get(vim.g, key)
   if global_value ~= nil then return global_value end
 
-  -- 5. Default
   return default
 end
 
+---Get a list of all settings tracked by get_setting in the current environment.
+---@return table<integer, string> settings Table of all tracked settings
+function M.get_settings()
+  local settings = {}
+  for key, _ in pairs(queried_settings) do
+    settings[#settings] = key
+  end
+  return settings
+end
+
 ---Composable to keep track of a setting.
----@see util.get_setting
-function util.use_get_setting(key, default)
-  return function () return util.get_setting(key, default) end
+---@see M.get_setting
+---@return {
+---  get: fun(buf?: number, tab?: number, win?: number),
+---  set: fun(value, ctx?: string, ctx_id?: number),
+---}
+function M.use_setting(key, default)
+  return {
+    get = function (buf, tab, win) return M.get_setting(key, default, buf, tab, win) end,
+    set = function (value, ctx, ctx_id)
+      if not ctx or ctx == 'g' then
+        vim.g[key] = value
+      else
+        vim[ctx][ctx_id or 0][key] = value
+      end
+      return value
+    end,
+  }
 end
 
 ---Check if table has a value for the given key.
 ---@param obj table|any The table to check
 ---@param key string|number The key to check
 ---@return boolean True iff the table has a value for the key
-function util.has_key(obj, key)
+function M.has_key(obj, key)
   if type(obj) == 'table' then
     return obj[key] ~= nil
   else
     return false
   end
-end
-
----Merge two or more tables into one.
----@param ... table[] List of tables to merge
----@return table table Merged table
----@note This function modifies the first table!
-function util.table_merge(...)
-    local tables = {...}
-    local result = tables[1]
-    for i = 2, #tables do
-        for k, v in pairs(tables[i]) do result[k] = v end
-    end
-    return result
 end
 
 ---Alias for vim.api.nvim_set_keymap with some better args and defaults.
@@ -232,8 +325,9 @@ end
 ---@param buffer? number Buffer number, otherwise mapping is global
 ---@param opts? table Table of :map-arguments
 ---@see vim.keymap.set
-function util.keymap(lhs, desc, rhs, mode, buffer, opts)
-  vim.keymap.set(mode or 'n', lhs, rhs, util.table_merge(
+function M.keymap(lhs, desc, rhs, mode, buffer, opts)
+  vim.keymap.set(mode or 'n', lhs, rhs, vim.tbl_extend(
+    'force',
     { noremap = true },
     desc and { desc = desc } or {},
     buffer ~= nil and { buffer = buffer } or {},
@@ -244,13 +338,13 @@ end
 ---Check if the given buffer is empty.
 ---@param buffer? number Buffer number, or current buffer
 ---@return boolean True iff the current buffer is empty
-function util.buf_is_empty(buffer)
+function M.buf_is_empty(buffer)
   local buf = buffer or vim.api.nvim_get_current_buf()
   return vim.api.nvim_buf_get_name(buf) == '' and vim.bo[buf].filetype == ''
 end
 
 
-function util.nvim_is_empty_on_open()
+function M.nvim_is_empty_on_open()
   -- Taken from mini.nvim `is_something_shown`.
   -- See: https://github.com/echasnovski/mini.nvim/blob/main/lua/mini/starter.lua
   -- Checks for when at least one of the following is true:
@@ -282,4 +376,4 @@ function util.nvim_is_empty_on_open()
   return true
 end
 
-return util
+return M

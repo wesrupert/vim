@@ -13,17 +13,19 @@ local plugins = {
   extra = true,
   icons = true,
   visits = {
-    init = function ()
-      local mini_visits = require('mini.visits')
-      util.keymap('gov', '[MiniVisits] Add label',    mini_visits.add_label)
-      util.keymap('goV', '[MiniVisits] Remove label', mini_visits.remove_label)
+    config = function (opts)
+      local visits = require('mini.visits')
+      visits.setup(opts)
+
+      util.keymap('gov', '[MiniVisits] Add label',    visits.add_label)
+      util.keymap('goV', '[MiniVisits] Remove label', visits.remove_label)
     end,
   },
 
   -- Default configs
 
   align = true,
-  files = util.not_vscode,
+  files = true,
   jump = true,
   jump2d = true,
   move = true,
@@ -52,27 +54,27 @@ local plugins = {
   },
 
   bufremove = {
-    cond = util.not_vscode,
-    init = function ()
+    config = function (opts)
+      local bufremove = require('mini.bufremove')
+      bufremove.setup(opts)
       util.keymap('<leader>zz', '[MiniBufremove] Save and close buffer', function ()
         vim.cmd('write')
-        require('mini.bufremove').delete()
+        bufremove.delete()
       end)
-      util.keymap('<leader>zq', '[MiniBufremove] Close buffer', require('mini.bufremove').delete)
+      util.keymap('<leader>zq', '[MiniBufremove] Close buffer', bufremove.delete)
     end,
   },
 
   diff = {
-    cond = util.not_vscode,
     opts = {
       view = {
         signs = { add = '┃', change = '┃', delete = '┃' },
       },
     },
-    init = function ()
-      local mini_diff = require('mini.diff')
-      util.keymap(']g', '[MiniDiff] Toggle overlay', mini_diff.toggle_overlay)
-      util.keymap('[g', '[MiniDiff] Toggle overlay', mini_diff.toggle_overlay)
+    config = function (opts)
+      local diff = require('mini.diff')
+      diff.setup(opts)
+      util.keymap(']g', '[MiniDiff] Toggle overlay', diff.toggle_overlay)
     end,
   },
 
@@ -87,7 +89,6 @@ local plugins = {
   },
 
   indentscope = {
-    cond = util.not_vscode,
     opts = {
       symbol = '│',
       options = { try_as_border = true },
@@ -117,37 +118,48 @@ local plugins = {
       evaluate = { prefix = 'g=' },
       exchange = { prefix = 'g<tab>' },
       multiply = { prefix = 'g+' },
-      replace  = { prefix = 'gr' },
+      replace  = { prefix = 'gor' },
       sort     = { prefix = 'gos' },
     },
   },
 
   sessions = {
-    cond = util.not_vscode,
-    config = function ()
-      local mini_sessions = require('mini.sessions')
-      mini_sessions.setup({
-        autoread = true,
-        autowrite = true,
-        hooks = {
-          post = {
-            read = function (ev) vim.g.mini_sessions_current = ev.name end,
-            write = function (ev) vim.g.mini_sessions_current = ev.name end,
-            delete = function (ev)
-              if vim.g.mini_sessions_current == ev.name then vim.g.mini_sessions_current = nil end
-            end
-          },
+    opts = {
+      autoread = true,
+      autowrite = true,
+      hooks = {
+        post = {
+          read = function (ev) vim.g.mini_sessions_current = ev.name end,
+          write = function (ev) vim.g.mini_sessions_current = ev.name end,
+          delete = function (ev)
+            if vim.g.mini_sessions_current == ev.name then vim.g.mini_sessions_current = nil end
+          end
         },
-      })
-    end,
-    init = function ()
-      local mini_sessions = require('mini.sessions')
-      vim.o.sessionoptions = 'curdir,folds,help,tabpages,winsize,terminal'
-      util.keymap('<c-s>', '[MiniSession] Select', mini_sessions.select)
-      util.keymap('<leader>se', '[MiniSession] Select', mini_sessions.select)
-      util.keymap('<leader>sw', '[MiniSession] Write',  function () mini_sessions.write(vim.fn.input('Session Name: ')) end)
+      },
+    },
+    config = function (opts)
+      local sessions = require('mini.sessions')
+
+      -- Autoread with command line support
+      local init_session = vim.g.init_session
+      if init_session then
+        vim.tbl_extend('force', opts or {}, { autoread = false })
+        vim.api.nvim_create_autocmd('VimEnter', {
+          desc = 'Autoread environment session',
+          group = user_mini_config,
+          nested = true,
+          once = true,
+          callback = function () sessions.read(init_session) end,
+        })
+      end
+
+      sessions.setup(opts)
+
+      util.keymap('<c-s>',      '[MiniSession] Select', sessions.select)
+      util.keymap('<leader>se', '[MiniSession] Select', sessions.select)
+      util.keymap('<leader>sw', '[MiniSession] Write',  function () sessions.write(vim.fn.input('Session Name: ')) end)
       util.keymap('<leader>ss', '[MiniSession] Update', function ()
-        mini_sessions.write(vim.g.mini_sessions_current or vim.fn.input('Session Name: '))
+        sessions.write(vim.g.mini_sessions_current or vim.fn.input('Session Name: '))
       end)
     end,
   },
@@ -171,7 +183,6 @@ local plugins = {
   },
 
   starter = {
-    cond = util.not_vscode,
     config = function ()
       local starter = require('mini.starter')
       local lazy_status_sok, lazy_status = pcall(require, 'lazy.status')
@@ -222,81 +233,68 @@ local plugins = {
           starter.gen_hook.adding_bullet(),
         },
       })
-    end,
-    init = function ()
-      util.keymap('<a-n>', '[MiniStarter] Open', require('mini.starter').open)
+
+      util.keymap('<a-n>', '[MiniStarter] Open', starter.open)
     end,
   },
 }
 
 return {
-  {
-    'echasnovski/mini.nvim',
-    config = function()
-      local print_mini = function (m, ...) print('[Mini.'..m..'] ', ...) end
-      local loaded = {}
+  'echasnovski/mini.nvim',
+  config = function()
+    local print_mini = function (m, ...) print('[Mini.'..m..'] ', ...) end
+    for k, p in pairs(plugins) do
+      -- Set up modules (load opts and run config)
+      xpcall(function ()
+        local plugin_ok, plugin = util.maybe_pcall(p)
+        if not plugin_ok then return end
 
-      for k, p in pairs(plugins) do
-        -- Set up modules (load opts and run config)
-        xpcall(function ()
-          local plugin_ok, plugin = util.maybe_pcall(p)
-          if not plugin_ok then return end
+        local plugin_is_table = type(plugin) == 'table'
+        if plugin_is_table and util.has_key(plugin, 'cond') then
+          local cond_ok = util.maybe_pcall(plugin.cond)
+          if not cond_ok then return end
+        end
 
-          local plugin_is_table = type(plugin) == 'table'
-          if plugin_is_table and util.has_key(plugin, 'cond') then
-            local cond_ok = util.maybe_pcall(plugin.cond)
-            if not cond_ok then return end
+        -- Run pre-install scripts
+        if util.has_key(p, 'init') then
+          local init_ok, init_result = util.maybe_pcall(p.init)
+          if not init_ok then
+            print_mini(k, 'Error running init', init_result)
+            return
           end
+        end
 
-
-          -- Get opts
-          local opts = {}
-          if util.has_key(plugin, 'opts') then
-            local opts_ok, opts_result = util.maybe_pcall(plugin.opts)
-            if not opts_ok or type(opts_result) ~= 'table' then
-              print_mini(k, 'Error loading opts', opts_result)
-              return
-            end
-            opts = opts_result
+        -- Get opts
+        local opts = {}
+        if util.has_key(plugin, 'opts') then
+          local opts_ok, opts_result = util.maybe_pcall(plugin.opts)
+          if not opts_ok or type(opts_result) ~= 'table' then
+            print_mini(k, 'Error loading opts', opts_result)
+            return
           end
+          opts = opts_result
+        end
 
-          -- Setup module
-          if util.has_key(plugin, 'config') then
-            local config_ok, config_result = util.maybe_pcall(plugin.config, opts)
-            if not config_ok then
-              print_mini(k, 'Error loading config', config_result)
-              return
-            end
-          else
-            local module_ok, module_result = pcall(require, 'mini.' .. k)
-            if not module_ok then
-              print_mini(k, 'Error importing module', module_result)
-              return
-            end
-            local setup_ok, setup_result = pcall(module_result.setup, opts)
-            if not setup_ok then
-              print_mini(k, 'Error running setup', setup_result)
-              return
-            end
+        -- Setup module
+        if util.has_key(plugin, 'config') then
+          local config_ok, config_result = util.maybe_pcall(plugin.config, opts)
+          if not config_ok then
+            print_mini(k, 'Error loading config', config_result)
+            return
           end
-
-          -- Setup complete, add to post-setup init modules
-          loaded[k] = plugin
-        end, function(err) print(err) end)
-      end
-
-      -- Run post-install scripts
-      for k, p in pairs(loaded) do
-        xpcall(function ()
-          if util.has_key(p, 'init') then
-            local init_ok, init_result = util.maybe_pcall(p.init)
-            if not init_ok then
-              print_mini(k, 'Error running init', init_result)
-              return
-            end
+        else
+          local module_ok, module_result = pcall(require, 'mini.' .. k)
+          if not module_ok then
+            print_mini(k, 'Error importing module', module_result)
+            return
           end
-        end, function(err) print(err) end)
-      end
-    end,
-  },
+          local setup_ok, setup_result = pcall(module_result.setup, opts)
+          if not setup_ok then
+            print_mini(k, 'Error running setup', setup_result)
+            return
+          end
+        end
+      end, function(err) print(err) end)
+    end
+  end,
 }

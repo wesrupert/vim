@@ -98,6 +98,7 @@ set scrolloff=2 sidescrolloff=1
 set splitbelow splitright
 set switchbuf=usetab
 set updatetime=500
+set sessionoptions=curdir,folds,help,tabpages,winsize,terminal
 
 if exists('&termguicolors')
   if !has('gui_running') && &term =~ '^\%(screen\|tmux\)'
@@ -113,7 +114,6 @@ colorscheme catppuccin
 set completeopt=menuone,preview,noinsert,noselect,fuzzy
 set gdefault ignorecase infercase smartcase
 set wildmenu wildoptions=fuzzy,pum wildmode=list:lastused:full
-set messagesopt=wait:2000,history:500
 set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc,.class
 set wildignore+=*.pyc,*.class,*.sln,*.Master,*.csproj,*.csproj.user,*.cache,*.dll,*.pdb,*.min.*
 set wildignore+=*.tar.*,*.swp,*.bak
@@ -126,7 +126,7 @@ if executable('rg')
 endif
 
 " Text options
-set breakindent smartindent
+set breakindent smartindent nowrap
 set conceallevel=2
 set cursorline
 set tabstop=2 shiftwidth=0 softtabstop=-1
@@ -168,10 +168,10 @@ noremap          ;             :
 noremap          :             ;
 
 noremap <silent> <c-w>t        <cmd>tabnew<cr>
-noremap <silent> <c-y>         <c-w>h
-noremap <silent> <c-h>         <c-w>j
-noremap <silent> <c-a>         <c-w>k
-noremap <silent> <c-e>         <c-w>l
+noremap <silent> <c-h>         <c-w>h
+noremap <silent> <c-j>         <c-w>j
+noremap <silent> <c-k>         <c-w>k
+noremap <silent> <c-l>         <c-w>l
 noremap <silent> <leader>/     <cmd>nohlsearch<cr>
 noremap <silent> <leader>[     <cmd>setlocal wrap!<cr><cmd>setlocal wrap?<cr>
 noremap <silent> <leader>c,    <cmd>cd ..<cr><cmd>echo ':cd '.getcwd()<cr>
@@ -198,12 +198,14 @@ inoremap <expr> <cr> pumvisible() ? "\<C-Y>" : "\<C-G>u\<cr>"
 noremap  <silent> <leader>a  <c-c>ggVG
 
 if has('clipboard')
-  noremap  <leader>v "+gp
-  noremap  <leader>V "+gP
-  noremap  <leader>x "+x
-  noremap  <leader>X "+X
-  noremap  <leader>y "+y
-  noremap  <leader>Y "+Y
+  nnoremap ygf <cmd>execute 'let @'.v:register.'="'.expand('%:p').'"'<cr>
+  noremap <leader>v "+gp
+  noremap <leader>V "+gP
+  noremap <leader>x "+x
+  noremap <leader>X "+X
+  noremap <leader>y "+y
+  noremap <leader>Y "+Y
+  nmap <leader>ygf "+ygf
 endif
 
 tnoremap <c-n> <c-\><c-n>
