@@ -82,8 +82,6 @@ vim.api.nvim_create_autocmd("TextYankPost", {
   desc = "Highlight on yank",
 })
 
--- Set up additional config and plugins
-require("lsp")
 if not vim.loop.fs_stat(lazypath) then
   vim.fn.system({
     "git",

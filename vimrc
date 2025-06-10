@@ -176,6 +176,7 @@ noremap <silent> <leader>/     <cmd>nohlsearch<cr>
 noremap <silent> <leader>[     <cmd>setlocal wrap!<cr><cmd>setlocal wrap?<cr>
 noremap <silent> <leader>c,    <cmd>cd ..<cr><cmd>echo ':cd '.getcwd()<cr>
 noremap <silent> <leader>cd    <cmd>execute 'cd '.expand('%:p:h')<cr><cmd>echo ':cd '.getcwd()<cr>
+noremap <silent> <leader>J     <cmd>silent! call repeat#set('\<leader>J')<cr>ddpkJ
 noremap <silent> <leader>rg    <cmd>Grep <cword><cr>
 noremap <silent> <leader>va    <cmd>execute 'e '.g:vimrc_custom<cr>
 noremap <silent> <leader>vb    <cmd>execute 'e '.g:vimrc_leader<cr>

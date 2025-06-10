@@ -170,8 +170,17 @@ function M.maybe_pcall(maybe_func, ...)
   return (maybe_func and true or false), maybe_func
 end
 
+---Wrap vim.fn.expandedcmd with a pcall to return safely on error.
+---@param string string
+---@param table opts?
+---@return any
+---@see vim.fn.expandcmd
+function M.safe_expandcmd(string, opts)
+  local ok, res = pcall(vim.fn.expandcmd, string, opts)
+  return ok and res or string
+end
 
--- Fast implementation to check if a table is a list
+---Fast implementation to check if a table is a list
 ---@param t table
 function M.is_list(t)
   local i = 0
@@ -185,15 +194,18 @@ function M.is_list(t)
   return true
 end
 
-local function can_merge(v)
-  return type(v) == "table" and (vim.tbl_isempty(v) or not M.is_list(v))
+---Check if the value is a table that can be merged (i.e. not a list).
+---@param value any
+---@return boolean
+function M.can_merge(value)
+  return type(value) == "table" and (vim.tbl_isempty(value) or not M.is_list(value))
 end
 
---- Merges the values similar to vim.tbl_deep_extend with the **force** behavior,
---- but the values can be any type, in which case they override the values on the left.
---- Values will me merged in-place in the first left-most table. If you want the result to be in
---- a new table, then simply pass an empty table as the first argument `vim.merge({}, ...)`
---- Supports clearing values by setting a key to `vim.NIL`
+---Merges the values similar to vim.tbl_deep_extend with the **force** behavior,
+---but the values can be any type, in which case they override the values on the left.
+---Values will me merged in-place in the first left-most table. If you want the result to be in
+---a new table, then simply pass an empty table as the first argument `vim.merge({}, ...)`
+---Supports clearing values by setting a key to `vim.NIL`
 ---@generic T
 ---@param ... T
 ---@return T
@@ -204,7 +216,7 @@ function M.merge(...)
   end
   for i = 2, select("#", ...) do
     local value = select(i, ...)
-    if can_merge(ret) and can_merge(value) then
+    if M.can_merge(ret) and M.can_merge(value) then
       for k, v in pairs(value) do
         ret[k] = M.merge(ret[k], v)
       end
@@ -317,6 +329,17 @@ function M.has_key(obj, key)
   end
 end
 
+---Parse fargs from a command into a callable format for lua functions
+---@param fargs string[]
+---@return string name, table opts
+function M.command_parse_fargs(fargs)
+  local name, opts_parts = fargs[1], vim.tbl_map(M.safe_expandcmd, vim.list_slice(fargs, 2, #fargs))
+  local tbl_string = string.format('{ %s }', table.concat(opts_parts, ', '))
+  local lua_load = loadstring('return ' .. tbl_string)
+  if lua_load == nil then error('Could not convert extra command arguments to table: ' .. tbl_string, 0) end
+  return name, lua_load()
+end
+
 ---Alias for vim.api.nvim_set_keymap with some better args and defaults.
 ---@param lhs string Left-hand side of the mapping
 ---@param desc string human-readable description
@@ -343,27 +366,24 @@ function M.buf_is_empty(buffer)
   return vim.api.nvim_buf_get_name(buf) == '' and vim.bo[buf].filetype == ''
 end
 
-
+---Checks for when at least one of the following is true:
+--- - There are files in arguments (like `nvim foo.txt` with new file).
+--- - Several buffers are listed (like session with placeholder buffers).
+---   (That means unlisted buffers (like from `nvim-tree`) don't affect decision.)
+--- - Current buffer is meant to show something else
+--- - Current buffer has any lines (something opened explicitly).
+---@see mini.nvim.is_something_shown https://github.com/echasnovski/mini.nvim/blob/main/lua/mini/starter.lua
+---@return boolean True iff nvim is "empty" on open
 function M.nvim_is_empty_on_open()
-  -- Taken from mini.nvim `is_something_shown`.
-  -- See: https://github.com/echasnovski/mini.nvim/blob/main/lua/mini/starter.lua
-  -- Checks for when at least one of the following is true:
-
-  -- There are files in arguments (like `nvim foo.txt` with new file).
   if vim.fn.argc() > 0 then return false end
+  if vim.bo.filetype ~= '' then return false end
 
-  -- Several buffers are listed (like session with placeholder buffers).
-  -- That means unlisted buffers (like from `nvim-tree`) don't affect decision.
   local listed_buffers = vim.tbl_filter(
     function(buf_id) return vim.fn.buflisted(buf_id) == 1 end,
     vim.api.nvim_list_bufs()
   )
   if #listed_buffers > 1 then return false end
 
-  -- Current buffer is meant to show something else
-  if vim.bo.filetype ~= '' then return false end
-
-  -- - Current buffer has any lines (something opened explicitly).
   -- NOTE: Usage of `line2byte(line('$') + 1) < 0` seemed to be fine, but it
   -- doesn't work if some automated changed was made to buffer while leaving it
   -- empty (returns 2 instead of -1). This was also the reason of not being

@@ -1,5 +1,5 @@
 local methods = vim.lsp.protocol.Methods
-local augroup_lsp_event_handler = vim.api.nvim_create_augroup('LspEventHandlerConfig', { clear = true })
+local augroup_lsp_event_handler = vim.api.nvim_create_augroup("LspEventHandlerConfig", { clear = true })
 
 local M = {}
 local m = {}
@@ -11,17 +11,31 @@ function M.get_clients(client_opts, filter)
   return filter and vim.tbl_filter(filter, result) or result
 end
 
----Set up LSP keymaps and autocommands for when an LSP attaches
----or updates capabilities for the current buffer.
+---Set up LSP keymaps and autocommands for when an LSP attaches or updates capabilities for the current buffer.
 ---@param on_attach fun(client:vim.lsp.Client, bufnr:integer) The callback to invoke
 ---@return number handle Handle to unregister on_attach listeners
 function M.on_attach(on_attach)
   return vim.api.nvim_create_autocmd("LspAttach", {
-    desc = '[LSP] Setup on_attach handler',
+    desc = "[LSP] Setup on_attach handler",
     group = augroup_lsp_event_handler,
     callback = function (ev)
       local client = vim.lsp.get_client_by_id(ev.data.client_id)
       if client then return on_attach(client, ev.buf) end
+    end,
+  })
+end
+
+---Set up LSP keymaps and autocommands for when the named LSP attaches or updates capabilities for the current buffer.
+---@param name string The client name
+---@param on_attach fun(client:vim.lsp.Client, bufnr:integer) The callback to invoke
+---@return number handle Handle to unregister on_attach listeners
+function M.on_attach_client(name, on_attach)
+  return vim.api.nvim_create_autocmd("LspAttach", {
+    desc = "[LSP] Setup on_attach handler for " .. name,
+    group = augroup_lsp_event_handler,
+    callback = function (ev)
+      local client = vim.lsp.get_client_by_id(ev.data.client_id)
+      if client and client.name == name then return on_attach(client, ev.buf) end
     end,
   })
 end
@@ -75,6 +89,19 @@ function M.on_supports_method(method, fn)
   end
   M.on_attach(check)
   M.on_dynamic_capability(check)
+end
+
+
+-- Set up LSP servers.
+function M.setup_lsp_servers()
+  -- Use stdpath instead of rtp to skip definitions only in nvim-lspconfig.
+  local lsp_dir = vim.fn.stdpath("config") .. "/after/lsp"
+  if not vim.fn.isdirectory(lsp_dir) then return end
+  local lsp_servers = {}
+  for _, file in ipairs(vim.fn.readdir(lsp_dir)) do
+    table.insert(lsp_servers, vim.fn.fnamemodify(file, ":t:r"))
+  end
+  vim.lsp.enable(lsp_servers)
 end
 
 return M

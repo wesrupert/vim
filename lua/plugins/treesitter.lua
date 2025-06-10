@@ -1,4 +1,6 @@
 local util = require("util")
+local user_treesitter_config = vim.api.nvim_create_augroup("UserTreesitterConfig", { clear = true })
+
 local setup_treesitter_plugin = function (name)
   return function (_, opts)
       ---@diagnostic disable-next-line: missing-fields
@@ -9,50 +11,96 @@ end
 return {
   {
     "nvim-treesitter/nvim-treesitter",
+    -- TODO: Update when the following issues are closed:
+    -- - https://github.com/andymass/vim-matchup/pull/390
+    -- branch = "main",
     cmd = {
       "TSBufDisable", "TSBufEnable", "TSBufToggle", "TSDisable", "TSEnable", "TSToggle",
       "TSInstall", "TSInstallInfo", "TSInstallSync", "TSModuleInfo", "TSUninstall", "TSUpdate", "TSUpdateSync",
     },
     build = function() require("nvim-treesitter.install").update({ with_sync = true }) end,
     opts = {
-      ensure_installed = {
-        "c",
-        "css",
-        "html",
-        "javascript",
-        "jsdoc",
-        "json",
-        "lua",
-        "markdown",
-        "markdown_inline",
-        "python",
-        "query",
-        "typescript",
-        "vim",
-        "vimdoc",
-        "vue",
-      },
-      compilers = { "clang" },
       sync_install = false,
-      auto_install = true,
-      highlight = {
-        enable = true,
-        additional_vim_regex_highlighting = { "markdown" },
-      },
-      indent = { enable = true },
+      compilers = { "clang" },
+      highlight = { enable = true }, -- TODO: Remove when updated to main branch
+      indent = { enable = true }, -- TODO: Remove when updated to main branch
     },
     config = function (_, opts)
-      require("nvim-treesitter.configs").setup(opts)
-      require("vim.treesitter.query").add_predicate("is-mise?", function(_, _, bufnr, _)
+      local treesitter = require("nvim-treesitter")
+      local treesitter_install = require("nvim-treesitter.install")
+      local treesitter_parsers = require("nvim-treesitter.parsers").list
+      local treesitter_query = require("vim.treesitter.query")
+
+      treesitter.setup()
+      require("nvim-treesitter.configs").setup(opts) -- TODO: Remove when updated to main branch
+
+      -- Override toml parser when in mise configs to add injected language support.
+      treesitter_query.add_predicate("is-mise?", function(_, _, bufnr, _)
         local filepath = vim.api.nvim_buf_get_name(tonumber(bufnr) or 0)
         local filename = vim.fn.fnamemodify(filepath, ":t")
         return string.match(filename, ".*mise.*%.toml$") ~= nil
       end, { force = true, all = false })
 
+      -- Enable fold/indent expressions
       vim.o.foldlevelstart = 999
-      vim.o.foldlevel = 999
-      vim.o.foldmethod = "expr"
-      vim.o.foldexpr = "nvim_treesitter#foldexpr()"
+      vim.api.nvim_create_autocmd("FileType", {
+        group = user_treesitter_config,
+        callback = function (ev)
+          local bufnr = ev.buf
+          if not pcall(vim.treesitter.start, bufnr) then return end
+          vim.bo[ev.buf].syntax = "off"
+          vim.wo.foldlevel = 999
+          vim.wo.foldmethod = "expr"
+          vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+          -- vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        end,
+      })
+
+      -- Enable additional syntax highlighting for some filetypes.
+      vim.api.nvim_create_autocmd("FileType", {
+        group = user_treesitter_config,
+        pattern = { "markdown" },
+        callback = function (ev) vim.bo[ev.buf].syntax = "on" end,
+      })
+
+      -- Auto-install and start treesitter parser for any buffer with a registered filetype.
+      local parser_install_attempted = {}
+      vim.api.nvim_create_autocmd("BufWinEnter", {
+        group = user_treesitter_config,
+        callback = function (ev)
+          local bufnr = ev.buf
+          local filetype = vim.api.nvim_get_option_value("filetype", { buf = bufnr })
+          if filetype == "" then return end
+
+          -- Check if parser was already auto-installed to short-circuit additional checks
+          if parser_install_attempted[filetype] ~= nil then return end
+
+          -- Check if parser can be inferred and is available to install
+          local parser_name = vim.treesitter.language.get_lang(filetype)
+          if parser_name == nil then return end
+          if not treesitter_parsers[parser_name] then return end
+
+          local parser_installed = pcall(vim.treesitter.get_parser, bufnr, parser_name)
+          if not parser_installed then
+            vim.notify("Installing " .. parser_name .. " treesitter grammar for...")
+            -- TODO: Use this version when updated to main branch
+            -- treesitter.install({ parser_name }):wait(30000)
+            treesitter_install.ensure_installed_sync(parser_name)
+            parser_installed = pcall(vim.treesitter.get_parser, bufnr, parser_name)
+            if parser_installed then vim.notify(parser_name .. " treesitter grammar installed!") end
+          end
+
+          if parser_installed then
+            vim.treesitter.start(bufnr, parser_name)
+          else
+            vim.notify("Error installing " .. parser_name .. " treesitter grammar!", vim.diagnostic.severity.ERROR)
+          end
+
+          -- Either we installed it, or encountered an error trying.
+          -- Either way, don't try again for this filetype this session.
+          parser_install_attempted[filetype] = true
+        end,
+      })
     end,
   },
   {
@@ -126,13 +174,15 @@ return {
     dependencies = { "nvim-treesitter/nvim-treesitter" },
     opts = {
       multiwindow = true,
-      max_lines = 3,
+      min_window_height = 20,
+      max_lines = 5,
+      line_numbers = false,
     },
     config = function (_, opts)
       local context = require("treesitter-context")
       context.setup(opts)
       local go_to_context = function () context.go_to_context(vim.v.count1) end
-      util.keymap("[e", "[TreeSitter] Jump to context start", go_to_context, nil, nil, { silent = true })
+      util.keymap("['", "[TreeSitter] Jump to context start", go_to_context, nil, nil, { silent = true })
     end,
     init = function ()
       vim.api.nvim_set_hl(0, "TreesitterContextBottom", { underline = true, sp = "Grey" })
@@ -143,12 +193,12 @@ return {
     dependencies = { "nvim-treesitter/nvim-treesitter" },
     config = function ()
       local tree_climber = require("tree-climber")
-      util.keymap("]n",  "[TreeSitter] Next sibling",   tree_climber.goto_next,   { "n", "v", "o" })
-      util.keymap("[n",  "[TreeSitter] Prev sibling",   tree_climber.goto_prev,   { "n", "v", "o" })
-      util.keymap("]N",  "[TreeSitter] Jump child",     tree_climber.goto_child,  { "n", "v", "o" })
-      util.keymap("[N",  "[TreeSitter] Jump parent",    tree_climber.goto_parent, { "n", "v", "o" })
-      util.keymap("an",  "[TreeSitter] Select node",    tree_climber.select_node, { "v", "o" })
-      util.keymap("in",  "[TreeSitter] Select inner",   tree_climber.select_node, { "v", "o" })
+      util.keymap("],",  "[TreeSitter] Next sibling",   tree_climber.goto_next,   { "n", "v", "o" })
+      util.keymap("[,",  "[TreeSitter] Prev sibling",   tree_climber.goto_prev,   { "n", "v", "o" })
+      util.keymap("].",  "[TreeSitter] Jump child",     tree_climber.goto_child,  { "n", "v", "o" })
+      util.keymap("[.",  "[TreeSitter] Jump parent",    tree_climber.goto_parent, { "n", "v", "o" })
+      util.keymap("a.",  "[TreeSitter] Select node",    tree_climber.select_node, { "v", "o" })
+      util.keymap("i.",  "[TreeSitter] Select inner",   tree_climber.select_node, { "v", "o" })
       util.keymap("gss", "[TreeSitter] Swap next node", tree_climber.swap_next)
       util.keymap("gsS", "[TreeSitter] Swap prev node", tree_climber.swap_prev)
     end,
@@ -162,8 +212,7 @@ return {
   {
     "windwp/nvim-ts-autotag",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
-    opts = { enable = true },
-    config = setup_treesitter_plugin("autotag"),
+    config = true,
   },
   {
     "joosepalviste/nvim-ts-context-commentstring",

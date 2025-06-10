@@ -1,1 +1,3 @@
-return {}
+return {
+  workingDirectories = { mode = "location" },
+}

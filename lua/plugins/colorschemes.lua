@@ -5,11 +5,11 @@ return {
     opts = {
       set_dark_mode = function()
         vim.api.nvim_set_option_value("background", "dark", {})
-        vim.cmd.colorscheme(util.get_setting("nighttheme", "catppuccin"))
+        vim.cmd.colorscheme(util.get_setting("night_theme", "catppuccin"))
       end,
       set_light_mode = function()
         vim.api.nvim_set_option_value("background", "light", {})
-        vim.cmd.colorscheme(util.get_setting("daytheme", "catppuccin"))
+        vim.cmd.colorscheme(util.get_setting("day_theme", "catppuccin"))
       end,
     },
   },
@@ -64,6 +64,19 @@ return {
         }
       end,
     },
+  },
+  {
+    "neanias/everforest-nvim",
+    priority = 1000,
+    opts = {
+      dim_inactive_windows = true,
+      italics = true,
+      show_eob = false,
+      -- inlay_hints_background = "dimmed",
+    },
+    config = function (_, opts)
+      require("everforest").setup(opts)
+    end,
   },
   {
     "edeneast/nightfox.nvim",
