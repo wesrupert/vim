@@ -73,7 +73,76 @@ local plugins = {
     },
     config = function (opts)
       local diff = require("mini.diff")
-      diff.setup(opts)
+
+      -- Jujutsu support
+      -- See https://github.com/nvim-mini/mini.nvim/discussions/1783
+      local jj_buffer_cache = {}
+
+      local function get_jj_root(path)
+        local result = vim.system(
+          { "jj", "--ignore-working-copy", "root" },
+          { cwd = vim.fs.dirname(path) }
+        ):wait()
+        if result.code ~= 0 then return nil end
+        return vim.trim(result.stdout)
+      end
+
+      local function invalidate_cache(buf_id)
+        local cache = jj_buffer_cache[buf_id]
+        if cache == nil then return false end
+        pcall(function()
+          cache.fs_event:stop()
+          cache.timer:stop()
+        end)
+        jj_buffer_cache[buf_id] = nil
+      end
+
+      local function watch_jj_file(buf_id, path)
+        local repo = get_jj_root(path)
+        if repo == nil then return false end
+
+        local set_ref_text = function ()
+          vim.system(
+            { "jj", "--ignore-working-copy", "file", "show", "-r", "@-", "\"" .. path .. "\"" },
+            { cwd = vim.fs.dirname(path), text = true },
+            vim.schedule_wrap(function (res) diff.set_ref_text(buf_id, res.stdout) end)
+          )
+        end
+
+        local buf_fs_event, timer = vim.loop.new_fs_event(), vim.loop.new_timer()
+        buf_fs_event:start(
+          vim.fs.joinpath(repo, ".jj/working_copy"),
+          { recursive = true },
+          function (_, filename, _)
+            if filename ~= "checkout" then return end
+            timer:stop()
+            timer:start(50, 0, set_ref_text)
+          end
+        )
+
+        invalidate_cache(buf_id)
+        jj_buffer_cache[buf_id] = { fs_event = buf_fs_event, timer = timer }
+
+        set_ref_text()
+      end
+
+      diff.setup(util.merge(opts or {}, {
+        source = {
+          name = "jj",
+          attach = function (buf_id)
+            if jj_buffer_cache[buf_id] ~= nil then return false end
+
+            local path = vim.loop.fs_realpath(vim.api.nvim_buf_get_name(buf_id)) or ''
+            if path == '' then return false end
+
+            return watch_jj_file(buf_id, path)
+          end,
+          detach = function (buf_id)
+            invalidate_cache(buf_id)
+          end,
+        }
+      }))
+
       util.keymap("]g", "[MiniDiff] Toggle overlay", diff.toggle_overlay)
     end,
   },
@@ -240,7 +309,7 @@ local plugins = {
 }
 
 return {
-  "echasnovski/mini.nvim",
+  "nvim-mini/mini.nvim",
   config = function()
     local print_mini = function (m, ...) print("[Mini."..m.."] ", ...) end
     for k, p in pairs(plugins) do

@@ -1,3 +1,5 @@
+local user_ai_config = nil
+
 local M = {}
 
 M.dirs = {
@@ -7,7 +9,7 @@ M.dirs = {
 }
 
 ---List of kind icons for LSP/file/etc icons.
-M.kind_icons     = {
+M.kind_icons = {
   Error             = '',
   Warn              = '',
   Info              = '',
@@ -257,6 +259,39 @@ function M.trim_empty_lines(lines)
   return vim.list_slice(lines, start, finish)
 end
 
+---Get whether the given buffer is part of the given root directory.
+---@param bufname string The buffer number
+---@param root string The root name
+---@return boolean # True iff the buffer is part of the root directory
+function M.is_buffer_name_root(bufname, root)
+  return string.sub(bufname, 1, #root) == root
+end
+
+---Get whether the given buffer is part of the given root directory.
+---@param buf number The buffer id
+---@param root string The root name
+---@return boolean # True iff the buffer is part of the root directory
+function M.is_buffer_root(buf, root)
+  if not vim.bo[buf].buflisted then return false end
+  if vim.bo[buf].buftype ~= "" then return false end
+  return M.is_buffer_name_root(vim.api.nvim_buf_get_name(buf), root)
+end
+
+---Get whether the given buffer is part of the home directory.
+---@param buf number The buffer name
+---@return boolean # True iff the buffer is part of the home directory
+function M.is_buffer_in_home(buf) return M.is_buffer_root(buf, M.dirs.home) end
+
+---Get whether the given buffer is part of the code directory.
+---@param buf number The buffer name
+---@return boolean # True iff the buffer is part of the code directory
+function M.is_buffer_in_code(buf) return M.is_buffer_root(buf, M.dirs.code) end
+
+---Get whether the given buffer is part of the work directory.
+---@param buf number The buffer name
+---@return boolean # True iff the buffer is part of the work directory
+function M.is_buffer_in_work(buf) return M.is_buffer_root(buf, M.dirs.work) end
+
 ---@type table<string, boolean>
 local queried_settings = {}
 
@@ -394,6 +429,34 @@ function M.nvim_is_empty_on_open()
   if string.len(first_line) > 0 then return false end
 
   return true
+end
+
+---Checks if the given buffer supports AI tooling.
+---@param bufnr? integer If bufname is not provided, derive the name from the buffer ID
+---@param bufname? string The buffer name
+---@return boolean allowed True iff AI is allowed in the given buffer
+function M.buf_is_ai_allowed(bufnr, bufname)
+  if M.is_buffer_name_root(bufname or vim.api.nvim_buf_get_name(bufnr or 0), M.dirs.work) then
+    return M.get_setting("copilot_at_work", true)
+  end
+  return M.get_setting("copilot_at_home", false)
+end
+
+---Perform the given callback when AI tooling is supported in a buffer.
+---@param desc string
+---@param callback fun(bufnr: integer)
+function M.on_buf_is_ai_allowed(desc, callback)
+  user_ai_config = user_ai_config or vim.api.nvim_create_augroup("UserAIConfig", { clear = true })
+  vim.api.nvim_create_autocmd("FileType", {
+    group = user_ai_config,
+    desc = desc,
+    callback = function (ev)
+      local bufnr = ev.buf
+      if M.buf_is_ai_allowed(bufnr) then
+        callback(bufnr)
+      end
+    end,
+  })
 end
 
 return M

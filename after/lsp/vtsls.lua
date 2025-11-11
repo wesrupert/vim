@@ -25,9 +25,6 @@ return {
     typescript = js_settings,
     javascript = ts_settings,
     vtsls = {
-      -- Make sure to use the one matching vue-language-server!
-      -- autoUseWorkspaceTsdk = false,
-      -- typescript = { globalTsdk = global_tsdk },
       tsserver = { globalPlugins = {} },
       experimental = {
         maxInlayHintLength = 30,
@@ -36,16 +33,17 @@ return {
     },
   },
   before_init = function(params, config)
+    -- Check for presence of vue language tools before adding @vue/typescript-plugin.
     local result = vim.system({ "npm", "query", "#vue" }, { cwd = params.workspaceFolders[1].name, text = true }):wait()
-    if result.stdout == "[]" then return end
-    local root = vim.fn.expand("$MASON/packages/vue-language-server")
-    config.settings.autoUseWorkspaceTsdk = false
-    config.settings.typescript.globalTsdk = root .. "/node_modules/typescript/lib"
-    table.insert(config.settings.vtsls.tsserver.globalPlugins, {
-      name = "@vue/typescript-plugin",
-      location = root .. "/node_modules/@vue/language-server",
-      languages = { "vue" },
-      configNamespace = "typescript",
-    })
+    if result.stdout ~= "[]" then
+      print("Injecting vue language tools")
+      local vue_ls_root = vim.fn.expand("$MASON/packages/vue-language-server")
+      table.insert(config.settings.vtsls.tsserver.globalPlugins, {
+        name = "@vue/typescript-plugin",
+        location = vue_ls_root .. "/node_modules/@vue/language-server/node_modules",
+        languages = { "vue" },
+        configNamespace = "typescript",
+      })
+    end
   end,
 }

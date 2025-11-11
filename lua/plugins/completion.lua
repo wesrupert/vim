@@ -1,5 +1,25 @@
 local util = require("util")
-local blink_tag = "*"
+
+-- local use_native_completion = true
+local use_native_completion = false
+-- local blink_tag = "*"
+local blink_tag = "v1.3.1"
+
+if use_native_completion then
+  require("util.lsp").on_supports_method("textDocument/completion", function (bufnr, client)
+    client.server_capabilities.completionProvider.triggerCharacters = vim.split("qwertyuiopasdfghjklzxcvbnm_-./ ", "")
+    vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = true })
+    vim.api.nvim_create_autocmd({ 'TextChangedI' }, {
+      group = vim.api.nvim_create_augroup('UserLspCompletion', { clear = true }),
+      buffer = bufnr,
+      callback = function ()
+        vim.lsp.completion.get()
+      end
+    })
+  end)
+  return {} -- Skip blink setup
+end
+
 return {
   {
     "saghen/blink.cmp",
@@ -10,19 +30,10 @@ return {
       keymap = { preset = "enter" },
       snippets = { preset = "mini_snippets" },
       sources = {
-        default = { "lsp", "lazydev", "path", "snippets", "buffer" },
+        default = { "lsp", "path", "snippets", "buffer" },
         providers = {
-          lazydev = {
-            name = "NeoVim",
-            module = "lazydev.integrations.blink",
-            score_offset = 50,
-            fallbacks = { "lsp" },
-          },
-          lsp = {
-            score_offset = 50,
-            -- Show buffer options when lsp is attached.
-            fallbacks = {},
-          },
+          -- Show buffer options when lsp is attached.
+          lsp = { score_offset = 50, fallbacks = {} },
         },
       },
       cmdline = {
@@ -40,8 +51,8 @@ return {
           winhighlight = "Normal:Normal,FloatBorder:FloatBorder,CursorLine:BlinkCmpMenuSelection,Search:None",
           draw = {
             gap = 2,
-            columns = { { "label", "label_description", gap = 1 }, { "kind_icon", "kind",  gap = 1 } },
-            treesitter = { "lazydev", "lsp" },
+            columns = { { "label", "label_description", gap = 1 }, { "kind_icon", "kind", gap = 1 } },
+            treesitter = { "lsp" },
           },
           cmdline_position = function ()
             if vim.g.ui_cmdline_pos ~= nil then
@@ -52,7 +63,7 @@ return {
             return { vim.o.lines - height - 1, 0 }
           end,
         },
-        ghost_text = { enabled = true },
+        ghost_text = { enabled = true, show_without_selection = true },
         documentation = {
           auto_show = true,
           auto_show_delay_ms = 50,
@@ -73,48 +84,60 @@ return {
     opts_extend = { "sources.default" },
   },
   {
-    "zbirenbaum/copilot.lua",
-    -- TODO: Check for copilot integration before enabling.
-    event = "InsertEnter",
+    "xzbdmw/colorful-menu.nvim",
     opts = {
-      suggestion = { enabled = false },
-      panel = { enabled = false },
-      should_attach = function (_, bufname)
-        if not vim.bo.buflisted then return false end
-        if vim.bo.buftype ~= "" then return false end
-        if string.sub(bufname, 1, #util.dirs.work) ~= util.dirs.work then return false end
-        return true
-      end,
+      ls = {
+        -- HACK: See https://github.com/xzbdmw/colorful-menu.nvim/issues/42
+        vtsls = { extra_info_hl = false },
+      },
     },
     specs = {
       {
-        "copilotc-nvim/copilotchat.nvim",
-        dependencies = { "nvim-lua/plenary.nvim" },
+        "saghen/blink.cmp",
+        optional = true,
         opts = {
-          model = "gpt-4o",
+          completion = {
+            menu = {
+              draw = {
+                columns = { { "kind_icon" }, { "label", "label_description", gap = 1 }, { "kind" } },
+                treesitter = nil,
+                components = {
+                  label = {
+                    text = function (ctx) return require("colorful-menu").blink_components_text(ctx) end,
+                    highlight = function (ctx) return require("colorful-menu").blink_components_highlight(ctx) end,
+                  },
+                },
+              },
+            },
+          },
         },
-        init = function ()
-          util.keymap("<a-c>", "[Copilot] Toggle chat", [[<cmd>CopilotChatToggle<cr>]])
-        end,
       },
+    },
+  },
+  {
+    "mikavilpas/blink-ripgrep.nvim",
+    specs = {
       {
         "saghen/blink.cmp",
-        dependencies = { "giuxtaposition/blink-cmp-copilot" },
+        optional = true,
         opts = function (_, opts)
-          local defaults = {
-            sources = { "lsp", "path", "snippets", "buffer" },
-            treesitter = { "lsp" },
-          }
-          local sources_default = vim.tbl_get(opts or {}, "sources", "default") or defaults.sources
-          local completion_draw = vim.tbl_get(opts or {}, "completion", "menu", "draw", "treesitter") or defaults.treesitter
-          table.insert(sources_default, 1, "copilot")
-          table.insert(completion_draw, 1, "copilot")
-          return vim.tbl_deep_extend("force", opts or {}, {
+          local sources_default = vim.tbl_get(opts or {}, "sources", "default") or {}
+          table.insert(sources_default, #sources_default, "ripgrep")
+          return util.merge(opts or {}, {
             sources = {
               default = sources_default,
-              providers = { copilot = { name = "Copilot", module = "blink-cmp-copilot", async = true, score_offset = 100 } },
+              providers = {
+                ripgrep = {
+                  name = "Ripgrep",
+                  module = "blink-ripgrep",
+                  opts = { backend = { ripgrep = { search_casing = "--smart-case" } } },
+                  transform_items = function(_, items)
+                    for _, item in ipairs(items) do item.kind_name = "Workspace" end
+                    return items
+                  end,
+                },
+              },
             },
-            completion = { menu = { draw = { treesitter = completion_draw } } },
           })
         end,
       },

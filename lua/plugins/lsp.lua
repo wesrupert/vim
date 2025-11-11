@@ -3,32 +3,43 @@ local lsp_util = require("util.lsp")
 
 local methods = vim.lsp.protocol.Methods
 local user_lsp_config_group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true })
-local user_lsp_inlay_hints_group = vim.api.nvim_create_augroup("UserLspInlayHintsConfig", { clear = true })
-local user_lsp_cursor_highlights_group = vim.api.nvim_create_augroup("UserLspCursorHighlightsConfig", { clear = true })
 
-lsp_util.on_attach(function (_, bufnr)
+-- LSP Keymaps
+lsp_util.on_attach(function (bufnr)
   util.keymap("grn", "[LSP] Rename",               vim.lsp.buf.rename, nil, bufnr)
   util.keymap("gra", "[LSP] Show code actions",    vim.lsp.buf.code_action, nil, bufnr)
   util.keymap("grw", "[LSP] Add workspace folder", vim.lsp.buf.add_workspace_folder, nil, bufnr)
   util.keymap("grW", "[LSP] Del workspace folder", vim.lsp.buf.remove_workspace_folder, nil, bufnr)
   util.keymap("[e",  "[LSP] Previous error",       function () vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR }) end, nil, bufnr)
   util.keymap("]e",  "[LSP] Previous error",       function () vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR }) end, nil, bufnr)
-  util.keymap("grq", "[LSP] Workspace info",       function () print("Workspace folders: " .. vim.inspect(vim.lsp.buf.list_workspace_folders())) end, nil, bufnr)
+  util.keymap("goq", "[LSP] Workspace info",       function () print("Workspace folders: " .. vim.inspect(vim.lsp.buf.list_workspace_folders())) end, nil, bufnr)
 end)
-
-lsp_util.on_attach_client("null-ls", function (_, bufnr)
+lsp_util.on_supports_method(methods.textDocument_definition, function (bufnr)
+  util.keymap("gd", "[LSP] Go to definition", vim.lsp.buf.definition, nil, bufnr)
+end)
+lsp_util.on_attach_client("null-ls", function (bufnr)
   util.keymap("zg", "[LSP] Show code actions", vim.lsp.buf.code_action, nil, bufnr)
   util.keymap("zG", "[LSP] Show code actions", vim.lsp.buf.code_action, nil, bufnr)
   util.keymap("[s", "[LSP] Previous info",     function () vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.INFO }) end, nil, bufnr)
   util.keymap("]s", "[LSP] Previous info",     function () vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.INFO }) end, nil, bufnr)
 end)
 
-lsp_util.on_supports_method(methods.textDocument_definition, function (_, bufnr)
-  util.keymap("gd", "[LSP] Go to definition", vim.lsp.buf.definition, nil, bufnr)
+-- "Organize Imports" mapping.
+lsp_util.on_attach_client("vtsls", function (bufnr)
+  local organize_imports = function ()
+    vim.lsp.buf.code_action({
+      context = { only = { "source.organizeImports" }, diagnostics = {} },
+      apply = true,
+    })
+  end
+  util.keymap("gsi", "[LSP:vtsls] Organize imports", organize_imports, nil, bufnr)
+  vim.api.nvim_buf_create_user_command(bufnr, "OrganizeImports", organize_imports, { desc = "[LSP:vtsls] Organize imports" })
 end)
 
-lsp_util.on_supports_method(methods.textDocument_documentHighlight, function (_, bufnr)
+-- Document highlight
+lsp_util.on_supports_method(methods.textDocument_documentHighlight, function (bufnr)
   local lsp_document_highlight_enabled = util.use_setting("lsp_document_highlight_enabled", true)
+  local user_lsp_cursor_highlights_group = vim.api.nvim_create_augroup("UserLspCursorHighlightsConfig", { clear = true })
   vim.api.nvim_create_autocmd({ "CursorHold", "InsertLeave" }, {
     group = user_lsp_cursor_highlights_group,
     desc = "[LSP] Highlight references under the cursor",
@@ -46,7 +57,8 @@ lsp_util.on_supports_method(methods.textDocument_documentHighlight, function (_,
 end)
 
 -- Automatic inlay hints / InsertEnter inlay hint toggle.
-lsp_util.on_supports_method(methods.textDocument_inlayHint, function (_, bufnr)
+lsp_util.on_supports_method(methods.textDocument_inlayHint, function (bufnr)
+  local user_lsp_inlay_hints_group = vim.api.nvim_create_augroup("UserLspInlayHintsConfig", { clear = true })
   local lsp_inlay_hints_enabled = util.use_setting("lsp_inlay_hints_enabled", true)
 
   -- Automatically enable inlay hints.
@@ -58,9 +70,15 @@ lsp_util.on_supports_method(methods.textDocument_inlayHint, function (_, bufnr)
     end, 500)
   end
 
-  util.keymap("grh", "[LSP] Toggle inlay hints", function ()
+  util.keymap("grh", "[LSP] Toggle inlay hints (buffer)", function ()
     local enabled = lsp_inlay_hints_enabled.set(not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 }), "b", bufnr)
     vim.lsp.inlay_hint.enable(enabled, { bufnr = 0 })
+    print("[LSP] Inlay hints " .. (enabled and "enabled" or "disabled"))
+  end, nil, bufnr)
+
+  util.keymap("grH", "[LSP] Toggle inlay hints", function ()
+    local enabled = lsp_inlay_hints_enabled.set(not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 }), "g")
+    vim.lsp.inlay_hint.enable(enabled)
     print("[LSP] Inlay hints " .. (enabled and "enabled" or "disabled"))
   end, nil, bufnr)
 
@@ -83,7 +101,7 @@ lsp_util.on_supports_method(methods.textDocument_inlayHint, function (_, bufnr)
 end)
 
 -- ESlint "Fix All" command/ "Fix on save" autocommand.
-lsp_util.on_attach(function (client, bufnr)
+lsp_util.on_attach(function (bufnr, client)
   if client.name ~= "eslint" then return end
   _G.eslint_fix_all = function ()
     client:request(methods.workspace_executeCommand, {
@@ -116,6 +134,32 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
     end
   end,
 })
+
+---@class vim.lsp.ClientConfig
+---@field should_attach? LspClientEventHandler
+
+-- LSP should_attach support.
+lsp_util.on_attach(function (bufnr, client)
+  local should_attach = client and client.config and client.config.should_attach or nil
+  if not should_attach then return end
+  if type(should_attach) ~= 'function' then return end
+  if should_attach(bufnr, client) ~= false then return end
+
+  -- Detach client from this buffer. Ideally, we'd never attach at all,
+  -- but vim.lsp doesn't support this.
+  -- NOTE: LspAttach happens before the buffer is actually marked as attached!
+  -- See: https://github.com/neovim/nvim-lspconfig/issues/2508
+  vim.defer_fn(function ()
+    if not vim.lsp.buf_is_attached(bufnr, client.id) then
+      vim.notify(
+        'Tried to detach ' .. client.name .. ' from buffer ' .. bufnr .. ' before it was attached!',
+        vim.log.levels.ERROR
+      )
+      return
+    end
+    vim.lsp.buf_detach_client(bufnr, client.id)
+  end, 10)
+end)
 
 vim.diagnostic.config({
   signs = {
@@ -159,7 +203,7 @@ return {
   { "folke/lsp-colors.nvim" },
   {
     "mason-org/mason-lspconfig.nvim",
-    dependencies = { "mason-org/mason.nvim", "pmizio/typescript-tools.nvim", "saghen/blink.cmp" },
+    dependencies = { "mason-org/mason.nvim", "pmizio/typescript-tools.nvim" },
     config = true,
   },
   {
@@ -197,13 +241,17 @@ return {
         title = false,
       },
       priority = {
+        -- NOTE: The patterns should be tested against the raw messages;
+        -- fastaction only makes them title case after pattern matching is complete!
         eslint = {
           { key = "f", order = 1, pattern = "fix this" },
           { key = "a", order = 2, pattern = "fix all" },
         },
         ["null-ls"] = {
-          { key = "d", order = 4, pattern = "add.*to.*~/%.config/cspell%.json" },
-          { key = "s", order = 3, pattern = "add.*to.*cspell%.json" },
+          { key = "=", order = 3, pattern = "^fix: " },
+          -- Definition order is swapped since #4 will grab anything from #5 as well.
+          { key = "d", order = 5, pattern = "add.*to.*~/%.config/cspell%.json" },
+          { key = "s", order = 4, pattern = "add.*to.*cspell%.json" },
         },
       },
     },
@@ -211,7 +259,7 @@ return {
       local fastaction = require("fastaction")
       fastaction.setup(opts)
 
-      lsp_util.on_attach(function (client, bufnr)
+      lsp_util.on_attach(function (bufnr, client)
         util.keymap("gra", "[LSP] Show code actions", fastaction.code_action, { "n", "x" }, bufnr)
         if client.name == 'null-ls' then
           util.keymap("zg",  "[LSP] Show code actions", fastaction.code_action, { "n", "x" }, bufnr)
@@ -220,4 +268,5 @@ return {
       end)
     end,
   },
+  { "yioneko/nvim-vtsls" },
 }

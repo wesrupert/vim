@@ -1,6 +1,8 @@
 local methods = vim.lsp.protocol.Methods
 local augroup_lsp_event_handler = vim.api.nvim_create_augroup("LspEventHandlerConfig", { clear = true })
 
+---@alias LspClientEventHandler fun(bufnr: integer, client: vim.lsp.Client): boolean|nil
+
 local M = {}
 local m = {}
 
@@ -12,39 +14,39 @@ function M.get_clients(client_opts, filter)
 end
 
 ---Set up LSP keymaps and autocommands for when an LSP attaches or updates capabilities for the current buffer.
----@param on_attach fun(client:vim.lsp.Client, bufnr:integer) The callback to invoke
+---@param callback LspClientEventHandler The callback to invoke
 ---@return number handle Handle to unregister on_attach listeners
-function M.on_attach(on_attach)
+function M.on_attach(callback)
   return vim.api.nvim_create_autocmd("LspAttach", {
     desc = "[LSP] Setup on_attach handler",
     group = augroup_lsp_event_handler,
     callback = function (ev)
       local client = vim.lsp.get_client_by_id(ev.data.client_id)
-      if client then return on_attach(client, ev.buf) end
+      if client then return callback(ev.buf, client) end
     end,
   })
 end
 
 ---Set up LSP keymaps and autocommands for when the named LSP attaches or updates capabilities for the current buffer.
 ---@param name string The client name
----@param on_attach fun(client:vim.lsp.Client, bufnr:integer) The callback to invoke
+---@param callback LspClientEventHandler The callback to invoke
 ---@return number handle Handle to unregister on_attach listeners
-function M.on_attach_client(name, on_attach)
+function M.on_attach_client(name, callback)
   return vim.api.nvim_create_autocmd("LspAttach", {
     desc = "[LSP] Setup on_attach handler for " .. name,
     group = augroup_lsp_event_handler,
     callback = function (ev)
       local client = vim.lsp.get_client_by_id(ev.data.client_id)
-      if client and client.name == name then return on_attach(client, ev.buf) end
+      if client and client.name == name then return callback(ev.buf, client) end
     end,
   })
 end
 
 ---@type boolean
 m.setup_dynamic_capability_complete = false
----@type fun(client: vim.lsp.Client, bufnr: number)[]
+---@type table<string, LspClientEventHandler>
 m.on_dynamic_capability = {}
----@type table<string,table<vim.lsp.Client, table<number,boolean>>>
+---@type table<string, table<vim.lsp.Client, table<number, boolean>>>
 m.on_supports_method = {}
 
 function m.setup_dynamic_capability()
@@ -57,38 +59,40 @@ function m.setup_dynamic_capability()
     local client = vim.lsp.get_client_by_id(ctx.client_id)
     if client then
       local bufnr = vim.api.nvim_get_current_buf()
-      m.on_dynamic_capability = vim.tbl_filter(function (handler)
-        return handler(client, bufnr) ~= false
-      end, m.on_dynamic_capability)
+      m.on_dynamic_capability = vim.tbl_filter(
+        ---@param handler LspClientEventHandler
+        function (handler) return handler(bufnr, client) ~= false end,
+        m.on_dynamic_capability
+      )
     end
     return result
   end
 end
 
----@param fn fun(client:vim.lsp.Client, bufnr: number)
-function M.on_dynamic_capability(fn)
-  table.insert(m.on_dynamic_capability, fn)
+---@param callback LspClientEventHandler The callback to invoke
+function M.on_dynamic_capability(callback)
+  table.insert(m.on_dynamic_capability, callback)
 end
 
-
----@param method string
----@param fn fun(client:vim.lsp.Client, bufnr: number)
-function M.on_supports_method(method, fn)
+---@param method vim.lsp.protocol.Method
+---@param callback LspClientEventHandler The callback to invoke
+function M.on_supports_method(method, callback)
   m.on_supports_method[method] = m.on_supports_method[method] or setmetatable({}, { __mode = "k" })
 
-  ---@param client vim.lsp.Client
-  local function check(client, bufnr)
+  ---Wrapper fn to deduplicate dynamic capabilities from the server.
+  ---@type LspClientEventHandler
+  local function callback_once_per_method_client_buffer(bufnr, client)
     m.on_supports_method[method][client] = m.on_supports_method[method][client] or {}
     if m.on_supports_method[method][client][bufnr] then
       return
     end
     if client:supports_method(method, bufnr) then
       m.on_supports_method[method][client][bufnr] = true
-      fn(client, bufnr)
+      callback(bufnr, client)
     end
   end
-  M.on_attach(check)
-  M.on_dynamic_capability(check)
+  M.on_attach(callback_once_per_method_client_buffer)
+  M.on_dynamic_capability(callback_once_per_method_client_buffer)
 end
 
 
@@ -104,4 +108,5 @@ function M.setup_lsp_servers()
   vim.lsp.enable(lsp_servers)
 end
 
+_G._util_lsp = m
 return M

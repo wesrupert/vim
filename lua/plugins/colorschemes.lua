@@ -2,6 +2,7 @@ local util = require "util"
 return {
   {
     "f-person/auto-dark-mode.nvim",
+    priority = 999,
     opts = {
       set_dark_mode = function()
         vim.api.nvim_set_option_value("background", "dark", {})
@@ -12,6 +13,9 @@ return {
         vim.cmd.colorscheme(util.get_setting("day_theme", "catppuccin"))
       end,
     },
+    init = function ()
+      vim.cmd.colorscheme(util.get_setting("day_theme", "catppuccin"))
+    end,
   },
   {
     "catppuccin/nvim",
@@ -72,7 +76,6 @@ return {
       dim_inactive_windows = true,
       italics = true,
       show_eob = false,
-      -- inlay_hints_background = "dimmed",
     },
     config = function (_, opts)
       require("everforest").setup(opts)

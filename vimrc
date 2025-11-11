@@ -108,8 +108,6 @@ if exists('&termguicolors')
   set termguicolors
 endif
 
-colorscheme catppuccin
-
 " Command bar
 set completeopt=menuone,preview,noinsert,noselect,fuzzy
 set gdefault ignorecase infercase smartcase
@@ -122,7 +120,8 @@ set wildignore+=*/build/**,*/bin/**,*/dist/**,*/node_modules/**
 set wildignore+=tags
 set wildignorecase
 if executable('rg')
-  set grepprg=rg\ --vimgrep
+  set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case
+  set grepformat=%f:%l:%c:%m,%f:%l:%m
 endif
 
 " Text options
@@ -210,6 +209,7 @@ if has('clipboard')
 endif
 
 tnoremap <c-n> <c-\><c-n>
+tnoremap <esc><esc> <c-\><c-n>
 tnoremap <c-w> <c-\><c-n><c-w>
 
 " Commands

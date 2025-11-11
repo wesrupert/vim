@@ -28,7 +28,7 @@ return {
     config = function (_, opts)
       local treesitter = require("nvim-treesitter")
       local treesitter_install = require("nvim-treesitter.install")
-      local treesitter_parsers = require("nvim-treesitter.parsers").list
+      local treesitter_parsers = require("nvim-treesitter.parsers")
       local treesitter_query = require("vim.treesitter.query")
 
       treesitter.setup()
@@ -78,7 +78,7 @@ return {
           -- Check if parser can be inferred and is available to install
           local parser_name = vim.treesitter.language.get_lang(filetype)
           if parser_name == nil then return end
-          if not treesitter_parsers[parser_name] then return end
+          if not treesitter_parsers.list[parser_name] then return end
 
           local parser_installed = pcall(vim.treesitter.get_parser, bufnr, parser_name)
           if not parser_installed then
@@ -228,16 +228,17 @@ return {
         return option == "commentstring" and calculate_commentstring() or get_option(filetype, option)
       end
     end,
-    spec = {
+    specs = {
       {
         "numtostr/comment.nvim",
-        opts = function ()
-          return {
+        optional = true,
+        opts = function (_, opts)
+          return util.merge(opts or {}, {
             -- Integrations module isn't created until plugin initialization, for some reason.
             -- Make sure to load it in a callback function, not a module-scoped object.
             -- See: https://github.com/JoosepAlviste/nvim-ts-context-commentstring/issues/58
             pre_hook = require("ts_context_commentstring.integrations.comment_nvim").create_pre_hook(),
-          }
+          })
         end,
       },
     },

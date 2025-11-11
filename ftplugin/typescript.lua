@@ -1,0 +1,1 @@
+vim.g.typescript_compiler_binary = "npx tsc"

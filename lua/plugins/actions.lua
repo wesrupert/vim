@@ -1,3 +1,5 @@
+local util = require("util")
+
 return {
   {
     "hamidi-dev/org-list.nvim",
