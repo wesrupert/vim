@@ -1,6 +1,7 @@
 local util = require("util")
 
 return {
+  { "rafikdraoui/jj-diffconflicts" },
   {
     "hamidi-dev/org-list.nvim",
     dependencies = { "tpope/vim-repeat" },
