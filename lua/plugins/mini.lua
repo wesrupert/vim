@@ -90,7 +90,7 @@ local plugins = {
       local function invalidate_cache(buf_id)
         local cache = jj_buffer_cache[buf_id]
         if cache == nil then return false end
-        pcall(function()
+        pcall(function ()
           cache.fs_event:stop()
           cache.timer:stop()
         end)
@@ -109,7 +109,8 @@ local plugins = {
           )
         end
 
-        local buf_fs_event, timer = vim.loop.new_fs_event(), vim.loop.new_timer()
+        ---@diagnostic disable-next-line: undefined-field
+        local buf_fs_event, timer = vim.uv.new_fs_event(), vim.uv.new_timer()
         buf_fs_event:start(
           vim.fs.joinpath(repo, ".jj/working_copy"),
           { recursive = true },
@@ -132,8 +133,9 @@ local plugins = {
           attach = function (buf_id)
             if jj_buffer_cache[buf_id] ~= nil then return false end
 
-            local path = vim.loop.fs_realpath(vim.api.nvim_buf_get_name(buf_id)) or ''
-            if path == '' then return false end
+            ---@diagnostic disable-next-line: undefined-field
+            local path = vim.uv.fs_realpath(vim.api.nvim_buf_get_name(buf_id)) or ""
+            if path == "" then return false end
 
             return watch_jj_file(buf_id, path)
           end,
@@ -166,7 +168,7 @@ local plugins = {
       local ignore_buftypes, ignore_filetypes = util.get_special_types("indent")
       vim.api.nvim_create_autocmd({ "BufNew", "BufRead", "TermEnter", "Filetype" }, {
         group = user_mini_config,
-        callback = function()
+        callback = function ()
           if vim.tbl_contains(ignore_buftypes, vim.bo.buftype)
             or vim.tbl_contains(ignore_filetypes, vim.bo.filetype) then
             vim.b.miniindentscope_disable = true
@@ -175,7 +177,7 @@ local plugins = {
       })
       vim.api.nvim_create_autocmd("ColorScheme", {
         group = user_mini_config,
-        callback = function()
+        callback = function ()
           vim.api.nvim_set_hl(0, "MiniIndentscopeSymbol", { link = "Comment", force = true })
         end,
       })
@@ -257,24 +259,26 @@ local plugins = {
       local lazy_status_sok, lazy_status = pcall(require, "lazy.status")
       starter.setup({
         autoopen = false,
-        header = function()
+        header = function ()
           local lines
           local add_line = function(l)
-            if lines == nil then lines = l else lines = lines.."\n"..l end
+            if lines == nil then lines = l else lines = lines .. "\n" .. l end
           end
 
           local hour = tonumber(vim.fn.strftime("%H"))
           local day_part =
             6 <= hour and hour < 12 and "morning" or
             12 <= hour and hour < 17 and "afternoon" or "evening"
-          local username = vim.loop.os_get_passwd()["username"] or "USERNAME"
+
+          ---@diagnostic disable-next-line: undefined-field
+          local username = vim.uv.os_get_passwd()["username"] or "USERNAME"
           add_line(("Good %s, %s"):format(day_part, username))
 
           if lazy_status_sok and lazy_status.has_updates() then
-            add_line("! "..lazy_status.updates().." plugin updates available")
+            add_line("! " .. lazy_status.updates() .. " plugin updates available")
           end
 
-          add_line("> "..vim.fn.getcwd())
+          add_line("> " .. vim.fn.getcwd())
 
           return lines
         end,
@@ -289,9 +293,9 @@ local plugins = {
           { section = "Files",     name = "C.  Recent Commands",      action = "Pick command_history" },
           starter.sections.sessions(5, true),
           starter.sections.recent_files(10, false, false),
-          { section = "System",    name = "S.  Settings",             action = function () vim.cmd("edit "..vim.g.vimrc) end },
-          { section = "System",    name = "SL. Settings (local)",     action = function () vim.cmd("edit "..vim.g.vimrc_custom) end},
-          { section = "System",    name = "SP. Settings (plugins)",   action = function () vim.cmd("edit "..vim.g.vimrc_plug) end},
+          { section = "System",    name = "S.  Settings",             action = function () vim.cmd("edit " .. vim.g.vimrc) end },
+          { section = "System",    name = "SL. Settings (local)",     action = function () vim.cmd("edit " .. vim.g.vimrc_custom) end},
+          { section = "System",    name = "SP. Settings (plugins)",   action = function () vim.cmd("edit " .. vim.g.vimrc_plug) end},
           { section = "System",    name = "P.  Plugins",              action = "Lazy" },
           { section = "System",    name = "L.  LSPs",                 action = "Mason" },
           { section = "System",    name = "Q.  Quit",                 action = "qall" },
@@ -310,8 +314,8 @@ local plugins = {
 
 return {
   "nvim-mini/mini.nvim",
-  config = function()
-    local print_mini = function (m, ...) print("[Mini."..m.."] ", ...) end
+  config = function ()
+    local print_mini = function (m, ...) print("[Mini." .. m .. "] ", ...) end
     for k, p in pairs(plugins) do
       -- Set up modules (load opts and run config)
       xpcall(function ()

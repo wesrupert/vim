@@ -4,11 +4,11 @@ return {
     "f-person/auto-dark-mode.nvim",
     priority = 999,
     opts = {
-      set_dark_mode = function()
+      set_dark_mode = function ()
         vim.api.nvim_set_option_value("background", "dark", {})
         vim.cmd.colorscheme(util.get_setting("night_theme", "catppuccin"))
       end,
-      set_light_mode = function()
+      set_light_mode = function ()
         vim.api.nvim_set_option_value("background", "light", {})
         vim.cmd.colorscheme(util.get_setting("day_theme", "catppuccin"))
       end,

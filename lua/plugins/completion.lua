@@ -78,7 +78,7 @@ return {
       },
       appearance = {
         nerd_font_variant = "normal",
-        kind_icons = util.tbl_copy(util.kind_icons),
+        kind_icons = util.duplicate(util.kind_icons),
       },
     },
     opts_extend = { "sources.default" },

@@ -111,7 +111,7 @@ return {
       })
 
       util.keymap("<leader>k", "[Which-Key] Show keymaps", which_key.show)
-      util.keymap("<leader>K", "[Which-Key] Show keymaps for buffer", function() which_key.show({ global = false }) end)
+      util.keymap("<leader>K", "[Which-Key] Show keymaps for buffer", function () which_key.show({ global = false }) end)
     end,
   },
   {

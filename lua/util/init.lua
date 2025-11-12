@@ -234,8 +234,25 @@ end
 ---Create a copy of a table.
 ---@param table table
 ---@return table table The copy
-function M.tbl_copy(table)
+function M.duplicate(table)
   return M.merge({}, table)
+end
+
+---Join tables into the initial table. Only performs a shallow join.
+---@param ... table
+---@return table table The joined table.
+function M.tbl_join(...)
+  local ret = select(1, ...)
+  if not ret or ret == vim.NIL then
+    ret = {}
+  end
+  for i = 2, select("#", ...) do
+    local value = select(i, ...)
+    for _, v in ipairs(value) do
+      table.insert(ret, v)
+    end
+  end
+  return ret
 end
 
 --- Removes empty lines from the beginning and end.

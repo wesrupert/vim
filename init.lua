@@ -65,8 +65,8 @@ end
 --- Keymaps
 
 -- Block insert in line visual mode
-util.keymap("I", "VLine block insert", function() return vim.fn.mode() == "V" and "^<C-v>I" or "I" end, "x", nil, { expr = true })
-util.keymap("A", "VLine block append", function() return vim.fn.mode() == "V" and "$<C-v>A" or "A" end, "x", nil, { expr = true })
+util.keymap("I", "VLine block insert", function () return vim.fn.mode() == "V" and "^<C-v>I" or "I" end, "x", nil, { expr = true })
+util.keymap("A", "VLine block append", function () return vim.fn.mode() == "V" and "$<C-v>A" or "A" end, "x", nil, { expr = true })
 
 -- Comment and yank
 util.keymap("yc",  "Comment and yank",        gen_comment_and_yank(false),      "n", nil, { expr = true })
