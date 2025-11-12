@@ -1,6 +1,27 @@
+local user_config_group = vim.api.nvim_create_augroup("UserConfig", { clear = true })
 local util = require("util")
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 vim.opt.rtp:prepend(lazypath)
+
+vim.g.mapleader = " "
+vim.g.health = { style = "float" }
+vim.o.winborder = "rounded"
+vim.o.foldmethod = "expr"
+vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+
+if vim.g.neovide then
+  vim.g.neovide_theme = "auto"
+  vim.g.neovide_remember_window_size = true
+  vim.g.neovide_hide_mouse_when_typing = true
+  vim.g.neovide_cursor_animate_command_line = false
+  vim.g.neovide_input_macos_option_key_is_meta = "both"
+  vim.g.neovide_text_gamma = 1.2
+  -- vim.g.neovide_text_contrast = 0.2
+  vim.g.neovide_floating_corner_radius = 0.3
+  vim.g.experimental_layer_grouping = true
+  vim.o.pumblend = 20
+  vim.o.winborder = "none"
+end
 
 if vim.fn.executable("mise") then
   local vim_tools = {
@@ -19,17 +40,6 @@ if vim.fn.executable("mise") then
     end
   end
 end
-
-local user_config_group = vim.api.nvim_create_augroup("UserConfig", { clear = false })
-
-vim.g.mapleader = " "
-vim.g.health = { style = "float" }
-vim.o.winborder = "rounded"
-vim.o.foldmethod = "expr"
-vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-
--- vim.g.node_host_prg = vim.fn.expand("$HOME/.local/share/mise/installs/node/22.14.0")
-
 
 ---Comment out selection, yank into the yank register, and optionally paste immediately.
 ---@param _ string Operatorfunc mode. Unused.
@@ -94,15 +104,9 @@ if not vim.loop.fs_stat(lazypath) then
 end
 require("lazy").setup("plugins",{
   ui = { border = vim.o.winborder },
+  dev = { path = "~/Code/nvim" },
   change_detection = { notify = false },
 })
-
-if vim.g.neovide ~= nil then
-  vim.g.neovide_theme = "auto"
-  vim.g.neovide_hide_mouse_when_typing = true
-  vim.g.neovide_cursor_animate_command_line = false
-  vim.o.pumblend = 30
-end
 
 local vimrc = vim.fn.stdpath("config") .. "/vimrc"
 if vim.loop.fs_stat(vimrc) then

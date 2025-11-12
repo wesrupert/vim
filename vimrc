@@ -86,7 +86,7 @@ call Mkdir(g:temp)
 
 " GUI settings
 if exists('&guifont')
-  set guifont=Atkinson_Hyperlegible_Mono,Symbols_Nerd_Font:h13
+  set guifont=Atkinson_Hyperlegible_Mono,Symbols_Nerd_Font:h13:#h-none
 endif
 
 " Application settings
