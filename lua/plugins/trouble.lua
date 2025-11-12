@@ -4,44 +4,41 @@ return {
   url = "https://github.com/wesrupert/trouble.nvim",
   dependencies = { "folke/snacks.nvim" },
   event = "VeryLazy",
+  ---@module "trouble"
+  ---@type trouble.Config
   opts = {
     focus = true,
+    open_no_results = true,
     modes = {
-      symbols = {
-        format = "{kind_icon} {symbol.name} {pos}",
+      ---@type trouble.Mode
+      ---@diagnostic disable-next-line: missing-fields
+      qflist = {
+        ---@type trouble.Window.opts
+        preview = { type = "split", relative = "win", position = "right", size = 0.4 },
+      },
+      ---@type trouble.Mode
+      ---@diagnostic disable-next-line: missing-fields
+      loclist = {
+        ---@type trouble.Window.opts
+        preview = { type = "split", relative = "win", position = "right", size = 0.4 },
       },
     },
   },
-  specs = {
-    "folke/snacks.nvim",
-    optional = true,
-    opts = function (_, opts)
-      return util.merge(opts or {}, {
-        picker = {
-          actions = require("trouble.sources.snacks").actions,
-          win = {
-            input = {
-              keys = {
-                ["<c-q>"] = { "trouble_open", mode = { "n", "i" } },
-              },
-            },
-          },
-        },
-      })
-    end,
-  },
-  init = function ()
+  config = function (_, opts)
     local trouble = require("trouble")
+    trouble.setup(opts)
+
     local user_trouble_config_group = vim.api.nvim_create_augroup("UserTroubleConfig", { clear = true })
     local trouble_close_on_leave = util.use_setting("trouble_close_on_leave", false).get
     local trouble_quickfix_takeover = util.use_setting("trouble_quickfix_takeover", true).get
-    local trouble_toggle_sidebar = function (mode, opts)
-      trouble.toggle(util.merge({ mode = mode, focus = false, win = { position = "right" } }, opts or {}))
+
+    local trouble_toggle_sidebar = function (mode, sidebar_opts)
+      trouble.toggle(util.merge({ mode = mode, focus = false, win = { position = "right" } }, sidebar_opts or {}))
     end
 
     util.keymap("grx", "[Trouble] Close",                trouble.close)
-    util.keymap("gro", "[Trouble] Symbols",              function () trouble_toggle_sidebar("symbols") end)
-    util.keymap("grO", "[Trouble] Symbols List",         function () trouble_toggle_sidebar("symbols", { win = { position = "bottom" } }) end)
+    util.keymap("gro", "[Trouble] Symbols",              function () trouble_toggle_sidebar("symbols", { flatten = true, format = "{kind_icon} {symbol.name} {pos}" }) end)
+    util.keymap("grO", "[Trouble] Symbols List",         function () trouble.open({ mode = "symbols", focus = true, win = { position = "bottom" } }) end)
     util.keymap("grq", "[Trouble] Quickfix List",        function () trouble.toggle("qflist") end)
     util.keymap("grQ", "[Trouble] Location List",        function () trouble.toggle("loclist") end)
     util.keymap("grD", "[Trouble] Diagnostics",          function () trouble.open({ mode = "diagnostics", filter = { ['not'] = { severity = vim.diagnostic.severity.INFO } } }) end)
@@ -89,4 +86,22 @@ return {
       callback = function () trouble.open("qflist") end,
     })
   end,
+  specs = {
+    "folke/snacks.nvim",
+    optional = true,
+    opts = function (_, opts)
+      return util.merge(opts or {}, {
+        picker = {
+          actions = require("trouble.sources.snacks").actions,
+          win = {
+            input = {
+              keys = {
+                ["<c-q>"] = { "trouble_open", mode = { "n", "i" } },
+              },
+            },
+          },
+        },
+      })
+    end,
+  },
 }
