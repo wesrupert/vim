@@ -1,173 +1,53 @@
 local util = require("util")
-local user_treesitter_config = vim.api.nvim_create_augroup("UserTreesitterConfig", { clear = true })
-
-local setup_treesitter_plugin = function (name)
-  return function (_, opts)
-      ---@diagnostic disable-next-line: missing-fields
-      require("nvim-treesitter.configs").setup({ [name] = opts })
-    end
-end
 
 return {
   {
     "nvim-treesitter/nvim-treesitter",
-    -- TODO: Update when the following issues are closed:
-    -- - https://github.com/andymass/vim-matchup/pull/390
-    -- branch = "main",
-    cmd = {
-      "TSBufDisable", "TSBufEnable", "TSBufToggle", "TSDisable", "TSEnable", "TSToggle",
-      "TSInstall", "TSInstallInfo", "TSInstallSync", "TSModuleInfo", "TSUninstall", "TSUpdate", "TSUpdateSync",
-    },
-    build = function() require("nvim-treesitter.install").update({ with_sync = true }) end,
+    branch = "main",
+    lazy = false,
+    build = function () require("nvim-treesitter.install").update({ with_sync = true }) end,
+  },
+  {
+    "wesrupert/ts-auto-install.nvim",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
     opts = {
-      sync_install = false,
-      compilers = { "clang" },
-      highlight = { enable = true }, -- TODO: Remove when updated to main branch
-      indent = { enable = true }, -- TODO: Remove when updated to main branch
+      skip_approval = true,
+      disable = { tmux = true },
+      fold = { enable = true, start_unfolded = true },
+      indent = { enable = false },
+      syntax = { enable = { markdown = true } },
     },
-    config = function (_, opts)
-      local treesitter = require("nvim-treesitter")
-      local treesitter_install = require("nvim-treesitter.install")
-      local treesitter_parsers = require("nvim-treesitter.parsers")
-      local treesitter_query = require("vim.treesitter.query")
-
-      treesitter.setup()
-      require("nvim-treesitter.configs").setup(opts) -- TODO: Remove when updated to main branch
-
-      -- Override toml parser when in mise configs to add injected language support.
-      treesitter_query.add_predicate("is-mise?", function(_, _, bufnr, _)
-        local filepath = vim.api.nvim_buf_get_name(tonumber(bufnr) or 0)
-        local filename = vim.fn.fnamemodify(filepath, ":t")
-        return string.match(filename, ".*mise.*%.toml$") ~= nil
-      end, { force = true, all = false })
-
-      -- Enable fold/indent expressions
-      vim.o.foldlevelstart = 999
-      vim.api.nvim_create_autocmd("FileType", {
-        group = user_treesitter_config,
-        callback = function (ev)
-          local bufnr = ev.buf
-          if not pcall(vim.treesitter.start, bufnr) then return end
-          vim.bo[ev.buf].syntax = "off"
-          vim.wo.foldlevel = 999
-          vim.wo.foldmethod = "expr"
-          vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-          -- vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-        end,
-      })
-
-      -- Enable additional syntax highlighting for some filetypes.
-      vim.api.nvim_create_autocmd("FileType", {
-        group = user_treesitter_config,
-        pattern = { "markdown" },
-        callback = function (ev) vim.bo[ev.buf].syntax = "on" end,
-      })
-
-      -- Auto-install and start treesitter parser for any buffer with a registered filetype.
-      local parser_install_attempted = {}
-      vim.api.nvim_create_autocmd("BufWinEnter", {
-        group = user_treesitter_config,
-        callback = function (ev)
-          local bufnr = ev.buf
-          local filetype = vim.api.nvim_get_option_value("filetype", { buf = bufnr })
-          if filetype == "" then return end
-
-          -- Check if parser was already auto-installed to short-circuit additional checks
-          if parser_install_attempted[filetype] ~= nil then return end
-
-          -- Check if parser can be inferred and is available to install
-          local parser_name = vim.treesitter.language.get_lang(filetype)
-          if parser_name == nil then return end
-          if not treesitter_parsers.list[parser_name] then return end
-
-          local parser_installed = pcall(vim.treesitter.get_parser, bufnr, parser_name)
-          if not parser_installed then
-            vim.notify("Installing " .. parser_name .. " treesitter grammar for...")
-            -- TODO: Use this version when updated to main branch
-            -- treesitter.install({ parser_name }):wait(30000)
-            treesitter_install.ensure_installed_sync(parser_name)
-            parser_installed = pcall(vim.treesitter.get_parser, bufnr, parser_name)
-            if parser_installed then vim.notify(parser_name .. " treesitter grammar installed!") end
-          end
-
-          if parser_installed then
-            vim.treesitter.start(bufnr, parser_name)
-          else
-            vim.notify("Error installing " .. parser_name .. " treesitter grammar!", vim.diagnostic.severity.ERROR)
-          end
-
-          -- Either we installed it, or encountered an error trying.
-          -- Either way, don't try again for this filetype this session.
-          parser_install_attempted[filetype] = true
-        end,
-      })
-    end,
   },
   {
     "nvim-treesitter/nvim-treesitter-textobjects",
+    branch = "main",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
-    opts = {
-      select = {
-        enable = true,
-        lookahead = true,
-        keymaps = {
-          ["if"] = "@function.inner",
-          ["af"] = "@function.outer",
-          ["ia"] = "@parameter.inner",
-          ["aa"] = "@parameter.outer",
-          ["is"] = "@block.outer",
-          ["as"] = "@block.outer",
-        },
-        selection_modes = {
-          ["@function.inner"] = "V", -- line-wise
-          ["@function.outer"] = "V", -- line-wise
-          ["@parameter.inner"] = "v", -- char-wise
-          ["@parameter.outer"] = "v", -- char-wise
-          ["@block.inner"] = "V", -- block-wise
-          ["@block.outer"] = "V", -- block-wise
-          ["@class.inner"] = "V", -- block-wise
-          ["@class.outer"] = "V", -- block-wise
-        },
-      },
-      move = {
-        enable = true,
-        set_jumps = true,
-        goto_next_start = {
-          ["]f"] = "@function.inner",
-          ["]a"] = "@parameter.outer",
-          ["]["] = "@block.inner",
-        },
-        goto_next_end = {
-          ["]F"] = "@function.outer",
-          ["]A"] = "@parameter.outer",
-          ["]]"] = "@block.outer",
-        },
-        goto_previous_start = {
-          ["[f"] = "@function.inner",
-          ["[a"] = "@parameter.outer",
-          ["[["] = "@block.inner",
-        },
-        goto_previous_end = {
-          ["[F"] = "@function.outer",
-          ["[A"] = "@parameter.outer",
-          ["[]"] = "@block.outer",
-        },
-      },
-      swap = {
-        enable = true,
-        swap_next = {
-          ["gsf"] = "@function.outer",
-          ["gsa"] = "@parameter.inner",
-          ["gsb"] = "@block.inner",
-        },
-        swap_previous = {
-          ["gsF"] = "@function.outer",
-          ["gsA"] = "@parameter.inner",
-          ["gsB"] = "@block.inner",
-        },
-      },
-    },
-    config = setup_treesitter_plugin("textobjects"),
+    ---@module "nvim-treesitter-textobjects"
+    ---@param opts TSTextObjects.UserConfig
+    config = function (_, opts)
+      local treesitter_textobjects = require("nvim-treesitter-textobjects")
+      local ts_to_swap = require("nvim-treesitter-textobjects.swap")
+      treesitter_textobjects.setup(opts)
+
+      -- Set up swap keymaps (select/move keymaps are handled by mini.ai).
+      vim.iter({
+        ["@statement.outer"]  = { n = "l", p = "L" },
+        ["@block.inner"]      = { n = "b", p = "B" },
+        ["@assignment.inner"] = { n = "=", p = "?" },
+        ["@parameter.inner"]  = { n = "a", p = "A" },
+      }):each(function (query, query_opts)
+        util.keymap(
+          "gs" .. query_opts.n,
+          "[TreeSitter] Swap " .. query .. " forward",
+          function () ts_to_swap.swap_next(query, query_opts.group) end
+        )
+        util.keymap(
+          "gs" .. query_opts.p,
+          "[TreeSitter] Swap " .. query .. " backward",
+          function () ts_to_swap.swap_previous(query, query_opts.group) end
+        )
+      end)
+    end,
   },
   {
     "nvim-treesitter/nvim-treesitter-context",
@@ -207,7 +87,6 @@ return {
     "andymass/vim-matchup",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
     opts = { enable = true },
-    config = setup_treesitter_plugin("matchup"),
   },
   {
     "windwp/nvim-ts-autotag",

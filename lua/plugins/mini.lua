@@ -36,12 +36,61 @@ local plugins = {
 
   ai = {
     opts = function ()
+      local gen_ts_spec = require("mini.ai").gen_spec.treesitter
       local gen_ai_spec = require("mini.extra").gen_ai_spec
       return {
+        mappings = {
+          goto_left = "[[",
+          goto_right = "]]",
+        },
         custom_textobjects = {
-          d = gen_ai_spec.diagnostic(),
-          l = gen_ai_spec.line(),
-          n = gen_ai_spec.number(),
+          -- Builtin text objects:
+          -- w = Word
+          -- W = WORD
+          -- s = Sentence
+          -- p = Paragraph
+          -- b = Block
+          -- B = BLOCK
+          -- t = Tag block
+
+          -- Mini.ai default text objects:
+          -- [ = Balanced []
+          -- { = Balanced {}
+          -- ( = Balanced ()
+          -- < = Balanced <>
+          -- > = Balanced <>
+          -- ) = Balanced ()
+          -- } = Balanced {}
+          -- ] = Balanced []
+          -- " = Balanced "
+          -- ' = Balanced '
+          -- ` = Balanced `
+          -- a = Argument
+          -- f = Function call
+          -- t = Tag
+          -- ? = User prompt
+          -- b = Alias for ), ], or }
+          -- q = Alias for ", ', or `
+
+          -- Relocate default "b" alias.
+          ["s"] = { { "%b()", "%b[]", "%b{}" }, "^.().*().$" },
+
+          ["j"] = gen_ai_spec.line(),
+          ["n"] = gen_ai_spec.number(),
+          ["d"] = gen_ai_spec.diagnostic(),
+          ["l"] = gen_ts_spec({ a = "@statement.outer", i = "@statement.inner" }),
+          ["b"] = gen_ts_spec({ a = "@block.outer", i = "@block.inner" }),
+          ["f"] = gen_ts_spec({ a = "@function.outer", i = "@function.inner" }),
+          ["a"] = gen_ts_spec({ a = "@parameter.outer", i = "@parameter.inner" }),
+          ["r"] = gen_ts_spec({ a = "@return.outer", i = "@return.inner" }),
+          ["="] = gen_ts_spec({
+            a = { "@assignment.lhs", "@assignment.outer" },
+            i = { "@assignment.rhs", "@assignment.inner" },
+          }),
+          ["q"] = gen_ts_spec({
+            a = { "@regex.outer", "@call.outer", "@conditional.outer", "@loop.outer", "@class.outer" },
+            i = { "@regex.inner", "@call.inner", "@conditional.inner", "@loop.inner", "@class.inner" },
+          }),
         },
       }
     end,
