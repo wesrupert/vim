@@ -2,13 +2,20 @@ return {
   "folke/snacks.nvim",
   priority = 1000,
   lazy = false,
+  ---@module "snacks"
+  ---@type snacks.Config
   opts = {
     bufdelete = { enabled = true },
     git = { enabled = true },
     gitbrowse = { enabled = true },
     statuscolumn = { enabled = true },
-    terminal = { enabled = true },
-    notifier = { enabled = false, style = "fancy" },
+    terminal = {
+      enabled = true,
+      win = {
+        backdrop = false,
+      },
+    },
+    notifier = { enabled = false },
     picker = {
       matcher = {
         cwd_bonus = true,
@@ -27,8 +34,6 @@ return {
 
     vim.print = snacks.debug.inspect -- Override print to use snacks for `:=` command
     util.keymap("<leader>m", "[Snacks] Show messages",     snacks.notifier.show_history)
-    util.keymap("<c-`>", "[Snacks] Toggle terminal",       snacks.terminal.toggle)
-    util.keymap("<c-`>", "[Snacks] Toggle terminal",       snacks.terminal.toggle, { "t" })
     util.keymap("[g",    "[Snacks] Blame current line",    snacks.git.blame_line)
     util.keymap("gss",   "[Snacks] Scratch buffer",        function () snacks.scratch() end)
     util.keymap("gsS",   "[Snacks] Pick Scratch buffer",   snacks.scratch.select)
@@ -37,13 +42,8 @@ return {
       vim.ui.input({ prompt = "Choose a branch: ", default = "master" }, function (branch) snacks.gitbrowse.open({ branch = branch }) end)
     end)
 
-    util.keymap("gol", "[Snacks] Open lazygit", function ()
-      if vim.fn.executable("tmux") then
-        vim.system({ "tmux", "display-popup", "-d", vim.fn.getcwd(), "-w", "95%", "-h", "95%", "-E", "lazygit" })
-      else
-        snacks.lazygit.open()
-      end
-    end)
+    util.keymap("<c-`>", "[Snacks] Toggle terminal",       snacks.terminal.toggle, { "n", "i", "t" })
+    vim.api.nvim_create_user_command("Terminal", function (ev) snacks.terminal.toggle(ev.args) end, { nargs = "*" })
 
     util.keymap ("<leader>bd", "[Snacks] Delete buffer", function () snacks.bufdelete() end)
     vim.api.nvim_create_user_command("BD", function () snacks.bufdelete() end, {})

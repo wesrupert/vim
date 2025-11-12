@@ -225,14 +225,6 @@ call s:GenerateCAbbrev('lgrep', 2, 'LGrep')
 call s:GenerateCAbbrev('olgrep', 3, 'OLGrep')
 call s:GenerateCAbbrev('rg', 2, 'Grep' )
 
-command! -nargs=* Terminal wincmd b | bel split | terminal <args>
-command! -nargs=* VTerminal wincmd l | bel vsplit | terminal <args>
-command! -nargs=* ETerminal terminal <args>
-call s:GenerateCAbbrev('terminal', 2, 'Terminal' )
-call s:GenerateCAbbrev('sterminal', 3, 'Terminal' )
-call s:GenerateCAbbrev('vterminal', 3, 'VTerminal' )
-call s:GenerateCAbbrev('eterminal', 3, 'terminal' )
-
 " }}}
 
 " Auto Commands {{{
@@ -254,6 +246,7 @@ augroup end
 
 augroup Terminal | autocmd!
   autocmd TermOpen,TermEnter * startinsert
+  autocmd BufEnter term://* * startinsert
   autocmd TermClose * if v:event.status == 0 | bdelete | endif
 augroup end
 
