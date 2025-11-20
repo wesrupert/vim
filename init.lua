@@ -11,15 +11,16 @@ vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 
 if util.is_gui() then
   vim.o.pumblend = 20
-  vim.o.winborder = "none"
 
   if vim.g.neovide then
+    vim.o.winborder = "solid"
     vim.g.neovide_theme = "auto"
     vim.g.neovide_remember_window_size = true
     vim.g.neovide_hide_mouse_when_typing = true
     vim.g.neovide_cursor_animate_command_line = false
     vim.g.neovide_input_macos_option_key_is_meta = "both"
     vim.g.neovide_text_gamma = 1.2
+    -- vim.g.neovide_floating_shadow = false
     vim.g.neovide_floating_corner_radius = 0.3
     vim.g.experimental_layer_grouping = true
   end
@@ -94,7 +95,36 @@ vim.api.nvim_create_autocmd("TextYankPost", {
   desc = "Highlight on yank",
 })
 
-if not vim.loop.fs_stat(lazypath) then
+local function read_gitignore()
+  local gitignore_path = vim.fs.find(".gitignore", { upward = true, type = "file" })
+  if #gitignore_path == 0 then return end
+
+  local current_ignores = {}
+  vim.iter(vim.fn.split(vim.o.wildignore, ",", false))
+    :each(function --[[@param x string]] (x) current_ignores[x] = true end)
+
+  local gitignore_lines = vim.fn.readfile(gitignore_path[1])
+  vim.iter(gitignore_lines)
+    :map   (function --[[@param x string]] (x) return x:gsub("%s*#.*", "") end)
+    :filter(function --[[@param x string]] (x) return not x:match("^%s*$") end)
+    :map   (function --[[@param x string]] (x) return x:match("/$") and x.."**" or x end)
+    :map   (function --[[@param x string]] (x) return x:match("^/.*[^/]$") and x.."/**" or x end)
+    :map   (function --[[@param x string]] (x) return x:match("^[^/.*]*$") and x.."/**" or x end)
+    :map   (function --[[@param x string]] (x) return x:match("^[^/]*/%*%*$") and "**/"..x or x end)
+    :each  (function --[[@param x string]] (x) current_ignores[x] = true end)
+  vim.o.wildignore = table.concat(vim.tbl_keys(current_ignores), ",")
+end
+_G.read_gitignore = read_gitignore
+
+vim.api.nvim_create_autocmd("User", {
+  group = user_config_group,
+  desc = "Add gitignore to wildignore",
+  pattern = "RooterChDir",
+  callback = read_gitignore,
+})
+
+-- Install plugins
+if not vim.uv.fs_stat(lazypath) then
   vim.fn.system({
     "git",
     "clone",
@@ -110,7 +140,8 @@ require("lazy").setup("plugins",{
   change_detection = { notify = false },
 })
 
+-- Load classic vim settings
 local vimrc = vim.fn.stdpath("config") .. "/vimrc"
-if vim.loop.fs_stat(vimrc) then
+if vim.uv.fs_stat(vimrc) then
   vim.fn.execute("source " .. vimrc)
 end

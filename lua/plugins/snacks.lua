@@ -84,7 +84,6 @@ return {
     util.keymap("<a-g>", "[Snacks] Git branches",  snacks.picker.git_branches)
     util.keymap("<a-t>", "[Snacks] Treesitter",    snacks.picker.treesitter)
     util.keymap("<a-o>", "[Snacks] Jumplist",      snacks.picker.jumps)
-    util.keymap("<a-u>", "[Snacks] Changelist",    snacks.picker.undo)
     util.keymap("<a-q>", "[Snacks] Location list", snacks.picker.loclist)
     util.keymap("<c-q>", "[Snacks] Quickfix",      snacks.picker.qflist)
     util.keymap("<c-k>", "[Snacks] Keymaps",       snacks.picker.keymaps)

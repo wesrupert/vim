@@ -30,12 +30,13 @@ function! Grep(local, open, ...) " {{{
 endfunction " }}}
 
 function! NormFile(path) " {{{
-  let expanded = expand(substitute(a:path, '[\\/]\+', g:slash, 'g'))
-  return expanded
+  let normalized = substitute(a:path, '[\\/]\+', g:slash, 'g')
+  let normalized = substitute(a:path, ',', '\\,', 'g')
+  return expandcmd(normalized)
 endfunction " }}}
 
 function! NormPath(path, ...) " {{{
-  let useslash = get(a:, 1, 1)
+  let useslash = get(a:, 1, v:true)
   let expanded = NormFile(a:path)
   if useslash && expanded[strlen(expanded)-1] != g:slash
     let expanded .= g:slash
@@ -65,29 +66,23 @@ endfunction " }}}
 
 " }}}
 
-if get(g:, 'vscode', 0)
-  " VS Code Neovim is the most common ShaDa concurrency culprit.
-  " Just use VS Code features instead.
-  set shada="NONE"
+" Meta Config {{{
+
+" Source vimrc.leader before performing additional configuration.
+let g:slash        = has('win32') ? '\' : '/'
+let g:vimrc        = NormFile(stdpath('config').'/vimrc')
+let g:vimrc_leader = s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before')
+
+" Update packpath
+if exists('&packpath')
+  if match(&packpath, substitute(stdpath('config'), '[\\/]', '[\\\\/]', 'g')) == -1
+    let &packpath .= ','.stdpath('config')
+  endif
 endif
 
-let g:slash        = has('win32') ? '\' : '/'
-let g:vimhome      = NormPath('$HOME/.config/nvim')
-let g:temp         = NormPath(g:vimhome.'/tmp')
-let g:vimrc        = NormFile(g:vimhome.'/vimrc')
-let g:vimrc_init   = NormFile(g:vimhome.'/init.lua')
-let g:vimrc_plug   = NormFile(g:vimhome.'/lua/plugins/init.lua')
-let g:vimrc_custom = NormFile(g:vimrc.'.custom')
-let g:vimrc_leader = s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before')
-call Mkdir(g:temp)
-
+" }}}
 
 " Preferences and Settings {{{
-
-" GUI settings
-if exists('&guifont')
-  set guifont=Atkinson_Hyperlegible_Mono,Symbols_Nerd_Font:h13:#h-none
-endif
 
 " Application settings
 syntax on
@@ -99,6 +94,7 @@ set splitbelow splitright
 set switchbuf=usetab
 set updatetime=500
 set sessionoptions=curdir,folds,help,tabpages,winsize,terminal
+set shada+="%"
 
 if exists('&termguicolors')
   if !has('gui_running') && &term =~ '^\%(screen\|tmux\)'
@@ -112,12 +108,9 @@ endif
 set completeopt=menuone,preview,noinsert,noselect,fuzzy
 set gdefault ignorecase infercase smartcase
 set wildmenu wildoptions=fuzzy,pum wildmode=list:lastused:full
-set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc,.class
-set wildignore+=*.pyc,*.class,*.sln,*.Master,*.csproj,*.csproj.user,*.cache,*.dll,*.pdb,*.min.*
-set wildignore+=*.tar.*,*.swp,*.bak
-set wildignore+=*/.git/**/*,*/.jj/**/*,*/.hg/**/*,*/.svn/**/*
-set wildignore+=*/build/**,*/bin/**,*/dist/**,*/node_modules/**
-set wildignore+=tags
+set suffixes=~,.bak,.swp,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc,.o,.class
+set wildignore+=**/.git/**,**/.jj/**,**/tags/**,**/build/**,**/bin/**,**/dist/**
+set wildignore+=*~,*.bak,*.aux,*.cache,*.dll,*.min,*.min.*,*.pdb,*.swp,*.tar,*.tar.*
 set wildignorecase
 if executable('rg')
   set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case
@@ -130,17 +123,17 @@ set conceallevel=2
 set cursorline
 set tabstop=2 shiftwidth=0 softtabstop=-1
 set number
-let &thesaurus = NormFile(g:vimhome.'/moby-thesaurus/words.txt')
+set listchars=tab:»\ ,extends:›,precedes:‹,nbsp:·,trail:·
+let &thesaurus = NormFile(stdpath('data').'/moby-thesaurus/words.txt')
 
-" }}}
 
-" Plugins {{{
-
-" Update packpath
-if exists('&packpath')
-  if match(&packpath, substitute(g:vimhome, '[\\/]', '[\\\\/]', 'g')) == -1
-    let &packpath .= ','.g:vimhome
-  endif
+" GUI settings
+if exists('&guifont')
+  set guifont=Atkinson_Hyperlegible_Mono,Symbols_Nerd_Font:h13:#h-none
+endif
+if exists("g:vscode")
+  " VSCode Neovim is a common ShaDa issue culprit, use VSCode features instead.
+  set shada=""
 endif
 
 " }}}
@@ -158,14 +151,14 @@ noremap <silent> <c-l>         <c-w>l
 noremap <silent> <leader>/     <cmd>nohlsearch<cr>
 noremap <silent> <leader>c,    <cmd>cd ..<cr><cmd>echo ':cd '.getcwd()<cr>
 noremap <silent> <leader>cd    <cmd>execute 'cd '.expand('%:p:h')<cr><cmd>echo ':cd '.getcwd()<cr>
-noremap <silent> <leader>J     <cmd>silent! call repeat#set('\<leader>J')<cr>ddpkJ
+noremap <silent> <leader>j     <cmd>silent! call repeat#set('\<leader>J')<cr>ddpkJ
 noremap <silent> <leader>rg    <cmd>Grep <cword><cr>
 noremap <silent> <leader>va    <cmd>execute 'e '.g:vimrc_custom<cr>
 noremap <silent> <leader>vb    <cmd>execute 'e '.g:vimrc_leader<cr>
-noremap <silent> <leader>vp    <cmd>execute 'e '.g:vimrc_plug<cr>
+noremap <silent> <leader>vp    <cmd>execute 'e '.NormFile(stdpath('config').'/lua/plugins/init.lua')<cr>
 noremap <silent> <leader>vr    <cmd>execute 'e '.g:vimrc<cr>
-noremap <silent> <leader>vi    <cmd>execute 'e '.g:vimrc_init<cr>
-noremap <silent> <leader>vz    <cmd>execute 'source '.g:vimrc<cr>
+noremap <silent> <leader>vi    <cmd>execute 'e '.NormFile(stdpath('config').'/init.lua')<cr>
+noremap <silent> <leader>vv    <cmd>source $MYVIMRC<cr>
 noremap <silent> ]w            <cmd>setlocal wrap!<cr><cmd>setlocal wrap?<cr>
 noremap <silent> ]W            <cmd>set wrap!<cr><cmd>setlocal wrap?<cr>
 noremap <silent> [w            <cmd>setlocal list!<cr><cmd>setlocal list?<cr>
@@ -231,6 +224,14 @@ augroup Filetypes | autocmd!
   autocmd FileType gitcommit setlocal tw=72 fo+=t cc=50,+0
 augroup end
 
+augroup HelpFiles | autocmd!
+  autocmd!
+  autocmd BufRead,BufWinEnter * if (&buftype == 'help') |
+        \   setlocal noequalalways nonumber norelativenumber scrolloff=0 sidescrolloff=0 |
+        \   if &columns > 160 | wincmd L | vert resize 84 | endif |
+        \ endif
+augroup end
+
 augroup Terminal | autocmd!
   autocmd TermOpen,TermEnter * startinsert
   autocmd BufEnter term://* * startinsert
@@ -250,18 +251,25 @@ augroup end
 
 " Backup and Undo {{{
 
-set backup writebackup
-let g:backupdir = get(g:, 'backupdir', NormPath(g:temp.'backups'))
-let &directory = g:backupdir.g:slash " Add extra slash to avoid filename collisions
-silent call Mkdir(g:backupdir)
+let s:backup_dir = NormPath(stdpath('cache').'/backup', v:false)
+if Mkdir(s:backup_dir)
+  set backup writebackup
+  " Double slash extends files to their full path to avoid collisions.
+  let &backupdir = s:backup_dir.'//,.'
+endif
 
-augroup Backups | autocmd!
-  autocmd BufRead * let &l:backupdir = NormPath(g:backupdir.g:slash.expand("%:p:h:t")) | silent call Mkdir(&l:backupdir)
-augroup end
+let s:swap_dir = NormPath(stdpath('cache').'/swap', v:false)
+if Mkdir(s:swap_dir)
+  " Double slash extends files to their full path to avoid collisions.
+  let &directory = s:swap_dir.'//,.'
+endif
 
-if has('persistent_undo') && Mkdir(g:temp.'undo')
-  set undofile
-  let &undodir = fnamemodify(g:backupdir, ':h:h').g:slash.'undo'
+if has('persistent_undo')
+  let s:undo_dir = NormPath(stdpath('data').'/undo', v:false)
+  if Mkdir(s:undo_dir)
+    set undofile
+    let &undodir = s:undo_dir
+  endif
 endif
 
 " }}}

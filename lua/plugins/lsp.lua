@@ -4,24 +4,35 @@ local lsp_util = require("util.lsp")
 local methods = vim.lsp.protocol.Methods
 local user_lsp_config_group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true })
 
+local code_action_fun = vim.lsp.buf.code_action
+
 -- LSP Keymaps
 lsp_util.on_attach(function (bufnr)
   util.keymap("grn", "[LSP] Rename",               vim.lsp.buf.rename, nil, bufnr)
-  util.keymap("gra", "[LSP] Show code actions",    vim.lsp.buf.code_action, nil, bufnr)
+  util.keymap("gra", "[LSP] Show code actions",    function () return code_action_fun() end, nil, bufnr)
   util.keymap("grw", "[LSP] Add workspace folder", vim.lsp.buf.add_workspace_folder, nil, bufnr)
   util.keymap("grW", "[LSP] Del workspace folder", vim.lsp.buf.remove_workspace_folder, nil, bufnr)
   util.keymap("[e",  "[LSP] Previous error",       function () vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR }) end, nil, bufnr)
   util.keymap("]e",  "[LSP] Previous error",       function () vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR }) end, nil, bufnr)
+  util.keymap("[s",  "[LSP] Previous info",        function () vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.INFO }) end, nil, bufnr)
+  util.keymap("]s",  "[LSP] Previous info",        function () vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.INFO }) end, nil, bufnr)
   util.keymap("goq", "[LSP] Workspace info",       function () print("Workspace folders: " .. vim.inspect(vim.lsp.buf.list_workspace_folders())) end, nil, bufnr)
 end)
 lsp_util.on_supports_method(methods.textDocument_definition, function (bufnr)
   util.keymap("gd", "[LSP] Go to definition", vim.lsp.buf.definition, nil, bufnr)
 end)
-lsp_util.on_attach_client("null-ls", function (bufnr)
-  util.keymap("zg", "[LSP] Show code actions", vim.lsp.buf.code_action, nil, bufnr)
-  util.keymap("zG", "[LSP] Show code actions", vim.lsp.buf.code_action, nil, bufnr)
-  util.keymap("[s", "[LSP] Previous info",     function () vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.INFO }) end, nil, bufnr)
-  util.keymap("]s", "[LSP] Previous info",     function () vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.INFO }) end, nil, bufnr)
+lsp_util.on_attach_client("codebook", function (bufnr)
+  local function codebook_code_action()
+    -- TODO @0.12.x: Remove legacy code path
+    if vim.version().minor >= 12 then
+      return code_action_fun({ filter = function (_, client_id)
+        return vim.lsp.get_client_by_id(client_id).name == "codebook"
+      end })
+    end
+    return code_action_fun()
+  end
+  util.keymap("zg", "[LSP] Show spelling actions", codebook_code_action, nil, bufnr)
+  util.keymap("zG", "[LSP] Show spelling actions", codebook_code_action, nil, bufnr)
 end)
 
 -- "Organize Imports" mapping.
@@ -195,10 +206,49 @@ return {
     priority = 1001, -- Must run before other lsp plugins!
     opts = {
       preset = "powerline",
-      options = { show_source = { enabled = true } },
+      options = {
+        show_all_diags_on_cursorline = true,
+        show_source = { enabled = true },
+        multilines = {
+          enabled = true,
+          always_show = false,
+          tabstop = 2,
+          severity = { vim.diagnostic.severity.ERROR },
+        },
+        overflow = { padding = 4 },
+        experimental = {
+          -- Make diagnostics not mirror across windows containing the same buffer
+          -- See: https://github.com/rachartier/tiny-inline-diagnostic.nvim/issues/127
+          use_window_local_extmarks = true,
+        },
+      },
     },
-    init = function ()
+    config = function (_, opts)
+      local tiny = require("tiny-inline-diagnostic")
+      tiny.setup(opts or {})
+
       vim.diagnostic.config({ virtual_text = false })
+
+      local was_enabled = false
+      vim.api.nvim_create_autocmd("User", {
+        desc = "[TinyInlineDiagnostic] Toggle on NES",
+        group = user_lsp_config_group,
+        pattern = "SidekickNesHide",
+        callback = function()
+          if was_enabled and not tiny.enabled then
+            tiny.enable()
+          end
+        end,
+      })
+      vim.api.nvim_create_autocmd("User", {
+        desc = "[TinyInlineDiagnostic] Toggle on NES",
+        group = user_lsp_config_group,
+        pattern = "SidekickNesShow",
+        callback = function()
+          was_enabled = tiny.enabled
+          tiny.disable()
+        end,
+      })
     end,
   },
   {
@@ -213,41 +263,6 @@ return {
     config = true,
   },
   {
-    "nvimtools/none-ls.nvim",
-    dependencies = {
-      "mason.nvim",
-      "nvimtools/none-ls-extras.nvim",
-      "davidmh/cspell.nvim",
-    },
-    opts = {
-      source_opts = {
-        cspell = {
-          opts = {
-            config_file_preferred_name = "cspell.json",
-            cspell_config_dirs = { "~/.config/" },
-          },
-          diagnostics = {
-            diagnostics_postprocess = function (event)
-              event.severity = vim.diagnostic.severity.INFO
-            end,
-          },
-        },
-      },
-    },
-    config = function (_, opts)
-      local none_ls = require("null-ls")
-      local cspell = require("cspell")
-      local cspell_opts = opts and opts.source_opts and opts.source_opts.cspell or {}
-
-      none_ls.setup({
-        sources = {
-          cspell.diagnostics.with(util.merge({}, cspell_opts.opts or {}, cspell_opts.diagnostics or {})),
-          cspell.code_actions.with(util.merge({}, cspell_opts.opts or {}, cspell_opts.code_actions or {})),
-        },
-      })
-    end,
-  },
-  {
     "chaitanyabsprip/fastaction.nvim",
     opts = {
       dismiss_keys = { "q", "<esc>", "<c-c>" },
@@ -259,28 +274,19 @@ return {
         -- FastAction only formats messages after pattern matching is complete!
         eslint = {
           { key = "f", order = 1, pattern = "fix this" },
-          { key = "a", order = 2, pattern = "fix all" },
+          { key = "F", order = 2, pattern = "fix all" },
         },
-        ["null-ls"] = {
-          { key = "=", order = 3, pattern = "^fix: " },
-          -- NOTE: Definition order is swapped since #4 will grab anything from #5 as well.
-          -- The "order" key will put them back in the desired order after.
-          { key = "d", order = 5, pattern = "add.*to.*~/%.config/cspell%.json" },
-          { key = "s", order = 4, pattern = "add.*to.*cspell%.json" },
+        ["codebook"] = {
+          { key = "g", order = 3, pattern = "add '.*' to dictionary" },
+          { key = "G", order = 4, pattern = "add '.*' to global dictionary" },
+          { key = "i", order = 5, pattern = "add current file to ignore list" },
         },
       },
     },
     config = function (_, opts)
       local fastaction = require("fastaction")
       fastaction.setup(opts)
-
-      lsp_util.on_attach(function (bufnr, client)
-        util.keymap("gra", "[LSP] Show code actions", fastaction.code_action, { "n", "x" }, bufnr)
-        if client.name == 'null-ls' then
-          util.keymap("zg",  "[LSP] Show code actions", fastaction.code_action, { "n", "x" }, bufnr)
-          util.keymap("zG",  "[LSP] Show code actions", fastaction.code_action, { "n", "x" }, bufnr)
-        end
-      end)
+      code_action_fun = fastaction.code_action
     end,
   },
   { "yioneko/nvim-vtsls" },

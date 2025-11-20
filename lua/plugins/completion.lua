@@ -2,8 +2,8 @@ local util = require("util")
 
 -- local use_native_completion = true
 local use_native_completion = false
--- local blink_tag = "*"
-local blink_tag = "v1.3.1"
+local blink_tag = "*"
+-- local blink_tag = "v1.3.1"
 
 if use_native_completion then
   require("util.lsp").on_supports_method("textDocument/completion", function (bufnr, client)
@@ -27,8 +27,12 @@ return {
     build =  not blink_tag and "cargo build --release" or nil,
     lazy = false, -- lazy loading handled internally
     opts = {
-      keymap = { preset = "enter" },
-      snippets = { preset = "mini_snippets" },
+      keymap = {
+        ["<cr>"] = { "accept", "fallback_to_mappings", "fallback" },
+        ["<c-x>"] = { "hide", "fallback" },
+        ["<left>"] = { "scroll_documentation_up", "fallback_to_mappings", "fallback" },
+        ["<right>"] = { "scroll_documentation_down", "fallback_to_mappings", "fallback" },
+      },
       sources = {
         default = { "lsp", "path", "snippets", "buffer" },
         providers = {
@@ -37,13 +41,11 @@ return {
         },
       },
       cmdline = {
-        keymap = { preset = "super-tab" },
         completion = { menu = { auto_show = true } },
       },
       completion = {
         keyword = { range = "full" },
         trigger = {
-          show_on_trigger_character = false,
           show_on_x_blocked_trigger_characters = { ",", '"', "'", "`", "(", "{" },
         },
         menu = {
@@ -79,6 +81,9 @@ return {
       appearance = {
         nerd_font_variant = "normal",
         kind_icons = util.duplicate(util.kind_icons),
+      },
+      snippets = {
+        preset = "mini_snippets",
       },
     },
     opts_extend = { "sources.default" },

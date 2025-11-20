@@ -37,6 +37,18 @@ return {
       "andrem222/copilot-lualine",
     },
     opts = function (_, opts)
+      local function mini_sessions_name()
+        local session = vim.g.mini_sessions_current
+        if session then
+          local session_file_symbol = require("mini.sessions").config.file
+          if vim.g.mini_sessions_current == session_file_symbol then
+            local root = vim.fs.root(vim.fn.getcwd(), session_file_symbol)
+            session = root and vim.fn.fnamemodify(root, ":t")
+          end
+        end
+        return session or ""
+      end
+
       -- Prepend opts to merge overridden specs properly.
       return util.merge({
         sections = {
@@ -50,7 +62,7 @@ return {
           lualine_x = {},
         },
         tabline = {
-          lualine_a = { function () return util.kind_icons.NeoVim .. "  ".. (vim.g.mini_sessions_current or "") end },
+          lualine_a = { "require'util'.kind_icons.NeoVim", mini_sessions_name },
           lualine_b = { { "tabs", mode = 2, use_mode_colors = true } },
           lualine_x = { { "altfile", path = 1, symbols = { separator = "󰘵 " } } },
           lualine_z = { { "filename", path = 1 } },

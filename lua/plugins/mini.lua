@@ -234,28 +234,38 @@ local plugins = {
     },
     config = function(_, opts)
       local sessions = require("mini.sessions")
-
-      -- Autoread with command line support
-      local init_session = vim.g.init_session
-      if init_session then
-        vim.tbl_extend("force", opts or {}, { autoread = false })
-        vim.api.nvim_create_autocmd("VimEnter", {
-          desc = "Autoread environment session",
-          group = user_mini_config,
-          nested = true,
-          once = true,
-          callback = function () sessions.read(init_session) end,
-        })
-      end
-
       sessions.setup(opts)
 
+      ---@param session? string
+      local function write_session(session)
+        ---@type string|nil
+        local n = session or ""
+        if n == "" then n = vim.fn.input("Session Name: ", vim.fn.fnamemodify(vim.fn.getcwd(), ":p:h:t")) end
+        if n == "" then n = nil end
+        sessions.write(n)
+      end
+
       util.keymap("<c-s>",      "[MiniSession] Select", sessions.select)
-      util.keymap("<leader>se", "[MiniSession] Select", sessions.select)
-      util.keymap("<leader>sw", "[MiniSession] Write",  function () sessions.write(vim.fn.input("Session Name: ")) end)
-      util.keymap("<leader>ss", "[MiniSession] Update", function ()
-        sessions.write(vim.g.mini_sessions_current or vim.fn.input("Session Name: "))
-      end)
+      util.keymap("<leader>ss", "[MiniSession] Select", sessions.select)
+      util.keymap("<leader>sn", "[MiniSession] Write (local)", function () sessions.write(sessions.config.file) end)
+      util.keymap("<leader>sN", "[MiniSession] Write (global)", function () write_session() end)
+      util.keymap("<leader>sw", "[MiniSession] Update", function () write_session(vim.g.mini_sessions_current) end)
+
+      -- Auto-read with command line support
+      vim.tbl_extend("force", opts or {}, { autoread = false })
+      vim.api.nvim_create_autocmd("VimEnter", {
+        desc = "[MiniSessions] Autoread environment session",
+        group = user_mini_config,
+        nested = true,
+        once = true,
+        callback = function ()
+          local init_session = vim.g.init_session
+          if vim.g.init_session and vim.g.init_session ~= "" then
+            sessions.read(init_session)
+          end
+        end,
+      })
+
     end,
   },
 

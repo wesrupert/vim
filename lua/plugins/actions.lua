@@ -1,7 +1,6 @@
 local util = require("util")
 
 return {
-  { "tpope/vim-repeat" },
   {
     "chrisgrieser/nvim-spider",
     config = function (_, opts)
@@ -20,6 +19,28 @@ return {
     event = "VeryLazy",
     config = true,
   },
-  { "sindrets/diffview.nvim" },
-  { "rafikdraoui/jj-diffconflicts" },
+  { "glts/vim-textobj-comment", dependencies = { "kana/vim-textobj-user" } },
+  {
+    "xxiaoa/atone.nvim",
+    cmd = "Atone",
+    opts = {
+      layout = {
+        width = 0.32,
+      },
+      ui = {
+        border = vim.o.winborder,
+      },
+    },
+    keys = {
+      { "<a-u>", "<cmd>Atone<cr>", desc = "[Atone] Toggle" },
+    },
+  },
+  {
+    "julienvincent/hunk.nvim",
+    cmd = { "DiffEditor" },
+    config = true,
+  },
+  {
+    "yannvanhalewyn/jujutsu.nvim",
+  },
 }

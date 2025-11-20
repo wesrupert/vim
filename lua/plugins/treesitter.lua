@@ -9,6 +9,7 @@ return {
   },
   {
     "wesrupert/ts-auto-install.nvim",
+    dev = true,
     dependencies = { "nvim-treesitter/nvim-treesitter" },
     opts = {
       skip_approval = true,
@@ -17,6 +18,23 @@ return {
       indent = { enable = false },
       syntax = { enable = { markdown = true } },
     },
+  },
+  {
+    "aaronik/treewalker.nvim",
+    config = function (_, opts)
+      local tree_walker = require("treewalker")
+      tree_walker.setup(opts or {})
+
+      util.keymap("]n", "[TreeWalker] Move to next sibling", tree_walker.move_down, { "n", "v" }, nil, { silent = true })
+      util.keymap("[n", "[TreeWalker] Move to prev sibling", tree_walker.move_up, { "n", "v" }, nil, { silent = true })
+      util.keymap("]N", "[TreeWalker] Move to child", tree_walker.move_in, { "n", "v" }, nil, { silent = true })
+      util.keymap("[N", "[TreeWalker] Move to parent", tree_walker.move_out, { "n", "v" }, nil, { silent = true })
+
+      util.keymap("gsh", "[TreeWalker] Swap left", tree_walker.swap_left, "n", nil, { silent = true })
+      util.keymap("gsj", "[TreeWalker] Swap down", tree_walker.swap_down, "n", nil, { silent = true })
+      util.keymap("gsk", "[TreeWalker] Swap up", tree_walker.swap_up, "n", nil, { silent = true })
+      util.keymap("gsl", "[TreeWalker] Swap right", tree_walker.swap_right, "n", nil, { silent = true })
+    end,
   },
   {
     "nvim-treesitter/nvim-treesitter-textobjects",
@@ -31,7 +49,7 @@ return {
 
       -- Set up swap keymaps (select/move keymaps are handled by mini.ai).
       vim.iter({
-        ["@statement.outer"]  = { n = "l", p = "L" },
+        ["@statement.outer"]  = { n = "s", p = "S" },
         ["@block.inner"]      = { n = "b", p = "B" },
         ["@assignment.inner"] = { n = "=", p = "?" },
         ["@parameter.inner"]  = { n = "a", p = "A" },
@@ -54,9 +72,10 @@ return {
     dependencies = { "nvim-treesitter/nvim-treesitter" },
     opts = {
       multiwindow = true,
+      mode = "topline",
       min_window_height = 20,
       max_lines = 5,
-      line_numbers = false,
+      separator = "─"
     },
     config = function (_, opts)
       local context = require("treesitter-context")

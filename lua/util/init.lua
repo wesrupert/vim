@@ -132,7 +132,6 @@ local special_filetypes = {
   TelescopePrompt       = { 'resize', 'indent' },
   toggleterm            = { 'resize', 'indent' },
   trouble               = { 'resize', 'indent' },
-  undotree              = { 'resize', 'indent' },
   qf                    = { 'resize', 'indent' },
 }
 

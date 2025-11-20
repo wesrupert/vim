@@ -36,7 +36,6 @@ return {
     -- Check for presence of vue language tools before adding @vue/typescript-plugin.
     local result = vim.system({ "npm", "query", "#vue" }, { cwd = params.workspaceFolders[1].name, text = true }):wait()
     if result.stdout ~= "[]" then
-      print("Injecting vue language tools")
       local vue_ls_root = vim.fn.expand("$MASON/packages/vue-language-server")
       table.insert(config.settings.vtsls.tsserver.globalPlugins, {
         name = "@vue/typescript-plugin",

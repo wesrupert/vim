@@ -4,11 +4,11 @@ return {
   { "aklt/plantuml-syntax" },
   { "cakebaker/scss-syntax.vim" },
   { "groenewege/vim-less" },
-  { "ipkiss42/xwiki.vim" },
   { "othree/yajs.vim" },
   { "pangloss/vim-javascript" },
   { "sheerun/html5.vim" },
   { "tpope/vim-git" },
+  { "ipkiss42/xwiki.vim" },
   {
     "posva/vim-vue",
     init = function () vim.g.vue_pre_processors = "detect_on_enter" end,
@@ -45,11 +45,5 @@ return {
         end,
       },
     },
-  },
-  {
-    "catgoose/vue-goto-definition.nvim",
-    event = "BufReadPre",
-    ft = { "vue", "typescript", "typescriptreact" },
-    config = true,
   },
 }
