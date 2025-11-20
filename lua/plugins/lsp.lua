@@ -142,20 +142,29 @@ lsp_util.on_attach(function (bufnr, client)
   if type(should_attach) ~= "function" then return end
   if should_attach(bufnr, client) then return end
 
-  -- Detach client from this buffer. Ideally, we'd never attach at all,
-  -- but vim.lsp doesn't support this.
-  -- NOTE: LspAttach happens before the buffer is actually marked as attached!
-  -- See: https://github.com/neovim/nvim-lspconfig/issues/2508
-  vim.defer_fn(function ()
-    if not vim.lsp.buf_is_attached(bufnr, client.id) then
+  ---Detach client from this buffer.
+  ---@param retry? number
+  ---@note
+  ---LspAttach happens before the buffer is actually marked as attached!
+  ---See: https://github.com/neovim/nvim-lspconfig/issues/2508
+  ---Ideally, we'd never attach at all, but vim.lsp doesn't support this...
+  local function defer_detach(retry)
+    vim.defer_fn(function ()
+      if vim.lsp.buf_is_attached(bufnr, client.id) then
+        vim.lsp.buf_detach_client(bufnr, client.id)
+        return
+      end
+      if retry and retry < 10 then
+        defer_detach(retry + 1)
+        return
+      end
       vim.notify(
         "Tried to detach " .. client.name .. " from buffer " .. bufnr .. " before it was attached!",
         vim.log.levels.ERROR
       )
-      return
-    end
-    vim.lsp.buf_detach_client(bufnr, client.id)
-  end, 10)
+    end, retry and retry * retry * 20 or 10)
+  end
+  defer_detach(0)
 end)
 
 vim.diagnostic.config({
@@ -211,21 +220,29 @@ return {
       "davidmh/cspell.nvim",
     },
     opts = {
-      config_file_preferred_name = "cspell.json",
-      cspell_config_dirs = { "~/.config/" },
+      source_opts = {
+        cspell = {
+          opts = {
+            config_file_preferred_name = "cspell.json",
+            cspell_config_dirs = { "~/.config/" },
+          },
+          diagnostics = {
+            diagnostics_postprocess = function (event)
+              event.severity = vim.diagnostic.severity.INFO
+            end,
+          },
+        },
+      },
     },
     config = function (_, opts)
       local none_ls = require("null-ls")
       local cspell = require("cspell")
+      local cspell_opts = opts and opts.source_opts and opts.source_opts.cspell or {}
+
       none_ls.setup({
         sources = {
-          cspell.diagnostics.with({
-            config = opts,
-            diagnostics_postprocess = function (event)
-              event.severity = vim.diagnostic.severity.INFO
-            end,
-          }),
-          cspell.code_actions.with({ config = opts }),
+          cspell.diagnostics.with(util.merge({}, cspell_opts.opts or {}, cspell_opts.diagnostics or {})),
+          cspell.code_actions.with(util.merge({}, cspell_opts.opts or {}, cspell_opts.code_actions or {})),
         },
       })
     end,
