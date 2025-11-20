@@ -5,16 +5,22 @@ return {
     priority = 999,
     opts = {
       set_dark_mode = function ()
+        local theme = util.get_setting("night_theme", "catppuccin")
+        if util.is_gui() then theme = util.get_setting("gui_night_theme", theme) end
         vim.api.nvim_set_option_value("background", "dark", {})
-        vim.cmd.colorscheme(util.get_setting("night_theme", "catppuccin"))
+        vim.cmd.colorscheme(theme)
       end,
       set_light_mode = function ()
+        local theme = util.get_setting("day_theme", "catppuccin")
+        if util.is_gui() then theme = util.get_setting("gui_day_theme", theme) end
         vim.api.nvim_set_option_value("background", "light", {})
-        vim.cmd.colorscheme(util.get_setting("day_theme", "catppuccin"))
+        vim.cmd.colorscheme(theme)
       end,
     },
     init = function ()
-      vim.cmd.colorscheme(util.get_setting("day_theme", "catppuccin"))
+      local theme = util.get_setting("day_theme", "catppuccin")
+      if util.is_gui() then theme = util.get_setting("gui_day_theme", theme) end
+      vim.cmd.colorscheme(theme)
     end,
   },
   {
@@ -22,6 +28,10 @@ return {
     name = "catppuccin",
     priority = 1000,
     opts = {
+      background = {
+        light = "latte",
+        dark = "mocha",
+      },
       integrations = {
         blink_cmp = true,
         cmp = true,
@@ -106,5 +116,10 @@ return {
   {
     "webhooked/kanso.nvim",
     priority = 1000,
+    opts = {
+      foreground = {
+        dark = "saturated",
+      },
+    },
   },
 }

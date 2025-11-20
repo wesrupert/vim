@@ -35,8 +35,8 @@ return {
     vim.print = snacks.debug.inspect -- Override print to use snacks for `:=` command
     util.keymap("<leader>m", "[Snacks] Show messages",     snacks.notifier.show_history)
     util.keymap("[g",    "[Snacks] Blame current line",    snacks.git.blame_line)
-    util.keymap("gss",   "[Snacks] Scratch buffer",        function () snacks.scratch() end)
-    util.keymap("gsS",   "[Snacks] Pick Scratch buffer",   snacks.scratch.select)
+    util.keymap("gos",   "[Snacks] Scratch buffer",        function () snacks.scratch() end)
+    util.keymap("goS",   "[Snacks] Pick Scratch buffer",   snacks.scratch.select)
     util.keymap("gox",   "[Snacks] Open on remote",        snacks.gitbrowse.open)
     util.keymap("goX",   "[Snacks] Open branch on remote", function ()
       vim.ui.input({ prompt = "Choose a branch: ", default = "master" }, function (branch) snacks.gitbrowse.open({ branch = branch }) end)

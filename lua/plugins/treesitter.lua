@@ -69,21 +69,6 @@ return {
     end,
   },
   {
-    "drybalka/tree-climber.nvim",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
-    config = function ()
-      local tree_climber = require("tree-climber")
-      util.keymap("],",  "[TreeSitter] Next sibling",   tree_climber.goto_next,   { "n", "v", "o" })
-      util.keymap("[,",  "[TreeSitter] Prev sibling",   tree_climber.goto_prev,   { "n", "v", "o" })
-      util.keymap("].",  "[TreeSitter] Jump child",     tree_climber.goto_child,  { "n", "v", "o" })
-      util.keymap("[.",  "[TreeSitter] Jump parent",    tree_climber.goto_parent, { "n", "v", "o" })
-      util.keymap("a.",  "[TreeSitter] Select node",    tree_climber.select_node, { "v", "o" })
-      util.keymap("i.",  "[TreeSitter] Select inner",   tree_climber.select_node, { "v", "o" })
-      util.keymap("gss", "[TreeSitter] Swap next node", tree_climber.swap_next)
-      util.keymap("gsS", "[TreeSitter] Swap prev node", tree_climber.swap_prev)
-    end,
-  },
-  {
     "andymass/vim-matchup",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
     opts = { enable = true },

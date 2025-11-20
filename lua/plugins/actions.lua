@@ -1,29 +1,25 @@
 local util = require("util")
 
 return {
-  { "rafikdraoui/jj-diffconflicts" },
+  { "tpope/vim-repeat" },
   {
-    "hamidi-dev/org-list.nvim",
-    dependencies = { "tpope/vim-repeat" },
-    opts = {
-      mapping = {
-        {
-          key = "<c-_>",
-          desc = "[Org List] Cycle list types",
-          filetypes = { "org", "markdown" },
-        },
-        checkbox_toggle = {
-          enabled = true,
-          key = "<a-_>",
-          desc = "[Org List] Toggle state",
-          filetypes = { "org", "markdown" },
-        },
-      },
-    },
+    "chrisgrieser/nvim-spider",
+    config = function (_, opts)
+      local spider = require("spider")
+      spider.setup(opts)
+      util.keymap("w",  "[Spider] Go word",        function () spider.motion("w") end)
+      util.keymap("o",  "[Spider] Go word",        function () spider.motion("w") end,  { "o", "x" })
+      util.keymap("e",  "[Spider] Go End",         function () spider.motion("e") end,  { "n", "o", "x" })
+      util.keymap("ge", "[Spider] Go end (back)",  function () spider.motion("ge") end, { "n", "o", "x" })
+      util.keymap("b",  "[Spider] Go word",        function () spider.motion("b") end)
+      util.keymap("u",  "[Spider] Go word (back)", function () spider.motion("b") end,  { "o", "x" })
+    end,
   },
   {
     "chentoast/marks.nvim",
     event = "VeryLazy",
     config = true,
   },
+  { "sindrets/diffview.nvim" },
+  { "rafikdraoui/jj-diffconflicts" },
 }

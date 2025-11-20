@@ -4,7 +4,7 @@ local user_mini_config = vim.api.nvim_create_augroup("UserMiniConfig", { clear =
 ---@class MiniConfig
 ---@field cond boolean|(fun(): boolean)|nil
 ---@field opts table|(fun(): table)|nil
----@field config (fun(opts: table))|nil
+---@field config (fun(spec: MiniConfig, opts: table))|nil
 ---@field init (fun(opts: table))|nil
 
 ---@type { [string]: boolean|MiniConfig }
@@ -13,7 +13,7 @@ local plugins = {
   extra = true,
   icons = true,
   visits = {
-    config = function (opts)
+    config = function(_, opts)
       local visits = require("mini.visits")
       visits.setup(opts)
 
@@ -40,54 +40,25 @@ local plugins = {
       local gen_ai_spec = require("mini.extra").gen_ai_spec
       return {
         mappings = {
-          goto_left = "[[",
-          goto_right = "]]",
+          goto_left = "<leader>k",
+          goto_right = "<leader>j",
         },
         custom_textobjects = {
-          -- Builtin text objects:
-          -- w = Word
-          -- W = WORD
-          -- s = Sentence
-          -- p = Paragraph
-          -- b = Block
-          -- B = BLOCK
-          -- t = Tag block
-
-          -- Mini.ai default text objects:
-          -- [ = Balanced []
-          -- { = Balanced {}
-          -- ( = Balanced ()
-          -- < = Balanced <>
-          -- > = Balanced <>
-          -- ) = Balanced ()
-          -- } = Balanced {}
-          -- ] = Balanced []
-          -- " = Balanced "
-          -- ' = Balanced '
-          -- ` = Balanced `
-          -- a = Argument
-          -- f = Function call
-          -- t = Tag
-          -- ? = User prompt
-          -- b = Alias for ), ], or }
-          -- q = Alias for ", ', or `
-
-          -- Relocate default "b" alias.
-          ["s"] = { { "%b()", "%b[]", "%b{}" }, "^.().*().$" },
-
-          ["j"] = gen_ai_spec.line(),
+          ["_"] = { "%b__", '^.().*().$' }, -- The 'abc' in 'xyz_abc_123'.
+          ["l"] = gen_ai_spec.line(),
           ["n"] = gen_ai_spec.number(),
           ["d"] = gen_ai_spec.diagnostic(),
-          ["l"] = gen_ts_spec({ a = "@statement.outer", i = "@statement.inner" }),
+          ["s"] = { { "%b()", "%b[]", "%b{}" }, "^.().*().$" }, -- Relocate default "b" alias.
           ["b"] = gen_ts_spec({ a = "@block.outer", i = "@block.inner" }),
           ["f"] = gen_ts_spec({ a = "@function.outer", i = "@function.inner" }),
           ["a"] = gen_ts_spec({ a = "@parameter.outer", i = "@parameter.inner" }),
           ["r"] = gen_ts_spec({ a = "@return.outer", i = "@return.inner" }),
+          [";"] = gen_ts_spec({ a = "@statement.outer", i = "@statement.inner" }),
           ["="] = gen_ts_spec({
             a = { "@assignment.lhs", "@assignment.outer" },
             i = { "@assignment.rhs", "@assignment.inner" },
           }),
-          ["q"] = gen_ts_spec({
+          ["-"] = gen_ts_spec({
             a = { "@regex.outer", "@call.outer", "@conditional.outer", "@loop.outer", "@class.outer" },
             i = { "@regex.inner", "@call.inner", "@conditional.inner", "@loop.inner", "@class.inner" },
           }),
@@ -97,13 +68,17 @@ local plugins = {
   },
 
   bracketed = {
-    opts = {
-      treesitter = { suffix = "" },
-    },
+    config = function (_, opts)
+      local mini_bracketed = require("mini.bracketed")
+      -- Override default treesitter implementation with ']]]'/'[[[' motions.
+      mini_bracketed.setup(util.merge({ treesitter = { suffix = "" } }, opts or {}))
+      util.keymap("]]]", "[MiniAi] Next ts node", function () mini_bracketed.treesitter("forward") end)
+      util.keymap("[[[", "[MiniAi] Previous ts node", function () mini_bracketed.treesitter("backward") end)
+    end
   },
 
   bufremove = {
-    config = function (opts)
+    config = function(_, opts)
       local bufremove = require("mini.bufremove")
       bufremove.setup(opts)
       util.keymap("<leader>zz", "[MiniBufremove] Save and close buffer", function ()
@@ -120,7 +95,7 @@ local plugins = {
         signs = { add = "┃", change = "┃", delete = "┃" },
       },
     },
-    config = function (opts)
+    config = function(_, opts)
       local diff = require("mini.diff")
 
       -- Jujutsu support
@@ -150,7 +125,7 @@ local plugins = {
         local repo = get_jj_root(path)
         if repo == nil then return false end
 
-        local set_ref_text = function ()
+        local function set_ref_text()
           vim.system(
             { "jj", "--ignore-working-copy", "file", "show", "-r", "@-", "\"" .. path .. "\"" },
             { cwd = vim.fs.dirname(path), text = true },
@@ -257,7 +232,7 @@ local plugins = {
         },
       },
     },
-    config = function (opts)
+    config = function(_, opts)
       local sessions = require("mini.sessions")
 
       -- Autoread with command line support
@@ -310,7 +285,7 @@ local plugins = {
         autoopen = false,
         header = function ()
           local lines
-          local add_line = function(l)
+          local function add_line(l)
             if lines == nil then lines = l else lines = lines .. "\n" .. l end
           end
 
@@ -359,12 +334,16 @@ local plugins = {
       util.keymap("<a-n>", "[MiniStarter] Open", starter.open)
     end,
   },
+
+  surround = {
+    opts = { search_method = "cover_or_next" },
+  },
 }
 
 return {
   "nvim-mini/mini.nvim",
   config = function ()
-    local print_mini = function (m, ...) print("[Mini." .. m .. "] ", ...) end
+    local function print_mini(m, ...) print("[Mini." .. m .. "] ", ...) end
     for k, p in pairs(plugins) do
       -- Set up modules (load opts and run config)
       xpcall(function ()
@@ -399,7 +378,7 @@ return {
 
         -- Setup module
         if util.has_key(plugin, "config") then
-          local config_ok, config_result = util.maybe_pcall(plugin.config, opts)
+          local config_ok, config_result = util.maybe_pcall(plugin.config, plugin, opts)
           if not config_ok then
             print_mini(k, "Error loading config", config_result)
             return

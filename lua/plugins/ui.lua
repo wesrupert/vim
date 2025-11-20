@@ -97,8 +97,6 @@ return {
     event = "VeryLazy",
     opts = {
       preset = "helix",
-      -- TODO: Workaround till https://github.com/folke/which-key.nvim/issues/967
-      show_help = false,
       sort = { "icase", "alphanum" },
     },
     config = function (_, opts)
@@ -106,12 +104,18 @@ return {
       local which_key_extras = require("which-key.extras")
       which_key.setup(opts)
 
+      util.keymap("<leader>w", "[Which-Key] Show keymaps", which_key.show)
+      util.keymap("<leader>W", "[Which-Key] Show keymaps for buffer", function () which_key.show({ global = false }) end)
+
       which_key.add({
-        { "gb", group = "buffers", expand = which_key_extras.expand.buf },
+        { "gb", group = "Buffers", expand = which_key_extras.expand.buf },
+        { "gs", group = "Swap" },
       })
 
-      util.keymap("<leader>k", "[Which-Key] Show keymaps", which_key.show)
-      util.keymap("<leader>K", "[Which-Key] Show keymaps for buffer", function () which_key.show({ global = false }) end)
+      which_key.add({
+        { "]]", group = "[Mini.ai] Next" },
+        { "[[", group = "[Mini.ai] Previous" },
+      })
     end,
   },
   {
