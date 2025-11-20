@@ -32,7 +32,7 @@ if vim.fn.executable("mise") then
   for tool, version in pairs(vim_tools) do
     ---@param cmd string[]
     ---@return boolean success, any result, ...any
-     local get_mise_output = function (cmd) return pcall(function () return vim.system(cmd):wait().stdout:gsub("\n$", "") end) end
+    local function get_mise_output(cmd) return pcall(function () return vim.system(cmd):wait().stdout:gsub("\n$", "") end) end
     local version_ok, latest_version = get_mise_output({ "mise", "latest", "-i", tool.."@"..version })
     if version_ok and latest_version then
       local path_ok, tool_path = get_mise_output({ "mise", "where", tool.."@"..latest_version })
@@ -66,7 +66,7 @@ function _G.comment_and_yank(_, paste)
 end
 function _G.comment_and_paste(kind) _G.comment_and_yank(kind, true) end
 
-local gen_comment_and_yank = function (paste, op)
+local function gen_comment_and_yank(paste, op)
   local operator = "g@" .. (op or "")
   local func = "v:lua.comment_and_yank" if paste then func = "v:lua.comment_and_paste" end
   return function () vim.opt.operatorfunc = func return operator end

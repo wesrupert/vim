@@ -26,11 +26,8 @@ end)
 
 -- "Organize Imports" mapping.
 lsp_util.on_attach_client("vtsls", function (bufnr)
-  local organize_imports = function ()
-    vim.lsp.buf.code_action({
-      context = { only = { "source.organizeImports" }, diagnostics = {} },
-      apply = true,
-    })
+  local function organize_imports()
+    vim.lsp.buf.code_action({ context = { only = { "source.organizeImports" }, diagnostics = {} }, apply = true })
   end
   util.keymap("gsi", "[LSP:vtsls] Organize imports", organize_imports, nil, bufnr)
   vim.api.nvim_buf_create_user_command(bufnr, "OrganizeImports", organize_imports, { desc = "[LSP:vtsls] Organize imports" })
@@ -142,8 +139,8 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
 lsp_util.on_attach(function (bufnr, client)
   local should_attach = client and client.config and client.config.should_attach or nil
   if not should_attach then return end
-  if type(should_attach) ~= 'function' then return end
-  if should_attach(bufnr, client) ~= false then return end
+  if type(should_attach) ~= "function" then return end
+  if should_attach(bufnr, client) then return end
 
   -- Detach client from this buffer. Ideally, we'd never attach at all,
   -- but vim.lsp doesn't support this.
@@ -152,7 +149,7 @@ lsp_util.on_attach(function (bufnr, client)
   vim.defer_fn(function ()
     if not vim.lsp.buf_is_attached(bufnr, client.id) then
       vim.notify(
-        'Tried to detach ' .. client.name .. ' from buffer ' .. bufnr .. ' before it was attached!',
+        "Tried to detach " .. client.name .. " from buffer " .. bufnr .. " before it was attached!",
         vim.log.levels.ERROR
       )
       return
@@ -241,15 +238,16 @@ return {
         title = false,
       },
       priority = {
-        -- NOTE: The patterns should be tested against the raw messages;
-        -- fastaction only makes them title case after pattern matching is complete!
+        -- NOTE: The patterns should be tested against the raw messages.
+        -- FastAction only formats messages after pattern matching is complete!
         eslint = {
           { key = "f", order = 1, pattern = "fix this" },
           { key = "a", order = 2, pattern = "fix all" },
         },
         ["null-ls"] = {
           { key = "=", order = 3, pattern = "^fix: " },
-          -- Definition order is swapped since #4 will grab anything from #5 as well.
+          -- NOTE: Definition order is swapped since #4 will grab anything from #5 as well.
+          -- The "order" key will put them back in the desired order after.
           { key = "d", order = 5, pattern = "add.*to.*~/%.config/cspell%.json" },
           { key = "s", order = 4, pattern = "add.*to.*cspell%.json" },
         },

@@ -32,7 +32,7 @@ return {
     local trouble_close_on_leave = util.use_setting("trouble_close_on_leave", false).get
     local trouble_quickfix_takeover = util.use_setting("trouble_quickfix_takeover", true).get
 
-    local trouble_toggle_sidebar = function (mode, sidebar_opts)
+    local function trouble_toggle_sidebar(mode, sidebar_opts)
       trouble.toggle(util.merge({ mode = mode, focus = false, win = { position = "right" } }, sidebar_opts or {}))
     end
 

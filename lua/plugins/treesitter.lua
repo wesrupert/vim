@@ -61,7 +61,7 @@ return {
     config = function (_, opts)
       local context = require("treesitter-context")
       context.setup(opts)
-      local go_to_context = function () context.go_to_context(vim.v.count1) end
+      local function go_to_context() context.go_to_context(vim.v.count1) end
       util.keymap("['", "[TreeSitter] Jump to context start", go_to_context, nil, nil, { silent = true })
     end,
     init = function ()

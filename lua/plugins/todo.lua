@@ -1,7 +1,7 @@
-local util = require('util')
+local util = require("util")
 return {
-  'folke/todo-comments.nvim',
-  dependencies = { 'folke/trouble.nvim', 'nvim-lua/plenary.nvim' },
+  "folke/todo-comments.nvim",
+  dependencies = { "folke/trouble.nvim", "nvim-lua/plenary.nvim" },
   opts = {
     -- TODO: Test text
     -- Test continuation
@@ -48,12 +48,12 @@ return {
     -- TODO False positive test
     -- @ TODO False positive test
     keywords = {
-      TODO = { alt = { 'Todo', 'ToDo', 'todo' } },
-      TEST = { icon = ' ' },
+      TODO = { alt = { "Todo", "ToDo", "todo" } },
+      TEST = { icon = " " },
       IMPL = {
-        icon = ' ',
-        color = 'error',
-        alt = { 'QWOP', 'qwop', 'FUCK', 'fuck', 'NOCOMMIT', "DON'T COMMIT", 'NOPUSH', "DON'T PUSH" },
+        icon = " ",
+        color = "error",
+        alt = { "QWOP", "qwop", "FUCK", "fuck", "NOCOMMIT", "DON'T COMMIT", "NOPUSH", "DON'T PUSH" },
       },
     },
     highlight = {
@@ -67,11 +67,14 @@ return {
     },
   },
   init = function ()
-    local trouble = require('trouble')
-    local todo_comments = require('todo-comments')
-    util.keymap(']t', '[Todos] Jump next', todo_comments.jump_next)
-    util.keymap('[t', '[Todos] Jump prev', todo_comments.jump_prev)
-    util.keymap('<leader>t', '[Trouble] Buffer todos', function () trouble.toggle({ mode = 'todo', filter = { buf = 0 } }) end)
-    util.keymap('<leader>T', '[Trouble] Todos', function () trouble.toggle('todo') end)
+    local trouble = require("trouble")
+    local todo_comments = require("todo-comments")
+    util.keymap("]t", "[Todos] Jump next", todo_comments.jump_next)
+    util.keymap("[t", "[Todos] Jump prev", todo_comments.jump_prev)
+    util.keymap("<leader>t", "[Trouble] Buffer todos", function ()
+      ---@diagnostic disable-next-line: missing-fields
+      trouble.toggle({ mode = "todo", filter = { buf = 0 } })
+    end)
+    util.keymap("<leader>T", "[Trouble] Todos", function () trouble.toggle("todo") end)
   end
 }
