@@ -418,6 +418,15 @@ function M.buf_is_empty(buffer)
   return vim.api.nvim_buf_get_name(buf) == '' and vim.bo[buf].filetype == ''
 end
 
+---Check if neovim is running inside a gui.
+---@return boolean is_gui
+function M.is_gui()
+  if vim.g.gui_running then return true end
+  -- Add more UIs as needed
+  if vim.g.neovide then return true end
+  return false
+end
+
 ---Checks for when at least one of the following is true:
 --- - There are files in arguments (like `nvim foo.txt` with new file).
 --- - Several buffers are listed (like session with placeholder buffers).

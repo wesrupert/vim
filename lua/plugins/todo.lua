@@ -48,6 +48,7 @@ return {
     -- TODO False positive test
     -- @ TODO False positive test
     keywords = {
+      NOTE = { icon = "" },
       TODO = { alt = { "Todo", "ToDo", "todo" } },
       TEST = { icon = " " },
       IMPL = {

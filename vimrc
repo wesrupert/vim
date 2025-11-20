@@ -115,7 +115,7 @@ set wildmenu wildoptions=fuzzy,pum wildmode=list:lastused:full
 set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc,.class
 set wildignore+=*.pyc,*.class,*.sln,*.Master,*.csproj,*.csproj.user,*.cache,*.dll,*.pdb,*.min.*
 set wildignore+=*.tar.*,*.swp,*.bak
-set wildignore+=*/.git/**/*,*/.hg/**/*,*/.svn/**/*
+set wildignore+=*/.git/**/*,*/.jj/**/*,*/.hg/**/*,*/.svn/**/*
 set wildignore+=*/build/**,*/bin/**,*/dist/**,*/node_modules/**
 set wildignore+=tags
 set wildignorecase
@@ -132,13 +132,6 @@ set tabstop=2 shiftwidth=0 softtabstop=-1
 set number
 let &thesaurus = NormFile(g:vimhome.'/moby-thesaurus/words.txt')
 
-" Languages for other settings
-let g:ui_languages = [ 'css', 'less', 'sass', 'scss', 'html', 'vue' ]
-let g:programming_languages = g:ui_languages +
-      \ [ 'c', 'cpp', 'cs', 'dosbatch', 'go', 'java',
-      \ 'javascript', 'jsp', 'objc', 'ruby', 'sh',
-      \ 'typescript', 'vim', 'zsh' ]
-
 " }}}
 
 " Plugins {{{
@@ -149,15 +142,6 @@ if exists('&packpath')
     let &packpath .= ','.g:vimhome
   endif
 endif
-
-" Configuration
-let g:markdown_fenced_languages = g:programming_languages
-let g:rooter_cd_cmd = 'lcd'
-let g:rooter_silent_chdir = 1
-augroup RooterPost | autocmd!
-  autocmd User RooterChDir try | cd src | catch | endtry
-augroup end
-
 
 " }}}
 
@@ -172,7 +156,6 @@ noremap <silent> <c-j>         <c-w>j
 noremap <silent> <c-k>         <c-w>k
 noremap <silent> <c-l>         <c-w>l
 noremap <silent> <leader>/     <cmd>nohlsearch<cr>
-noremap <silent> <leader>[     <cmd>setlocal wrap!<cr><cmd>setlocal wrap?<cr>
 noremap <silent> <leader>c,    <cmd>cd ..<cr><cmd>echo ':cd '.getcwd()<cr>
 noremap <silent> <leader>cd    <cmd>execute 'cd '.expand('%:p:h')<cr><cmd>echo ':cd '.getcwd()<cr>
 noremap <silent> <leader>J     <cmd>silent! call repeat#set('\<leader>J')<cr>ddpkJ
@@ -183,6 +166,10 @@ noremap <silent> <leader>vp    <cmd>execute 'e '.g:vimrc_plug<cr>
 noremap <silent> <leader>vr    <cmd>execute 'e '.g:vimrc<cr>
 noremap <silent> <leader>vi    <cmd>execute 'e '.g:vimrc_init<cr>
 noremap <silent> <leader>vz    <cmd>execute 'source '.g:vimrc<cr>
+noremap <silent> ]w            <cmd>setlocal wrap!<cr><cmd>setlocal wrap?<cr>
+noremap <silent> ]W            <cmd>set wrap!<cr><cmd>setlocal wrap?<cr>
+noremap <silent> [w            <cmd>setlocal list!<cr><cmd>setlocal list?<cr>
+noremap <silent> [W            <cmd>set list!<cr><cmd>setlocal list?<cr>
 
 noremap          Q             <c-q>
 noremap <silent> gV            `[v`]

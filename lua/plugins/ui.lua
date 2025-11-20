@@ -144,7 +144,19 @@ return {
       util.keymap("gz", "[Zen mode] Toggle", zen_mode.toggle)
     end,
   },
-  { "airblade/vim-rooter" },
+  {
+    "airblade/vim-rooter",
+    init = function ()
+      vim.g.rooter_cd_cmd = "lcd"
+      vim.g.rooter_silent_chdir = 1
+      vim.api.nvim_create_autocmd("User", {
+        group = vim.api.nvim_create_augroup("UserRooter", { clear = true }),
+        desc = "[Rooter] start in src when present",
+        pattern = "RooterChDir",
+        callback = function () pcall(vim.cmd.cd, "./src") end,
+      })
+    end,
+  },
   { "conormcd/matchindent.vim" },
   {
     "alexghergh/nvim-tmux-navigation",
