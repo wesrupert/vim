@@ -38,15 +38,9 @@ return {
     },
     opts = function (_, opts)
       local function mini_sessions_name()
-        local session = vim.g.mini_sessions_current
-        if session then
-          local session_file_symbol = require("mini.sessions").config.file
-          if vim.g.mini_sessions_current == session_file_symbol then
-            local root = vim.fs.root(vim.fn.getcwd(), session_file_symbol)
-            session = root and vim.fn.fnamemodify(root, ":t")
-          end
-        end
-        return session or ""
+        local s = vim.g.mini_sessions_current
+        if not s then return "" end
+        return s.type == "global" and s.name or vim.fn.fnamemodify(s.path, ":p:h:t")
       end
 
       -- Prepend opts to merge overridden specs properly.

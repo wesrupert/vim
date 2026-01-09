@@ -151,7 +151,6 @@ noremap <silent> <c-l>         <c-w>l
 noremap <silent> <leader>/     <cmd>nohlsearch<cr>
 noremap <silent> <leader>c,    <cmd>cd ..<cr><cmd>echo ':cd '.getcwd()<cr>
 noremap <silent> <leader>cd    <cmd>execute 'cd '.expand('%:p:h')<cr><cmd>echo ':cd '.getcwd()<cr>
-noremap <silent> <leader>j     <cmd>silent! call repeat#set('\<leader>J')<cr>ddpkJ
 noremap <silent> <leader>rg    <cmd>Grep <cword><cr>
 noremap <silent> <leader>va    <cmd>execute 'e '.g:vimrc_custom<cr>
 noremap <silent> <leader>vb    <cmd>execute 'e '.g:vimrc_leader<cr>
@@ -163,6 +162,9 @@ noremap <silent> ]w            <cmd>setlocal wrap!<cr><cmd>setlocal wrap?<cr>
 noremap <silent> ]W            <cmd>set wrap!<cr><cmd>setlocal wrap?<cr>
 noremap <silent> [w            <cmd>setlocal list!<cr><cmd>setlocal list?<cr>
 noremap <silent> [W            <cmd>set list!<cr><cmd>setlocal list?<cr>
+
+noremap <plug>JoinUp ddpkJ<cmd>silent! call repeat#set("\<plug>JoinUp", 1)<cr>
+noremap <silent> <leader>j <plug>JoinUp
 
 noremap          Q             <c-q>
 noremap <silent> gV            `[v`]
@@ -232,9 +234,12 @@ augroup HelpFiles | autocmd!
         \ endif
 augroup end
 
-augroup Terminal | autocmd!
+augroup TerminalAutoInsert | autocmd!
   autocmd TermOpen,TermEnter * startinsert
-  autocmd BufEnter term://* * startinsert
+  autocmd BufEnter term://* startinsert
+augroup end
+
+augroup TerminalAutoClose | autocmd!
   autocmd TermClose * if v:event.status == 0 | bdelete | endif
 augroup end
 

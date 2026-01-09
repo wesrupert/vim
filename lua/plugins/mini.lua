@@ -7,6 +7,15 @@ local user_mini_config = vim.api.nvim_create_augroup("UserMiniConfig", { clear =
 ---@field config (fun(spec: MiniConfig, opts: table))|nil
 ---@field init (fun(opts: table))|nil
 
+---@class MiniSessions.Session Session information
+---@field modify_time number Modification time (see |getftime()|) of session file
+---@field name string Name of session (should be equal to table key)
+---@field path string Full path to session file
+---@field type "global" | "local" Type of session
+
+---@type MiniSessions.Session
+vim.g.mini_sessions_current = nil
+
 ---@type { [string]: boolean|MiniConfig }
 local plugins = {
   -- Load these first, as other minis have dependencies on it.
@@ -224,10 +233,16 @@ local plugins = {
       autowrite = true,
       hooks = {
         post = {
-          read = function (ev) vim.g.mini_sessions_current = ev.name end,
-          write = function (ev) vim.g.mini_sessions_current = ev.name end,
+          read = function (ev)
+            vim.g.mini_sessions_current = ev
+          end,
+          write = function (ev)
+            vim.g.mini_sessions_current = ev
+          end,
           delete = function (ev)
-            if vim.g.mini_sessions_current == ev.name then vim.g.mini_sessions_current = nil end
+            if vim.g.mini_sessions_current.path == ev.path then
+              vim.g.mini_sessions_current = nil
+            end
           end
         },
       },
