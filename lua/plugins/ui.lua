@@ -43,6 +43,42 @@ return {
         return s.type == "global" and s.name or vim.fn.fnamemodify(s.path, ":p:h:t")
       end
 
+      local function overseer_component()
+        local overseer = require("overseer")
+        local STATUS = overseer.STATUS
+
+        local tasks = overseer.list_tasks()
+        local running = 0
+        local success = 0
+        local failure = 0
+
+        for _, task in ipairs(tasks) do
+          if task.status == STATUS.RUNNING then
+            running = running + 1
+          elseif task.status == STATUS.SUCCESS then
+            success = success + 1
+          elseif task.status == STATUS.FAILURE then
+            failure = failure + 1
+          end
+        end
+
+        local parts = {}
+        if running > 0 then
+          table.insert(parts, string.format("⚙ %d", running))
+        end
+        if failure > 0 then
+          table.insert(parts, string.format("✗ %d", failure))
+        end
+        if success > 0 then
+          table.insert(parts, string.format("✓ %d", success))
+        end
+
+        if #parts == 0 then
+          return ""
+        end
+        return table.concat(parts, " ")
+      end
+
       -- Prepend opts to merge overridden specs properly.
       return util.merge({
         sections = {
@@ -56,7 +92,7 @@ return {
           lualine_x = {},
         },
         tabline = {
-          lualine_a = { "require'util'.kind_icons.NeoVim", mini_sessions_name },
+          lualine_a = { "require'util'.kind_icons.NeoVim", mini_sessions_name, overseer_component },
           lualine_b = { { "tabs", mode = 2, use_mode_colors = true } },
           lualine_x = { { "altfile", path = 1, symbols = { separator = "󰘵 " } } },
           lualine_z = { { "filename", path = 1 } },

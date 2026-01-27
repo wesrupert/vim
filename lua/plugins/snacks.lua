@@ -85,10 +85,9 @@ return {
     util.keymap("<a-t>", "[Snacks] Treesitter",    snacks.picker.treesitter)
     util.keymap("<a-o>", "[Snacks] Jumplist",      snacks.picker.jumps)
     util.keymap("<a-q>", "[Snacks] Location list", snacks.picker.loclist)
-    util.keymap("<c-q>", "[Snacks] Quickfix",      snacks.picker.qflist)
-    util.keymap("<c-k>", "[Snacks] Keymaps",       snacks.picker.keymaps)
+    util.keymap("<a-q>", "[Snacks] Quickfix",      snacks.picker.qflist)
+    util.keymap("<a-k>", "[Snacks] Keymaps",       snacks.picker.keymaps)
     util.keymap("<a-w>", "[Snacks] Workspaces",    snacks.picker.projects)
-    util.keymap('<c-">', "[Snacks] Marks",         snacks.picker.marks)
     util.keymap("z=",    "[Snacks] Spellcheck",    snacks.picker.spelling)
 
     require("util.lsp").on_attach(function (bufnr)

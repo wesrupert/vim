@@ -235,6 +235,12 @@ local plugins = {
         post = {
           read = function (ev)
             vim.g.mini_sessions_current = ev
+            if vim.o.sessionoptions:find("globals") then -- Load session settings.
+              if vim.g.PROJECT_tsc_makeprg then
+                vim.g.tsc_makeprg = vim.g.PROJECT_tsc_makeprg
+                vim.cmd.compiler('tsc')
+              end
+            end
           end,
           write = function (ev)
             vim.g.mini_sessions_current = ev

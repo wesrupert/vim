@@ -40,7 +40,9 @@ return {
     util.keymap("gro", "[Trouble] Symbols",              function () trouble_toggle_sidebar("symbols", { flatten = true, format = "{kind_icon} {symbol.name} {pos}" }) end)
     util.keymap("grO", "[Trouble] Symbols List",         function () trouble.open({ mode = "symbols", focus = true, win = { position = "bottom" } }) end)
     util.keymap("grq", "[Trouble] Quickfix List",        function () trouble.toggle("qflist") end)
-    util.keymap("grQ", "[Trouble] Location List",        function () trouble.toggle("loclist") end)
+    util.keymap("grQ", "[Trouble] Quickfix List (v)",    function () trouble.open({ mode = "qflist", win = { position = "right", size = 0.32 }, preview = { position = "bottom" } }) end)
+    util.keymap("grl", "[Trouble] Location List",        function () trouble.toggle("loclist") end)
+    util.keymap("grL", "[Trouble] Location List (v)",    function () trouble.open({ mode = "loclist", win = { position = "right", size = 0.32 }, preview = { position = "bottom" } }) end)
     util.keymap("grD", "[Trouble] Diagnostics",          function () trouble.open({ mode = "diagnostics", filter = { ['not'] = { severity = vim.diagnostic.severity.INFO } } }) end)
     util.keymap("grd", "[Trouble] Diagnostics (buffer)", function () trouble.open({ mode = "diagnostics", filter = { buf = 0 } }) end)
 
@@ -55,7 +57,7 @@ return {
     vim.api.nvim_create_autocmd("BufLeave", {
       group = user_trouble_config_group,
       callback = function (ev)
-        if vim.bo[ev.buf].filetype == "trouble" and trouble_close_on_leave() then
+        if vim.bo[ev.buf].filetype == "trouble" and trouble_close_on_leave(ev.buf) then
           trouble.close()
         end
       end,
@@ -64,7 +66,7 @@ return {
     vim.api.nvim_create_autocmd("BufRead", {
       group = user_trouble_config_group,
       callback = function (ev)
-        if vim.bo[ev.buf].buftype == "quickfix" and trouble_quickfix_takeover() then
+        if vim.bo[ev.buf].buftype == "quickfix" and trouble_quickfix_takeover(ev.buf) then
           vim.schedule(function ()
             vim.cmd([[cclose]])
             vim.cmd([[lclose]])
@@ -86,22 +88,4 @@ return {
       callback = function () trouble.open("qflist") end,
     })
   end,
-  specs = {
-    "folke/snacks.nvim",
-    optional = true,
-    opts = function (_, opts)
-      return util.merge(opts or {}, {
-        picker = {
-          actions = require("trouble.sources.snacks").actions,
-          win = {
-            input = {
-              keys = {
-                ["<c-q>"] = { "trouble_open", mode = { "n", "i" } },
-              },
-            },
-          },
-        },
-      })
-    end,
-  },
 }

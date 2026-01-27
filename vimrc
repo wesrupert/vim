@@ -93,7 +93,7 @@ set scrolloff=2 sidescrolloff=1
 set splitbelow splitright
 set switchbuf=usetab
 set updatetime=500
-set sessionoptions=curdir,folds,help,tabpages,winsize,terminal
+set sessionoptions=curdir,folds,help,tabpages,winsize,terminal,globals
 set shada+="%"
 
 if exists('&termguicolors')
@@ -162,9 +162,14 @@ noremap <silent> ]w            <cmd>setlocal wrap!<cr><cmd>setlocal wrap?<cr>
 noremap <silent> ]W            <cmd>set wrap!<cr><cmd>setlocal wrap?<cr>
 noremap <silent> [w            <cmd>setlocal list!<cr><cmd>setlocal list?<cr>
 noremap <silent> [W            <cmd>set list!<cr><cmd>setlocal list?<cr>
+noremap          [Q            <cmd>colder<cr>
+noremap          ]Q            <cmd>cnewer<cr>
+noremap          [L            <cmd>lolder<cr>
+noremap          ]L            <cmd>lnewer<cr>
 
 noremap <plug>JoinUp ddpkJ<cmd>silent! call repeat#set("\<plug>JoinUp", 1)<cr>
 noremap <silent> <leader>j <plug>JoinUp
+nmap <silent> <leader>J <leader>j
 
 noremap          Q             <c-q>
 noremap <silent> gV            `[v`]
@@ -197,10 +202,10 @@ tnoremap <c-w> <c-\><c-n><c-w>
 " Commands
 command! -nargs=0 Autosave call Autosave(1)
 command! -nargs=0 NoAutosave call Autosave(0)
-command! -nargs=+ -complete=file_in_path Grep call Grep(0, 0, <f-args>)
-command! -nargs=+ -complete=file_in_path OGrep call Grep(0, 1, <f-args>)
-command! -nargs=+ -complete=file_in_path LGrep call Grep(1, 0, <f-args>)
-command! -nargs=+ -complete=file_in_path OLGrep call Grep(1, 1, <f-args>)
+command! -nargs=+ Grep call Grep(0, 0, <f-args>)
+command! -nargs=+ OGrep call Grep(0, 1, <f-args>)
+command! -nargs=+ LGrep call Grep(1, 0, <f-args>)
+command! -nargs=+ OLGrep call Grep(1, 1, <f-args>)
 call s:GenerateCAbbrev('grep', 2, 'Grep' )
 call s:GenerateCAbbrev('ogrep', 2, 'OGrep' )
 call s:GenerateCAbbrev('lgrep', 2, 'LGrep')

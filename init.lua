@@ -1,7 +1,8 @@
-local user_config_group = vim.api.nvim_create_augroup("UserConfig", { clear = true })
+local user_default_config = vim.api.nvim_create_augroup("UserConfig", { clear = true })
 local util = require("util")
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-vim.opt.rtp:prepend(lazypath)
+
+-- Basic settings
+-- {{{
 
 vim.g.mapleader = " "
 vim.g.health = { style = "float" }
@@ -26,23 +27,21 @@ if util.is_gui() then
   end
 end
 
-if vim.fn.executable("mise") then
-  local vim_tools = {
-    node = "latest",
-    python = "latest",
-    ruby = "latest",
-  }
-  for tool, version in pairs(vim_tools) do
-    ---@param cmd string[]
-    ---@return boolean success, any result, ...any
-    local function get_mise_output(cmd) return pcall(function () return vim.system(cmd):wait().stdout:gsub("\n$", "") end) end
-    local version_ok, latest_version = get_mise_output({ "mise", "latest", "-i", tool.."@"..version })
-    if version_ok and latest_version then
-      local path_ok, tool_path = get_mise_output({ "mise", "where", tool.."@"..latest_version })
-      if path_ok and tool_path then vim.env.PATH =  tool_path .. "/bin:" .. vim.env.PATH end
-    end
-  end
+-- }}}
+
+-- Load custom settings.
+-- {{{
+
+local custom_init = vim.fn.stdpath("config") .. "/init.custom.vim"
+---@diagnostic disable-next-line: undefined-field
+if vim.uv.fs_stat(custom_init) then
+  vim.fn.execute("source " .. custom_init)
 end
+
+-- }}}
+
+-- Keymaps
+-- {{{
 
 ---Comment out selection, yank into the yank register, and optionally paste immediately.
 ---@param _ string Operatorfunc mode. Unused.
@@ -69,13 +68,14 @@ function _G.comment_and_yank(_, paste)
 end
 function _G.comment_and_paste(kind) _G.comment_and_yank(kind, true) end
 
+---Generate comment-and-paste keybinding opfunc.
+---@param paste? boolean Iff true, paste yanked text immediately
+---@param op? string Operatorfunc mode
 local function gen_comment_and_yank(paste, op)
   local operator = "g@" .. (op or "")
   local func = "v:lua.comment_and_yank" if paste then func = "v:lua.comment_and_paste" end
   return function () vim.opt.operatorfunc = func return operator end
 end
-
---- Keymaps
 
 -- Block insert in line visual mode
 util.keymap("I", "VLine block insert", function () return vim.fn.mode() == "V" and "^<C-v>I" or "I" end, "x", nil, { expr = true })
@@ -90,10 +90,38 @@ util.keymap("gc",  "Comment and yank lines",  gen_comment_and_yank(false, "_"), 
 util.keymap("gC",  "Comment and paste lines", gen_comment_and_yank(true,  "_"), "x", nil, { expr = true })
 
 vim.api.nvim_create_autocmd("TextYankPost", {
-  group = user_config_group,
+  group = user_default_config,
   callback = function () vim.hl.on_yank({ higroup="Visual", timeout=300 }) end,
   desc = "Highlight on yank",
 })
+
+-- }}}
+
+-- Load tools from mise, if present.
+-- {{{
+
+if vim.fn.executable("mise") then
+  local vim_tools = {
+    node = "latest",
+    python = "latest",
+    ruby = "latest",
+  }
+  for tool, version in pairs(vim_tools) do
+    ---@param cmd string[]
+    ---@return boolean success, any result, ...any
+    local function get_mise_output(cmd) return pcall(function () return vim.system(cmd):wait().stdout:gsub("\n$", "") end) end
+    local version_ok, latest_version = get_mise_output({ "mise", "latest", "-i", tool.."@"..version })
+    if version_ok and latest_version then
+      local path_ok, tool_path = get_mise_output({ "mise", "where", tool.."@"..latest_version })
+      if path_ok and tool_path then vim.env.PATH =  tool_path .. "/bin:" .. vim.env.PATH end
+    end
+  end
+end
+
+-- }}}
+
+-- Add gitignore values to wildignore, if present.
+-- {{{
 
 local function read_gitignore()
   local gitignore_path = vim.fs.find(".gitignore", { upward = true, type = "file" })
@@ -117,13 +145,19 @@ end
 _G.read_gitignore = read_gitignore
 
 vim.api.nvim_create_autocmd("User", {
-  group = user_config_group,
+  group = user_default_config,
   desc = "Add gitignore to wildignore",
   pattern = "RooterChDir",
   callback = read_gitignore,
 })
 
--- Install plugins
+-- }}}
+
+-- Install plugins.
+-- {{{
+
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+vim.opt.rtp:prepend(lazypath)
 if not vim.uv.fs_stat(lazypath) then
   vim.fn.system({
     "git",
@@ -134,14 +168,75 @@ if not vim.uv.fs_stat(lazypath) then
     lazypath,
   })
 end
-require("lazy").setup("plugins",{
-  ui = { border = vim.o.winborder },
+require("lazy").setup("plugins", {
   dev = { path = "~/Code/nvim" },
+  ui = { border = vim.o.winborder },
   change_detection = { notify = false },
 })
 
--- Load classic vim settings
+-- }}}
+
+-- Persist/theme colorschemes.
+-- {{{
+
+local user_colorscheme_config = vim.api.nvim_create_augroup("UserColorschemeConfig", { clear = true })
+
+---Get the current colorscheme config, optionally for a specific background type.
+---Stores/retrieves colorscheme info in ShaDa.
+---@param background? 'dark'|'light'
+---@return string colorscheme
+---@return string config_key
+local function get_colorscheme_config(background)
+  local b = background or vim.o.background
+  local config_key = b == "light" and "DAY_THEME" or "NIGHT_THEME"
+  local colorscheme = util.get_setting(config_key, vim.g.colors_name or "catppuccin")
+  if util.is_gui() then
+    config_key = b == "light" and "GUI_DAY_THEME" or "GUI_NIGHT_THEME"
+    colorscheme = util.get_setting(config_key, colorscheme)
+  end
+  return colorscheme, config_key
+end
+
+vim.api.nvim_create_autocmd("VimEnter", {
+  desc = "[UI] Retrieve colorscheme from ShaDa",
+  group = user_colorscheme_config,
+  nested = true,
+  callback = function()
+    local _, config_key = get_colorscheme_config()
+    pcall(vim.cmd.colorscheme, vim.g[config_key])
+  end,
+})
+
+vim.api.nvim_create_autocmd("OptionSet", {
+  pattern = "background",
+  desc = "[UI] Update colorscheme on theme change",
+  group = user_colorscheme_config,
+  callback = function()
+    local colorscheme = get_colorscheme_config(vim.o.background)
+    vim.cmd.colorscheme(colorscheme)
+  end,
+})
+
+vim.api.nvim_create_autocmd("ColorScheme", {
+  desc = "[UI] Store colorscheme to ShaDa",
+  group = user_colorscheme_config,
+  callback = function(params)
+    local _, config_key = get_colorscheme_config()
+    vim.g[config_key] = params.match
+  end,
+})
+
+-- }}}
+
+-- Load classic vim settings.
+-- {{{
+
 local vimrc = vim.fn.stdpath("config") .. "/vimrc"
+---@diagnostic disable-next-line: undefined-field
 if vim.uv.fs_stat(vimrc) then
   vim.fn.execute("source " .. vimrc)
 end
+
+-- }}}
+
+-- vim: foldmethod=marker
