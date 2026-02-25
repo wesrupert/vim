@@ -4,6 +4,7 @@ local util = require("util")
 -- Basic settings
 -- {{{
 
+vim.g.slash = vim.fn.has('win32') and '\\' or '/'
 vim.g.mapleader = " "
 vim.g.health = { style = "float" }
 vim.o.winborder = "rounded"
@@ -97,29 +98,6 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 
 -- }}}
 
--- Load tools from mise, if present.
--- {{{
-
-if vim.fn.executable("mise") then
-  local vim_tools = {
-    node = "latest",
-    python = "latest",
-    ruby = "latest",
-  }
-  for tool, version in pairs(vim_tools) do
-    ---@param cmd string[]
-    ---@return boolean success, any result, ...any
-    local function get_mise_output(cmd) return pcall(function () return vim.system(cmd):wait().stdout:gsub("\n$", "") end) end
-    local version_ok, latest_version = get_mise_output({ "mise", "latest", "-i", tool.."@"..version })
-    if version_ok and latest_version then
-      local path_ok, tool_path = get_mise_output({ "mise", "where", tool.."@"..latest_version })
-      if path_ok and tool_path then vim.env.PATH =  tool_path .. "/bin:" .. vim.env.PATH end
-    end
-  end
-end
-
--- }}}
-
 -- Add gitignore values to wildignore, if present.
 -- {{{
 
@@ -168,6 +146,9 @@ if not vim.uv.fs_stat(lazypath) then
     lazypath,
   })
 end
+
+-- Load mise dependencies first, so they can be used by plugins like copilot.
+util.load_mise_deps()
 require("lazy").setup("plugins", {
   dev = { path = "~/Code/nvim" },
   ui = { border = vim.o.winborder },

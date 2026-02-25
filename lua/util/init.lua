@@ -8,6 +8,21 @@ M.dirs = {
   work = vim.fn.expand('$HOME/Code/work'),
 }
 
+M.tools = {
+  node = {
+    version = 'latest',
+    path = '',
+  },
+  python = {
+    version = 'latest',
+    path = '',
+  },
+  ruby = {
+    version = 'latest',
+    path = '',
+  },
+}
+
 ---List of kind icons for LSP/file/etc icons.
 M.kind_icons = {
   Error             = '',
@@ -424,6 +439,29 @@ function M.is_gui()
   -- Add more UIs as needed
   if vim.g.neovide then return true end
   return false
+end
+
+---Load tool dependencies from mise.
+function M.load_mise_deps()
+  if not vim.fn.executable("mise") then return end
+  for tool, config in pairs(M.tools) do
+    ---@param cmd string[]
+    ---@return boolean success, any result, ...any
+    local function get_mise_output(cmd) return pcall(function () return vim.system(cmd):wait().stdout:gsub("\n$", "") end) end
+    local version_ok, latest_version = get_mise_output({ "mise", "latest", "-i", tool.."@"..config.version })
+    if version_ok and latest_version then
+      local path_ok, tool_path = get_mise_output({ "mise", "where", tool.."@"..latest_version })
+      if path_ok and tool_path then
+        if vim.uv.fs_stat(tool_path .. vim.g.slash .. "bin") then
+          tool_path = tool_path .. vim.g.slash .. "bin"
+        end
+        M.tools[tool].path = tool_path
+        if not vim.env.PATH:find(tool_path) then
+          vim.env.PATH = tool_path .. ":" .. vim.env.PATH
+        end
+      end
+    end
+  end
 end
 
 ---Checks for when at least one of the following is true:

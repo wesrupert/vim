@@ -69,7 +69,6 @@ endfunction " }}}
 " Meta Config {{{
 
 " Source vimrc.leader before performing additional configuration.
-let g:slash        = has('win32') ? '\' : '/'
 let g:vimrc        = NormFile(stdpath('config').'/vimrc')
 let g:vimrc_leader = s:TrySourceFile(g:vimrc.'.leader', g:vimrc.'.before')
 

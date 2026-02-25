@@ -112,17 +112,20 @@ return {
   {
     "zbirenbaum/copilot.lua",
     event = "InsertEnter",
-    opts = {
-      suggestion = { enabled = false },
-      panel = { enabled = false },
-      ---@module "copilot"
-      ---@type ShouldAttachFunc
-      should_attach = function (bufnr, bufname)
-        local should_attach_default = require("copilot.config.should_attach").default
-        if should_attach_default(bufnr, bufname) == false then return false end
-        return util.buf_is_ai_allowed(bufnr, bufname)
-      end,
-    },
+    opts = function ()
+      return {
+        copilot_node_command = util.tools.node.path and util.tools.node.path .. vim.g.slash .. "node" or "node",
+        suggestion = { enabled = false },
+        panel = { enabled = false },
+        ---@module "copilot"
+        ---@type ShouldAttachFunc
+        should_attach = function (bufnr, bufname)
+          local should_attach_default = require("copilot.config.should_attach").default
+          if should_attach_default(bufnr, bufname) == false then return false end
+          return util.buf_is_ai_allowed(bufnr, bufname)
+        end,
+      }
+    end,
     specs = {
       {
         -- NOTE: Not optional, as it's only included here when copilot.lua is.
