@@ -1,7 +1,6 @@
 local util = require("util")
 return {
   "folke/trouble.nvim",
-  url = "https://github.com/wesrupert/trouble.nvim",
   dependencies = { "folke/snacks.nvim" },
   event = "VeryLazy",
   ---@module "trouble"

@@ -15,15 +15,13 @@ if util.is_gui() then
   vim.o.pumblend = 20
 
   if vim.g.neovide then
-    vim.o.winborder = "solid"
     vim.g.neovide_theme = "auto"
     vim.g.neovide_remember_window_size = true
     vim.g.neovide_hide_mouse_when_typing = true
-    vim.g.neovide_cursor_animate_command_line = false
     vim.g.neovide_input_macos_option_key_is_meta = "both"
     vim.g.neovide_text_gamma = 1.2
-    -- vim.g.neovide_floating_shadow = false
-    vim.g.neovide_floating_corner_radius = 0.3
+    vim.g.neovide_floating_shadow = false
+    vim.g.neovide_floating_corner_radius = 0.4
     vim.g.experimental_layer_grouping = true
   end
 end

@@ -15,8 +15,8 @@ return {
       skip_approval = true,
       disable = { tmux = true },
       fold = { enable = true, start_unfolded = true },
-      indent = { enable = false },
-      syntax = { enable = { markdown = true } },
+      indent = { enable = { javascriptreact = false, typescriptreact = false } },
+      syntax = { enable = { javascriptreact = true,  typescriptreact = true, markdown = true } },
     },
   },
   {

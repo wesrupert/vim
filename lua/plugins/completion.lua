@@ -71,9 +71,7 @@ return util.tbl_join(
             },
           },
         },
-        fuzzy = {
-          sorts = { "exact", "score", "sort_text" },
-        },
+        fuzzy = { sorts = { "exact", "score", "sort_text", "label" } },
         appearance = {
           nerd_font_variant = "normal",
           kind_icons = util.duplicate(util.kind_icons),

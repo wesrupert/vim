@@ -1,10 +1,23 @@
 local util = require("util")
 
+-- TODO v0.12.x: Remove checks
+-- TODO v0.12.x: Remove neovide override when neovide/neovide#3125 is fixed
+local is_12_or_greater = vim.version().minor >= 12
+if is_12_or_greater and not vim.g.neovide then
+  vim.o.cmdheight = 0
+  require('vim._core.ui2').enable({
+     enable = true,
+     msg = { timeout = 3000 },
+  })
+end
+
 return {
   {
     "oxy2dev/ui.nvim",
     priority = 1000,
     lazy = false,
+    -- TODO v0.12.x: Remove
+    cond = not (vim.g.neovide or is_12_or_greater),
     opts = {
       popupmenu = { enabled = false },
       message = {
@@ -128,7 +141,6 @@ return {
       local dropbar_api = require("dropbar.api")
       dropbar.setup(opts)
 
-      vim.ui.select = require("dropbar.utils.menu").select
       util.keymap("g;", "[Dropbar] Pick symbols in winbar", dropbar_api.pick)
       util.keymap("[;", "[Dropbar] Go to start of current context", dropbar_api.goto_context_start)
       util.keymap("];", "[Dropbar] Select next context", dropbar_api.select_next_context)

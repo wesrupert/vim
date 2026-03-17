@@ -4,14 +4,20 @@ return {
   { "aklt/plantuml-syntax" },
   { "cakebaker/scss-syntax.vim" },
   { "groenewege/vim-less" },
-  { "othree/yajs.vim" },
-  { "pangloss/vim-javascript" },
   { "sheerun/html5.vim" },
+  { "pangloss/vim-javascript" },
   { "tpope/vim-git" },
   { "ipkiss42/xwiki.vim" },
   {
     "posva/vim-vue",
     init = function () vim.g.vue_pre_processors = "detect_on_enter" end,
+  },
+  {
+    "maxmellon/vim-jsx-pretty",
+    dependencies = { "yuezk/vim-js", "peitalin/vim-jsx-typescript" },
+    init = function ()
+      vim.g.vim_jsx_pretty_disable_tsx = 1 -- Handled by peitalin/vim-jsx-typescript
+    end,
   },
 
   -- LSP Additions
