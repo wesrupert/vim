@@ -1,45 +1,6 @@
 local util = require("util")
 
--- TODO v0.12.x: Remove checks
--- TODO v0.12.x: Remove neovide override when neovide/neovide#3125 is fixed
-local is_12_or_greater = vim.version().minor >= 12
-if is_12_or_greater and not vim.g.neovide then
-  vim.o.cmdheight = 0
-  require('vim._core.ui2').enable({
-     enable = true,
-     msg = { timeout = 3000 },
-  })
-end
-
 return {
-  {
-    "oxy2dev/ui.nvim",
-    priority = 1000,
-    lazy = false,
-    -- TODO v0.12.x: Remove
-    cond = not (vim.g.neovide or is_12_or_greater),
-    opts = {
-      popupmenu = { enabled = false },
-      message = {
-        ignore = function (kind, content)
-          local ui_utils = require("ui.utils");
-          local lines = ui_utils.process_content(content);
-
-          -- Ignore the first message after :w
-          if kind == "bufwrite" and string.match(lines[#lines], "written$") == nil then return true end
-
-          -- Ignore inlay hint errors when deleting lines of text
-          if string.match(lines[2], 'inlay_hint.*"col": out of range') then return true end
-
-          -- Ignore vtsls inlay hints due to syntax tree errors
-          -- HACK: See https://github.com/yioneko/vtsls/issues/159
-          if string.match(lines[1], "textDocument/inlayHint failed.*TypeScript Server Error") then return true end
-
-          return false
-        end,
-      },
-    },
-  },
   {
     "nvim-lualine/lualine.nvim",
     dependencies = {
@@ -141,9 +102,9 @@ return {
       local dropbar_api = require("dropbar.api")
       dropbar.setup(opts)
 
-      util.keymap("g;", "[Dropbar] Pick symbols in winbar", dropbar_api.pick)
-      util.keymap("[;", "[Dropbar] Go to start of current context", dropbar_api.goto_context_start)
-      util.keymap("];", "[Dropbar] Select next context", dropbar_api.select_next_context)
+      util._keymap("g;", "[Dropbar] Pick symbols in winbar", dropbar_api.pick)
+      util._keymap("[;", "[Dropbar] Go to start of current context", dropbar_api.goto_context_start)
+      util._keymap("];", "[Dropbar] Select next context", dropbar_api.select_next_context)
     end,
   },
   {
@@ -158,8 +119,8 @@ return {
       local which_key_extras = require("which-key.extras")
       which_key.setup(opts)
 
-      util.keymap("<leader>w", "[Which-Key] Show keymaps", which_key.show)
-      util.keymap("<leader>W", "[Which-Key] Show keymaps for buffer", function () which_key.show({ global = false }) end)
+      util._keymap("<leader>w", "[Which-Key] Show keymaps", which_key.show)
+      util._keymap("<leader>W", "[Which-Key] Show keymaps for buffer", function () which_key.show({ global = false }) end)
 
       which_key.add({
         { "gb", group = "Buffers", expand = which_key_extras.expand.buf },
@@ -184,9 +145,9 @@ return {
     config = function (_, opts)
       local hbac = require("hbac")
       hbac.setup(opts)
-      util.keymap("<leader>bp", "[Bufclose] Pin/Unpin", hbac.toggle_pin)
-      util.keymap("<leader>bo", "[Bufclose] Close unpinned", hbac.close_unpinned)
-      util.keymap("<leader>ba", "[Bufclose] Toggle autoclose", hbac.toggle_autoclose)
+      util._keymap("<leader>bp", "[Bufclose] Pin/Unpin", hbac.toggle_pin)
+      util._keymap("<leader>bo", "[Bufclose] Close unpinned", hbac.close_unpinned)
+      util._keymap("<leader>ba", "[Bufclose] Toggle autoclose", hbac.toggle_autoclose)
     end
   },
   {
@@ -195,7 +156,7 @@ return {
     config = function (_, opts)
       local zen_mode = require("zen-mode")
       zen_mode.setup(opts)
-      util.keymap("gz", "[Zen mode] Toggle", zen_mode.toggle)
+      util._keymap("gz", "[Zen mode] Toggle", zen_mode.toggle)
     end,
   },
   {

@@ -25,17 +25,19 @@ return {
       end
 
       util.on_buf_is_ai_allowed("[Sidekick] Create user mappings", function (bufnr)
-        util.keymap("glk",   "[Sidekick] Toggle",         sidekick_cli_toggle(),            { "n", "x" }, bufnr)
-        util.keymap("<a-l>", "[Sidekick] Toggle",         sidekick_cli_toggle(),            { "i" },      bufnr)
-        util.keymap( "glK",  "[Sidekick] Select CLI",     sidekick_cli_toggle(true),        nil,          bufnr)
-        util.keymap( "glx",  "[Sidekick] Detach CLI",     sidekick_cli.close,               nil,          bufnr)
-        util.keymap( "glg",  "[Sidekick] Send This",      sidekick_cli_send("{this}"),      { "x", "n" }, bufnr)
-        util.keymap( "glf",  "[Sidekick] Send File",      sidekick_cli_send("{file}"),      nil,          bufnr)
-        util.keymap( "glg",  "[Sidekick] Send Selection", sidekick_cli_send("{selection}"), { "x" },      bufnr)
-        util.keymap( "glp",  "[Sidekick] Select Prompt",  sidekick_cli.prompt,              { "n", "x" }, bufnr)
-        util.keymap("<tab>", "[Sidekick] Goto/Apply Next Edit Suggestion", function ()
-          if not sidekick.nes_jump_or_apply() then return "<tab>" end
-        end, nil, bufnr, { expr = true })
+        util.keymap("[Sidekick]", {
+          { "glk",   "Toggle",         opts = { modes = { "n", "x" } }, sidekick_cli_toggle()            },
+          { "<a-l>", "Toggle",         opts = { modes = "i" },          sidekick_cli_toggle()            },
+          { "glK",   "Select CLI",                                      sidekick_cli_toggle(true),       },
+          { "glx",   "Detach CLI",                                      sidekick_cli.close,              },
+          { "glg",   "Send This",      opts = { modes = { "x", "n" } }, sidekick_cli_send("{this}")      },
+          { "glf",   "Send File",                                       sidekick_cli_send("{file}")      },
+          { "glg",   "Send Selection", opts = { modes = "x",   },       sidekick_cli_send("{selection}") },
+          { "glp",   "Select Prompt",  opts = { modes = { "n", "x" } }, sidekick_cli.prompt              },
+          { "<tab>", "Goto/Apply NES", opts = { expr = true },          function ()
+            if not sidekick.nes_jump_or_apply() then return "<tab>" end
+          end },
+        }, bufnr)
       end)
     end,
     specs = {
@@ -114,7 +116,9 @@ return {
     event = "InsertEnter",
     opts = function ()
       return {
-        copilot_node_command = util.tools.node.path and util.tools.node.path .. vim.g.slash .. "node" or "node",
+        copilot_node_command = util.tools.node.path ~= ""
+          and vim.fs.find("node", { type = "file", path = util.tools.node.path })
+          or "node",
         suggestion = { enabled = false },
         panel = { enabled = false },
         ---@module "copilot"
@@ -141,16 +145,27 @@ return {
           local copilot_chat = require("CopilotChat")
           copilot_chat.setup(opts)
           util.on_buf_is_ai_allowed("[CopilotChat] Create user mappings", function (bufnr)
-            util.keymap("gll", "[Copilot] Toggle popup", function ()
-              copilot_chat.toggle({ window = { layout = "float", relative = "cursor", height = 30, width = 120, row = 1, col = 1 } })
-            end, nil, bufnr)
-            util.keymap("glL", "[Copilot] Toggle sidebar", function ()
-              copilot_chat.toggle({ window = { layout = "vertical" } })
-            end, nil, bufnr)
-            util.keymap("glq", "[Copilot] Quick chat", function ()
-              local input = vim.fn.input("Quick Chat: ")
-              if input ~= "" then copilot_chat.ask("#buffer " .. input) end
-            end, nil, bufnr)
+            util.keymap("[Copilot]", {
+              {
+                "gll", "Toggle popup",
+                function ()
+                  copilot_chat.toggle({ window = { layout = "float", relative = "cursor", height = 30, width = 120, row = 1, col = 1 } })
+                end,
+              },
+              {
+                "glL", "Toggle sidebar",
+                function ()
+                  copilot_chat.toggle({ window = { layout = "vertical" } })
+                end,
+              },
+              {
+                "glq", "Quick chat",
+                function ()
+                  local input = vim.fn.input("Quick Chat: ")
+                  if input ~= "" then copilot_chat.ask("#buffer " .. input) end
+                end,
+              },
+            }, bufnr)
           end)
         end,
       },

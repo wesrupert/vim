@@ -20,6 +20,7 @@ return util.tbl_join(
   use_native_completion and {} or {
     {
       "saghen/blink.cmp",
+      dependencies = { "nvim-mini/mini.snippets" },
       version = "*",
       lazy = false, -- lazy loading handled internally
       opts = {
@@ -82,6 +83,7 @@ return util.tbl_join(
       },
       opts_extend = { "sources.default" },
     },
+    { "nvim-mini/mini.snippets", dependencies = { "nvim-mini/mini.icons" }, config = true },
     {
       "xzbdmw/colorful-menu.nvim",
       opts = {

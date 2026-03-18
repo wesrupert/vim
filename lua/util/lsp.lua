@@ -6,6 +6,20 @@ local augroup_lsp_event_handler = vim.api.nvim_create_augroup("LspEventHandlerCo
 local M = {}
 local m = {}
 
+m.code_action_fun = vim.lsp.buf.code_action
+
+---Helper function to handle code action calls via plugin.
+---@param callback? fun(opts?: vim.lsp.buf.code_action.Opts)
+function M.register_code_action_fun(callback)
+  m.code_action_fun = callback
+end
+
+---Helper function to handle code action calls via plugin.
+---@param opts? vim.lsp.buf.code_action.Opts
+function M.do_code_action(opts)
+  return m.code_action_fun(opts)
+end
+
 ---@param client_opts? vim.lsp.get_clients.Filter
 ---@param filter? fun(client: vim.lsp.Client): boolean
 function M.get_clients(client_opts, filter)

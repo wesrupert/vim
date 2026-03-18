@@ -4,35 +4,37 @@ local lsp_util = require("util.lsp")
 local methods = vim.lsp.protocol.Methods
 local user_lsp_config_group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true })
 
-local code_action_fun = vim.lsp.buf.code_action
-
 -- LSP Keymaps
 lsp_util.on_attach(function (bufnr)
-  util.keymap("grn", "[LSP] Rename",               vim.lsp.buf.rename, nil, bufnr)
-  util.keymap("gra", "[LSP] Show code actions",    function () return code_action_fun() end, nil, bufnr)
-  util.keymap("grw", "[LSP] Add workspace folder", vim.lsp.buf.add_workspace_folder, nil, bufnr)
-  util.keymap("grW", "[LSP] Del workspace folder", vim.lsp.buf.remove_workspace_folder, nil, bufnr)
-  util.keymap("[e",  "[LSP] Previous error",       function () vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR }) end, nil, bufnr)
-  util.keymap("]e",  "[LSP] Previous error",       function () vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR }) end, nil, bufnr)
-  util.keymap("[s",  "[LSP] Previous info",        function () vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.INFO }) end, nil, bufnr)
-  util.keymap("]s",  "[LSP] Previous info",        function () vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.INFO }) end, nil, bufnr)
-  util.keymap("goq", "[LSP] Workspace info",       function () print("Workspace folders: " .. vim.inspect(vim.lsp.buf.list_workspace_folders())) end, nil, bufnr)
+  util.keymap("[LSP]", {
+    { "grn", "Rename",               vim.lsp.buf.rename                                                                                },
+    { "gra", "Show code actions",    lsp_util.do_code_action                                                                           },
+    { "grw", "Add workspace folder", vim.lsp.buf.add_workspace_folder                                                                  },
+    { "grW", "Del workspace folder", vim.lsp.buf.remove_workspace_folder                                                               },
+    { "[e",  "Previous error",       function () vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR }) end     },
+    { "]e",  "Previous error",       function () vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR }) end      },
+    { "[s",  "Previous info",        function () vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.INFO }) end      },
+    { "]s",  "Previous info",        function () vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.INFO }) end       },
+    { "goq", "Workspace info",       function () print("Workspace folders: " .. vim.inspect(vim.lsp.buf.list_workspace_folders())) end },
+  }, bufnr)
 end)
+
 lsp_util.on_supports_method(methods.textDocument_definition, function (bufnr)
-  util.keymap("gd", "[LSP] Go to definition", vim.lsp.buf.definition, nil, bufnr)
+  util.keymap("[LSP]", { { "gd", "Go to definition", vim.lsp.buf.definition } }, bufnr)
 end)
+
 lsp_util.on_attach_client("codebook", function (bufnr)
-  local function codebook_code_action()
-    -- TODO @0.12.x: Remove legacy code path
-    if vim.version().minor >= 12 then
-      return code_action_fun({ filter = function (_, client_id)
-        return vim.lsp.get_client_by_id(client_id).name == "codebook"
-      end })
-    end
-    return code_action_fun()
+  util.keymap("[LSP:codebook]", { { "grs", "Show spelling actions", function ()
+    return lsp_util.do_code_action({
+      filter = function (x, id)
+        if vim.lsp.get_client_by_id(id).name ~= "codebook" then return false end
+        if x.title:match("Add '[^']*' to dictionary") ~= nil then return false end
+        if x.title:match("Add '[^']*' to global dictionary") ~= nil then return false end
+        return true
+      end,
+    })
   end
-  util.keymap("zg", "[LSP] Show spelling actions", codebook_code_action, nil, bufnr)
-  util.keymap("zG", "[LSP] Show spelling actions", codebook_code_action, nil, bufnr)
+  } }, bufnr)
 end)
 
 -- "Organize Imports" mapping.
@@ -40,7 +42,7 @@ lsp_util.on_attach_client("vtsls", function (bufnr)
   local function organize_imports()
     vim.lsp.buf.code_action({ context = { only = { "source.organizeImports" }, diagnostics = {} }, apply = true })
   end
-  util.keymap("gsi", "[LSP:vtsls] Organize imports", organize_imports, nil, bufnr)
+  util.keymap("[LSP:vtsls]", { { "gsi", "Organize imports", organize_imports } }, bufnr)
   vim.api.nvim_buf_create_user_command(bufnr, "OrganizeImports", organize_imports, { desc = "[LSP:vtsls] Organize imports" })
 end)
 
@@ -67,7 +69,7 @@ end)
 -- Automatic inlay hints / InsertEnter inlay hint toggle.
 lsp_util.on_supports_method(methods.textDocument_inlayHint, function (bufnr)
   local user_lsp_inlay_hints_group = vim.api.nvim_create_augroup("UserLspInlayHintsConfig", { clear = true })
-  local lsp_inlay_hints_enabled = util.use_setting("lsp_inlay_hints_enabled", true)
+  local lsp_inlay_hints_enabled = util.use_setting("LSP_INLAY_HINTS_ENABLED", true)
 
   -- Automatically enable inlay hints.
   if lsp_inlay_hints_enabled.get(bufnr) then
@@ -78,30 +80,37 @@ lsp_util.on_supports_method(methods.textDocument_inlayHint, function (bufnr)
     end, 500)
   end
 
-  util.keymap("grh", "[LSP] Toggle inlay hints (buffer)", function ()
-    local enabled = lsp_inlay_hints_enabled.set(not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 }), "b", bufnr)
-    vim.lsp.inlay_hint.enable(enabled, { bufnr = 0 })
-    print("[LSP] Inlay hints " .. (enabled and "enabled" or "disabled"))
-  end, nil, bufnr)
-
-  util.keymap("grH", "[LSP] Toggle inlay hints", function ()
-    local enabled = lsp_inlay_hints_enabled.set(not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 }), "g")
-    vim.lsp.inlay_hint.enable(enabled)
-    print("[LSP] Inlay hints " .. (enabled and "enabled" or "disabled"))
-  end, nil, bufnr)
+  util.keymap("[LSP]", {
+    {
+      "grh", "[LSP] Toggle inlay hints (buffer)", function ()
+        local enabled = lsp_inlay_hints_enabled.set(not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 }), "b", bufnr)
+        vim.lsp.inlay_hint.enable(enabled, { bufnr = 0 })
+        print("[LSP] Inlay hints " .. (enabled and "enabled" or "disabled"))
+      end,
+    },
+    {
+      "grH", "[LSP] Toggle inlay hints", function ()
+        local enabled = lsp_inlay_hints_enabled.set(not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 }), "g")
+        vim.lsp.inlay_hint.enable(enabled)
+        print("[LSP] Inlay hints " .. (enabled and "enabled" or "disabled"))
+      end,
+    },
+  }, bufnr)
 
   vim.api.nvim_create_autocmd("InsertEnter", {
     group = user_lsp_inlay_hints_group,
     desc = "[LSP] Insert-only inlay hints",
     buffer = bufnr,
-    callback = function () vim.lsp.inlay_hint.enable(false, { bufnr = bufnr }) end,
+    callback = function ()
+      vim.lsp.inlay_hint.enable(false, { bufnr = bufnr })
+    end,
   })
   vim.api.nvim_create_autocmd("InsertLeave", {
     group = user_lsp_inlay_hints_group,
     desc = "[LSP] Insert-only inlay hints",
     buffer = bufnr,
     callback = function ()
-      if lsp_inlay_hints_enabled.get() then
+      if lsp_inlay_hints_enabled.get(bufnr) then
         vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
       end
     end,
@@ -117,7 +126,7 @@ lsp_util.on_attach(function (bufnr, client)
       arguments = { { uri = vim.uri_from_bufnr(bufnr), version = vim.lsp.util.buf_versions[bufnr] } },
     }, nil, bufnr)
   end
-  util.keymap("gre", "[LSP:eslint] Fix all", eslint_fix_all, nil, bufnr)
+  util.keymap("[LSP:eslint]", { { "gre", "Fix all", eslint_fix_all } }, bufnr)
 
   vim.api.nvim_create_autocmd("BufWritePre", {
     group = user_lsp_config_group,
@@ -276,17 +285,42 @@ return {
           { key = "f", order = 1, pattern = "fix this" },
           { key = "F", order = 2, pattern = "fix all" },
         },
-        ["codebook"] = {
-          { key = "g", order = 3, pattern = "add '.*' to dictionary" },
-          { key = "G", order = 4, pattern = "add '.*' to global dictionary" },
-          { key = "i", order = 5, pattern = "add current file to ignore list" },
+        codebook = {
+          { key = "i", order = 3, pattern = "add current file to ignore list" },
         },
       },
     },
     config = function (_, opts)
       local fastaction = require("fastaction")
       fastaction.setup(opts)
-      code_action_fun = fastaction.code_action
+      lsp_util.register_code_action_fun(fastaction.code_action)
+
+      lsp_util.on_attach_client("codebook", function (bufnr) util.keymap("[LSP:codebook]", {
+        {
+          "zg",
+          "Accept",
+          function () return lsp_util.do_code_action({
+            select_first = true,
+            filter = function (x, id)
+              if vim.lsp.get_client_by_id(id).name ~= "codebook" then return false end
+              if x.title:match("Add '[^']*' to dictionary") == nil then return false end
+              return true
+            end,
+          }) end,
+        },
+        {
+          "zG",
+          "Accept (global)",
+          function () return lsp_util.do_code_action({
+            select_first = true,
+            filter = function (x, id)
+              if vim.lsp.get_client_by_id(id).name ~= "codebook" then return false end
+              if x.title:match("Add '[^']*' to global dictionary") == nil then return false end
+              return true
+            end,
+          }) end,
+        },
+      }, bufnr) end)
     end,
   },
   { "yioneko/nvim-vtsls" },

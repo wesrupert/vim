@@ -11,6 +11,12 @@ vim.o.winborder = "rounded"
 vim.o.foldmethod = "expr"
 vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 
+vim.o.cmdheight = 0
+require('vim._core.ui2').enable({
+  enable = true,
+  msg = { timeout = 2500 },
+})
+
 if util.is_gui() then
   vim.o.pumblend = 20
 
@@ -23,6 +29,11 @@ if util.is_gui() then
     vim.g.neovide_floating_shadow = false
     vim.g.neovide_floating_corner_radius = 0.4
     vim.g.experimental_layer_grouping = true
+
+  -- HACK neovide/neovide#3125: Needed to remove buggy extra window when ui2 is enabled.
+    vim.api.nvim_create_autocmd('FocusGained', { group = user_default_config, pattern = '*', once = true, callback = function ()
+      vim.cmd([[new | close]])
+    end })
   end
 end
 
@@ -67,6 +78,18 @@ function _G.comment_and_yank(_, paste)
 end
 function _G.comment_and_paste(kind) _G.comment_and_yank(kind, true) end
 
+util.keymap("[VLine block insert]", {
+  { "I", "Insert", opts = { modes = "x", expr = true }, function () return vim.fn.mode() == "V" and "^<C-v>I" or "I" end },
+  { "A", "Append", opts = { modes = "x", expr = true }, function () return vim.fn.mode() == "V" and "$<C-v>A" or "A" end },
+})
+
+util.keymap("[Term scroll]", {
+  { "<ScrollWheelUp>",    "Up",    opts = { modes = "t" }, "<up><up><up>",          },
+  { "<ScrollWheelDown>",  "Down",  opts = { modes = "t" }, "<down><down><down>",    },
+  { "<ScrollWheelLeft>",  "Left",  opts = { modes = "t" }, "<left><left><left>",    },
+  { "<ScrollWheelRight>", "Right", opts = { modes = "t" }, "<right><right><right>", },
+})
+
 ---Generate comment-and-paste keybinding opfunc.
 ---@param paste? boolean Iff true, paste yanked text immediately
 ---@param op? string Operatorfunc mode
@@ -76,17 +99,14 @@ local function gen_comment_and_yank(paste, op)
   return function () vim.opt.operatorfunc = func return operator end
 end
 
--- Block insert in line visual mode
-util.keymap("I", "VLine block insert", function () return vim.fn.mode() == "V" and "^<C-v>I" or "I" end, "x", nil, { expr = true })
-util.keymap("A", "VLine block append", function () return vim.fn.mode() == "V" and "$<C-v>A" or "A" end, "x", nil, { expr = true })
-
--- Comment and yank
-util.keymap("yc",  "Comment and yank",        gen_comment_and_yank(false),      "n", nil, { expr = true })
-util.keymap("yC",  "Comment and paste",       gen_comment_and_yank(true),       "n", nil, { expr = true })
-util.keymap("ycc", "Comment and yank line",   gen_comment_and_yank(false, "_"), "n", nil, { expr = true })
-util.keymap("ycC", "Comment and paste line",  gen_comment_and_yank(true,  "_"), "n", nil, { expr = true })
-util.keymap("gc",  "Comment and yank lines",  gen_comment_and_yank(false, "_"), "x", nil, { expr = true })
-util.keymap("gC",  "Comment and paste lines", gen_comment_and_yank(true,  "_"), "x", nil, { expr = true })
+util.keymap("[Yank-and-comment]", {
+  { "yc",  "Yank",        opts = { expr = true },              gen_comment_and_yank(false)      },
+  { "yC",  "Paste",       opts = { expr = true },              gen_comment_and_yank(true)       },
+  { "ycc", "Yank line",   opts = { expr = true },              gen_comment_and_yank(false, "_") },
+  { "ycC", "Paste line",  opts = { expr = true },              gen_comment_and_yank(true,  "_") },
+  { "gc",  "Yank lines",  opts = { modes = "x", expr = true }, gen_comment_and_yank(false, "_") },
+  { "gC",  "Paste lines", opts = { modes = "x", expr = true }, gen_comment_and_yank(true,  "_") },
+})
 
 vim.api.nvim_create_autocmd("TextYankPost", {
   group = user_default_config,

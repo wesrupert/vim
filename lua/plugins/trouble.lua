@@ -35,21 +35,22 @@ return {
       trouble.toggle(util.merge({ mode = mode, focus = false, win = { position = "right" } }, sidebar_opts or {}))
     end
 
-    util.keymap("grx", "[Trouble] Close",                trouble.close)
-    util.keymap("gro", "[Trouble] Symbols",              function () trouble_toggle_sidebar("symbols", { flatten = true, format = "{kind_icon} {symbol.name} {pos}" }) end)
-    util.keymap("grO", "[Trouble] Symbols List",         function () trouble.open({ mode = "symbols", focus = true, win = { position = "bottom" } }) end)
-    util.keymap("grq", "[Trouble] Quickfix List",        function () trouble.toggle("qflist") end)
-    util.keymap("grQ", "[Trouble] Quickfix List (v)",    function () trouble.open({ mode = "qflist", win = { position = "right", size = 0.32 }, preview = { position = "bottom" } }) end)
-    util.keymap("grl", "[Trouble] Location List",        function () trouble.toggle("loclist") end)
-    util.keymap("grL", "[Trouble] Location List (v)",    function () trouble.open({ mode = "loclist", win = { position = "right", size = 0.32 }, preview = { position = "bottom" } }) end)
-    util.keymap("grD", "[Trouble] Diagnostics",          function () trouble.open({ mode = "diagnostics", filter = { ['not'] = { severity = vim.diagnostic.severity.INFO } } }) end)
-    util.keymap("grd", "[Trouble] Diagnostics (buffer)", function () trouble.open({ mode = "diagnostics", filter = { buf = 0 } }) end)
+    util._keymap("<c-t>", "[Trouble] Close", trouble.close)
+
+    util._keymap("gro", "[Trouble] Symbols",              function () trouble_toggle_sidebar("symbols", { flatten = true, format = "{kind_icon} {symbol.name} {pos}" }) end)
+    util._keymap("grO", "[Trouble] Symbols List",         function () trouble.open({ mode = "symbols", focus = true, win = { position = "bottom" } }) end)
+    util._keymap("grq", "[Trouble] Quickfix List",        function () trouble.toggle("qflist") end)
+    util._keymap("grQ", "[Trouble] Quickfix List (v)",    function () trouble.open({ mode = "qflist", win = { position = "right", size = 0.32 }, preview = { position = "bottom" } }) end)
+    util._keymap("grl", "[Trouble] Location List",        function () trouble.toggle("loclist") end)
+    util._keymap("grL", "[Trouble] Location List (v)",    function () trouble.open({ mode = "loclist", win = { position = "right", size = 0.32 }, preview = { position = "bottom" } }) end)
+    util._keymap("grD", "[Trouble] Diagnostics",          function () trouble.open({ mode = "diagnostics", filter = { ['not'] = { severity = vim.diagnostic.severity.INFO } } }) end)
+    util._keymap("grd", "[Trouble] Diagnostics (buffer)", function () trouble.open({ mode = "diagnostics", filter = { buf = 0 } }) end)
 
     vim.api.nvim_create_autocmd("LspAttach", {
       group = user_trouble_config_group,
       callback = function(ev)
-        util.keymap("grR", "[Trouble] References",      function () trouble_toggle_sidebar("lsp") end)
-        util.keymap("grI", "[Trouble] Implementations", function () trouble_toggle_sidebar("lsp_implementations") end)
+        util._keymap("grR", "[Trouble] References",      function () trouble_toggle_sidebar("lsp") end)
+        util._keymap("grI", "[Trouble] Implementations", function () trouble_toggle_sidebar("lsp_implementations") end)
       end,
     })
 

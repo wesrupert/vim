@@ -406,7 +406,41 @@ function M.command_parse_fargs(fargs)
   return name, lua_load()
 end
 
+---@class Util.keymap.set.Opts : vim.keymap.set.Opts
+---@field modes? string|string[]
+
+---@class Util.keymap.set.Spec
+---@field [1] string lhs
+---@field [2] string desc
+---@field [3] string|function rhs
+---@field opts? Util.keymap.set.Opts opts
+
 ---Alias for vim.api.nvim_set_keymap with some better args and defaults.
+---@see vim.keymap.set
+---@param scope string
+---@param specs Util.keymap.set.Spec[]
+---@param buf? integer
+function M.keymap(scope, specs, buf)
+  for _, spec in ipairs(specs) do
+    if spec then
+      local modes = spec.opts and spec.opts.modes or "n"
+      local merged_opts = M.merge(
+        ---@type vim.keymap.set.Opts
+        {
+          noremap = true,
+          buf = buf,
+          desc = scope .. " " .. spec[2],
+        },
+        spec.opts or {}
+      )
+      merged_opts.modes = nil
+      vim.keymap.set(modes, spec[1], spec[3], merged_opts)
+    end
+  end
+end
+
+---Alias for vim.api.nvim_set_keymap with some better args and defaults.
+---@deprecated Use the new syntax instead
 ---@param lhs string Left-hand side of the mapping
 ---@param desc string human-readable description
 ---@param rhs string|function Right-hand side of the mapping, can be a Lua function
@@ -414,7 +448,7 @@ end
 ---@param buffer? number Buffer number, otherwise mapping is global
 ---@param opts? table Table of :map-arguments
 ---@see vim.keymap.set
-function M.keymap(lhs, desc, rhs, mode, buffer, opts)
+function M._keymap(lhs, desc, rhs, mode, buffer, opts)
   vim.keymap.set(mode or 'n', lhs, rhs, vim.tbl_extend(
     'force',
     { noremap = true },

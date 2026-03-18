@@ -1,5 +1,15 @@
 return {
   {
+    "nvim-mini/mini.hipatterns",
+    opts = function ()
+      return {
+        highlighters = {
+          hex_color = require("mini.hipatterns").gen_highlighter.hex_color(),
+        },
+      }
+    end,
+  },
+  {
     "catppuccin/nvim",
     name = "catppuccin",
     priority = 1000,
@@ -58,6 +68,8 @@ return {
   {
     "neanias/everforest-nvim",
     priority = 1000,
+    ---@module "everforest"
+    ---@type Everforest.SetupOptions
     opts = {
       dim_inactive_windows = true,
       italics = true,
@@ -141,7 +153,6 @@ return {
       }
     end,
     config = function (_, opts)
-      _G.foxy_opts = opts
       require("nightfox").setup(opts)
     end
   },

@@ -25,15 +25,15 @@ return {
       local tree_walker = require("treewalker")
       tree_walker.setup(opts or {})
 
-      util.keymap("]n", "[TreeWalker] Move to next sibling", tree_walker.move_down, { "n", "v" }, nil, { silent = true })
-      util.keymap("[n", "[TreeWalker] Move to prev sibling", tree_walker.move_up, { "n", "v" }, nil, { silent = true })
-      util.keymap("]N", "[TreeWalker] Move to child", tree_walker.move_in, { "n", "v" }, nil, { silent = true })
-      util.keymap("[N", "[TreeWalker] Move to parent", tree_walker.move_out, { "n", "v" }, nil, { silent = true })
+      util._keymap("]n", "[TreeWalker] Move to next sibling", tree_walker.move_down, { "n", "v" }, nil, { silent = true })
+      util._keymap("[n", "[TreeWalker] Move to prev sibling", tree_walker.move_up, { "n", "v" }, nil, { silent = true })
+      util._keymap("]N", "[TreeWalker] Move to child", tree_walker.move_in, { "n", "v" }, nil, { silent = true })
+      util._keymap("[N", "[TreeWalker] Move to parent", tree_walker.move_out, { "n", "v" }, nil, { silent = true })
 
-      util.keymap("gsh", "[TreeWalker] Swap left", tree_walker.swap_left, "n", nil, { silent = true })
-      util.keymap("gsj", "[TreeWalker] Swap down", tree_walker.swap_down, "n", nil, { silent = true })
-      util.keymap("gsk", "[TreeWalker] Swap up", tree_walker.swap_up, "n", nil, { silent = true })
-      util.keymap("gsl", "[TreeWalker] Swap right", tree_walker.swap_right, "n", nil, { silent = true })
+      util._keymap("gsh", "[TreeWalker] Swap left", tree_walker.swap_left, "n", nil, { silent = true })
+      util._keymap("gsj", "[TreeWalker] Swap down", tree_walker.swap_down, "n", nil, { silent = true })
+      util._keymap("gsk", "[TreeWalker] Swap up", tree_walker.swap_up, "n", nil, { silent = true })
+      util._keymap("gsl", "[TreeWalker] Swap right", tree_walker.swap_right, "n", nil, { silent = true })
     end,
   },
   {
@@ -54,12 +54,12 @@ return {
         ["@assignment.inner"] = { n = "=", p = "?" },
         ["@parameter.inner"]  = { n = "a", p = "A" },
       }):each(function (query, query_opts)
-        util.keymap(
+        util._keymap(
           "gs" .. query_opts.n,
           "[TreeSitter] Swap " .. query .. " forward",
           function () ts_to_swap.swap_next(query, query_opts.group) end
         )
-        util.keymap(
+        util._keymap(
           "gs" .. query_opts.p,
           "[TreeSitter] Swap " .. query .. " backward",
           function () ts_to_swap.swap_previous(query, query_opts.group) end
@@ -81,7 +81,7 @@ return {
       local context = require("treesitter-context")
       context.setup(opts)
       local function go_to_context() context.go_to_context(vim.v.count1) end
-      util.keymap("['", "[TreeSitter] Jump to context start", go_to_context, nil, nil, { silent = true })
+      util._keymap("['", "[TreeSitter] Jump to context start", go_to_context, nil, nil, { silent = true })
     end,
     init = function ()
       vim.api.nvim_set_hl(0, "TreesitterContextBottom", { underline = true, sp = "Grey" })
