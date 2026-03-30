@@ -4,47 +4,52 @@ local lsp_util = require("util.lsp")
 local methods = vim.lsp.protocol.Methods
 local user_lsp_config_group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true })
 
+local quick_actions = { "source", "refactor", "quickfix" }
+
 -- LSP Keymaps
 lsp_util.on_attach(function (bufnr)
-  util.keymap("[LSP]", {
-    { "grn", "Rename",               vim.lsp.buf.rename                                                                                },
-    { "gra", "Show code actions",    lsp_util.do_code_action                                                                           },
-    { "grw", "Add workspace folder", vim.lsp.buf.add_workspace_folder                                                                  },
-    { "grW", "Del workspace folder", vim.lsp.buf.remove_workspace_folder                                                               },
-    { "[e",  "Previous error",       function () vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR }) end     },
-    { "]e",  "Previous error",       function () vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR }) end      },
-    { "[s",  "Previous info",        function () vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.INFO }) end      },
-    { "]s",  "Previous info",        function () vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.INFO }) end       },
-    { "goq", "Workspace info",       function () print("Workspace folders: " .. vim.inspect(vim.lsp.buf.list_workspace_folders())) end },
+  local function gen_jump(forward, severity)
+    local count = forward and 1 or -1
+    return function () vim.diagnostic.jump({ count = count, severity = severity }) end
+  end
+  util.keymap({
+    { "goq", desc = "[LSP] Workspace info",       function () print("Workspace folders: " .. vim.inspect(vim.lsp.buf.list_workspace_folders())) end },
+    { "grw", desc = "[LSP] Add workspace folder", vim.lsp.buf.add_workspace_folder    },
+    { "grW", desc = "[LSP] Del workspace folder", vim.lsp.buf.remove_workspace_folder },
+
+    { "grn",   desc = "[LSP] Rename",            vim.lsp.buf.rename      },
+    { "gra",   desc = "[LSP] Show code actions", lsp_util.do_code_action },
+    { "<c-,>", desc = "[LSP] Show code actions", lsp_util.do_code_action },
+
+    ---@diagnostic disable-next-line: missing-fields
+    { "gre", desc = "[LSP] Show quick edits", function () return lsp_util.do_code_action({ context = { only = quick_actions } }) end },
+
+    { "[e",  desc = "[LSP] Previous error", gen_jump(false, vim.diagnostic.severity.ERROR) },
+    { "]e",  desc = "[LSP] Previous error", gen_jump(true,  vim.diagnostic.severity.ERROR) },
+    { "[s",  desc = "[LSP] Previous info",  gen_jump(false, vim.diagnostic.severity.INFO)  },
+    { "]s",  desc = "[LSP] Previous info",  gen_jump(true,  vim.diagnostic.severity.INFO)  },
   }, bufnr)
 end)
 
 lsp_util.on_supports_method(methods.textDocument_definition, function (bufnr)
-  util.keymap("[LSP]", { { "gd", "Go to definition", vim.lsp.buf.definition } }, bufnr)
+  util.keymap({ { "gd", desc = "[LSP] Go to definition", buf = bufnr, vim.lsp.buf.definition } })
 end)
 
-lsp_util.on_attach_client("codebook", function (bufnr)
-  util.keymap("[LSP:codebook]", { { "grs", "Show spelling actions", function ()
-    return lsp_util.do_code_action({
-      filter = function (x, id)
-        if vim.lsp.get_client_by_id(id).name ~= "codebook" then return false end
-        if x.title:match("Add '[^']*' to dictionary") ~= nil then return false end
-        if x.title:match("Add '[^']*' to global dictionary") ~= nil then return false end
-        return true
-      end,
+-- Loading progress notifications
+vim.api.nvim_create_autocmd('LspProgress', {
+  group = user_lsp_config_group,
+  callback = function (ev)
+    local value = ev.data.params.value
+    vim.api.nvim_echo({ { value.message or 'done' } }, false, {
+      id = 'lsp.' .. ev.data.client_id,
+      kind = 'progress',
+      source = 'vim.lsp',
+      title = value.title,
+      status = value.kind ~= 'end' and 'running' or 'success',
+      percent = value.percentage,
     })
-  end
-  } }, bufnr)
-end)
-
--- "Organize Imports" mapping.
-lsp_util.on_attach_client("vtsls", function (bufnr)
-  local function organize_imports()
-    vim.lsp.buf.code_action({ context = { only = { "source.organizeImports" }, diagnostics = {} }, apply = true })
-  end
-  util.keymap("[LSP:vtsls]", { { "gsi", "Organize imports", organize_imports } }, bufnr)
-  vim.api.nvim_buf_create_user_command(bufnr, "OrganizeImports", organize_imports, { desc = "[LSP:vtsls] Organize imports" })
-end)
+  end,
+})
 
 -- Document highlight
 lsp_util.on_supports_method(methods.textDocument_documentHighlight, function (bufnr)
@@ -80,22 +85,22 @@ lsp_util.on_supports_method(methods.textDocument_inlayHint, function (bufnr)
     end, 500)
   end
 
-  util.keymap("[LSP]", {
+  util.keymap({
     {
-      "grh", "[LSP] Toggle inlay hints (buffer)", function ()
+      "grh", desc = "[LSP] Toggle inlay hints (buffer)", buf = bufnr, function ()
         local enabled = lsp_inlay_hints_enabled.set(not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 }), "b", bufnr)
         vim.lsp.inlay_hint.enable(enabled, { bufnr = 0 })
         print("[LSP] Inlay hints " .. (enabled and "enabled" or "disabled"))
       end,
     },
     {
-      "grH", "[LSP] Toggle inlay hints", function ()
+      "grH", desc = "[LSP] Toggle inlay hints", buf = bufnr, function ()
         local enabled = lsp_inlay_hints_enabled.set(not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 }), "g")
         vim.lsp.inlay_hint.enable(enabled)
         print("[LSP] Inlay hints " .. (enabled and "enabled" or "disabled"))
       end,
     },
-  }, bufnr)
+  })
 
   vim.api.nvim_create_autocmd("InsertEnter", {
     group = user_lsp_inlay_hints_group,
@@ -126,13 +131,13 @@ lsp_util.on_attach(function (bufnr, client)
       arguments = { { uri = vim.uri_from_bufnr(bufnr), version = vim.lsp.util.buf_versions[bufnr] } },
     }, nil, bufnr)
   end
-  util.keymap("[LSP:eslint]", { { "gre", "Fix all", eslint_fix_all } }, bufnr)
+  util.keymap({ { "gre", desc = "[LSP:eslint] Fix all", buf = bufnr, eslint_fix_all } })
 
   vim.api.nvim_create_autocmd("BufWritePre", {
     group = user_lsp_config_group,
     desc = "[LSP:eslint] Fix on save",
     buffer = bufnr,
-    callback = function () if util.get_setting("eslint_run_on_save", true, bufnr) then eslint_fix_all() end end,
+    callback = function () if util.get_setting("ESLINT_RUN_ON_SAVE", true, bufnr) then eslint_fix_all() end end,
   })
 end)
 
@@ -261,6 +266,38 @@ return {
     end,
   },
   {
+    "rachartier/tiny-code-action.nvim",
+    dependencies = {"nvim-lua/plenary.nvim"},
+    event = "LspAttach",
+    opts = {
+      backend = "difftastic",
+      picker = {
+        "buffer",
+        opts = {
+          hotkeys = true,
+          hotkeys_mode = "text_diff_based",
+          custom_keys = {
+            { key = "ff", pattern = "Fix this prettier/.* problem" },
+            { key = "fa", pattern = "Fix this prettier/prettier problems" },
+            { key = "zg", pattern = "Add '[^']*' to dictionary" },
+            { key = "zG", pattern = "Add '[^']*' to global dictionary" },
+            { key = "zi", pattern = "Add current file to ignore list" },
+          },
+          keymaps = {
+            preview = "-",
+            preview_close = { "-", "q", "<esc>" },
+            close = { "q", "<esc>" },
+          },
+        },
+      },
+    },
+    config = function (_, opts)
+      local tiny_code_action = require("tiny-code-action")
+      tiny_code_action.setup(opts)
+      lsp_util.register_code_action_fun(tiny_code_action.code_action)
+    end,
+  },
+  {
     "neovim/nvim-lspconfig",
     init = function () lsp_util.setup_lsp_servers() end,
   },
@@ -271,57 +308,13 @@ return {
     dependencies = { "mason-org/mason.nvim", "pmizio/typescript-tools.nvim" },
     config = true,
   },
-  {
-    "chaitanyabsprip/fastaction.nvim",
-    opts = {
-      dismiss_keys = { "q", "<esc>", "<c-c>" },
-      popup = {
-        title = false,
-      },
-      priority = {
-        -- NOTE: The patterns should be tested against the raw messages.
-        -- FastAction only formats messages after pattern matching is complete!
-        eslint = {
-          { key = "f", order = 1, pattern = "fix this" },
-          { key = "F", order = 2, pattern = "fix all" },
-        },
-        codebook = {
-          { key = "i", order = 3, pattern = "add current file to ignore list" },
-        },
-      },
-    },
-    config = function (_, opts)
-      local fastaction = require("fastaction")
-      fastaction.setup(opts)
-      lsp_util.register_code_action_fun(fastaction.code_action)
-
-      lsp_util.on_attach_client("codebook", function (bufnr) util.keymap("[LSP:codebook]", {
-        {
-          "zg",
-          "Accept",
-          function () return lsp_util.do_code_action({
-            select_first = true,
-            filter = function (x, id)
-              if vim.lsp.get_client_by_id(id).name ~= "codebook" then return false end
-              if x.title:match("Add '[^']*' to dictionary") == nil then return false end
-              return true
-            end,
-          }) end,
-        },
-        {
-          "zG",
-          "Accept (global)",
-          function () return lsp_util.do_code_action({
-            select_first = true,
-            filter = function (x, id)
-              if vim.lsp.get_client_by_id(id).name ~= "codebook" then return false end
-              if x.title:match("Add '[^']*' to global dictionary") == nil then return false end
-              return true
-            end,
-          }) end,
-        },
-      }, bufnr) end)
-    end,
-  },
   { "yioneko/nvim-vtsls" },
+  {
+    "nemanjamalesija/ts-expand-hover.nvim",
+    ft = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
+    opts = {
+      keymaps = { expand = "=" },
+      float = { border = vim.o.winborder },
+    },
+  },
 }

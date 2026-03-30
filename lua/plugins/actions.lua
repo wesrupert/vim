@@ -1,26 +1,29 @@
 return {
   {
     "chrishrb/gx.nvim",
-    keys = { { "gx", "<cmd>Browse<cr>", desc = "[GX] Opens filepath or URI under cursor with the system handler", mode = { "n", "x" } } },
+    keys = {
+      { "gx", desc = "[GX] Open external", mode = { "n", "x" }, "<cmd>Browse<cr>" },
+    },
     cmd = { "Browse" },
     init = function ()
       vim.g.netrw_nogx = 1 -- disable netrw gx
     end,
-    opts = { plugin = true, github = true, package_json = true },
+    opts = {
+      plugin = true,
+      github = true,
+      package_json = true,
+    },
   },
   {
     "chrisgrieser/nvim-spider",
-    config = function (_, opts)
-      local spider = require("spider")
-      spider.setup(opts)
-      require("util").keymap("[Spider]", {
-        { "w",  "Word",                                       function () spider.motion("w") end  },
-        { "o",  "Word", opts = { modes = { "o", "x" } },      function () spider.motion("w") end  },
-        { "e",  "End",  opts = { modes = { "n", "o", "x" } }, function () spider.motion("e") end  },
-        { "b",  "Back",                                       function () spider.motion("b") end  },
-        { "ge", "BEnd", opts = { modes = { "n", "o", "x" } }, function () spider.motion("ge") end },
-      })
-    end,
+    keys = {
+      { "w",  desc = "[Spider] Word",                            function () require("spider").motion("w") end  },
+      { "o",  desc = "[Spider] Word", mode = { "o", "x" },      function () require("spider").motion("w") end  },
+      { "e",  desc = "[Spider] End",  mode = { "n", "o", "x" }, function () require("spider").motion("e") end  },
+      { "b",  desc = "[Spider] Back",                            function () require("spider").motion("b") end  },
+      { "ge", desc = "[Spider] BEnd", mode = { "n", "o", "x" }, function () require("spider").motion("ge") end },
+    },
+    config = true,
   },
   { "chentoast/marks.nvim", event = "VeryLazy", config = true },
   { "glts/vim-textobj-comment", dependencies = { "kana/vim-textobj-user" } },
@@ -28,13 +31,14 @@ return {
   {
     "nvim-mini/mini.ai",
     dependencies = { "nvim-mini/mini.extra", "nvim-mini/mini.icons" },
+    event = "VeryLazy",
     opts = function ()
       local gen_ts_spec = require("mini.ai").gen_spec.treesitter
       local gen_ai_spec = require("mini.extra").gen_ai_spec
       return {
         mappings = {
-          goto_left = "<leader>k",
-          goto_right = "<leader>j",
+          goto_left = "<leader>h",
+          goto_right = "<leader>l",
         },
         custom_textobjects = {
           ["_"] = { "%b__", '^.().*().$' }, -- The 'abc' in 'xyz_abc_123'.
@@ -59,13 +63,14 @@ return {
       }
     end,
   },
-  { "nvim-mini/mini.align", config = true },
-  { "nvim-mini/mini.bracketed", opts = { treesitter = { suffix = "" --[[Let TreeWalker manage treesitter motions]] } } },
-  { "nvim-mini/mini.jump", config = true },
-  { "nvim-mini/mini.jump2d", config = true },
-  { "nvim-mini/mini.move", config = true },
+  { "nvim-mini/mini.align", event = "VeryLazy", config = true },
+  { "nvim-mini/mini.bracketed", event = "VeryLazy", opts = { treesitter = { suffix = "" --[[Let TreeWalker manage treesitter motions]] } } },
+  { "nvim-mini/mini.jump", event = "VeryLazy", config = true },
+  { "nvim-mini/mini.jump2d", event = "VeryLazy", config = true },
+  { "nvim-mini/mini.move", event = "VeryLazy", config = true },
   {
     "nvim-mini/mini.operators",
+    event = "VeryLazy",
     opts = {
       evaluate = { prefix = "g=" },
       exchange = { prefix = "g<tab>" },
@@ -93,4 +98,5 @@ return {
     end,
   },
   { "nvim-mini/mini.surround", opts = { search_method = "cover_or_next" }, config = true },
+  { "lionyxml/gitlineage.nvim", opts = { keymap = "ghh" } },
 }

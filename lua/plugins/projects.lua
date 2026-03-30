@@ -1,5 +1,6 @@
 local util = require("util")
 
+---@type LazySpec[]
 return {
   {
     "nvim-mini/mini.sessions",
@@ -65,22 +66,28 @@ return {
         sessions.write(n)
       end
 
-      util.keymap("[Mini:sessions]", {
-        { "<leader>so", "Select",         sessions.select                                            },
-        { "<leader>sl", "Write (local)",  function () sessions.write(sessions.config.file) end       },
-        { "<leader>sg", "Write (global)", function () write_session() end                            },
-        { "<leader>su", "Update",         function () write_session(vim.g.mini_sessions_current) end },
+      vim.api.nvim_create_user_command("Restart", sessions.restart, { desc = "[Mini:sessions] Restart" })
+      util.keymap({
+        { "<leader>sr", desc = "[Mini:sessions] Restart",        sessions.restart                                           },
+        { "<leader>so", desc = "[Mini:sessions] Select",         sessions.select                                            },
+        { "<leader>sl", desc = "[Mini:sessions] Write (local)",  function () sessions.write(sessions.config.file) end       },
+        { "<leader>sg", desc = "[Mini:sessions] Write (global)", function () write_session() end                            },
+        { "<leader>su", desc = "[Mini:sessions] Update",         function () write_session(vim.g.mini_sessions_current) end },
       })
     end,
   },
   {
     "stevearc/overseer.nvim",
-    config = function (_, opts)
-      local overseer = require("overseer")
-      overseer.setup(opts or {})
-      util._keymap("gol", "[Overseer] Toggle",      [[<cmd>OverseerToggle<cr>]])
-      util._keymap("goo", "[Overseer] Run",         [[<cmd>OverseerRun<cr>]])
-      util._keymap("goa", "[Overseer] Modify Task", [[<cmd>OverseerTaskAction<cr>]])
-    end,
+    cmd = { "OverseerOpen", "OverseerClose", "OverseerToggle", "OverseerRun", "OverseerShell", "OverseerTaskAction" },
+    keys = {
+      { "gol", desc = "[Overseer] Toggle",      [[<cmd>OverseerToggle<cr>]]     },
+      { "goo", desc = "[Overseer] Run",         [[<cmd>OverseerRun<cr>]]        },
+      { "goa", desc = "[Overseer] Modify Task", [[<cmd>OverseerTaskAction<cr>]] },
+    },
+    opts = {
+      keymaps = {
+        ["<c-r>"] = { "keymap.run_action", opts = { action = "restart" }, desc = "Restart task" },
+      },
+    },
   },
 }

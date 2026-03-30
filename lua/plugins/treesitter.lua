@@ -21,20 +21,17 @@ return {
   },
   {
     "aaronik/treewalker.nvim",
-    config = function (_, opts)
-      local tree_walker = require("treewalker")
-      tree_walker.setup(opts or {})
-
-      util._keymap("]n", "[TreeWalker] Move to next sibling", tree_walker.move_down, { "n", "v" }, nil, { silent = true })
-      util._keymap("[n", "[TreeWalker] Move to prev sibling", tree_walker.move_up, { "n", "v" }, nil, { silent = true })
-      util._keymap("]N", "[TreeWalker] Move to child", tree_walker.move_in, { "n", "v" }, nil, { silent = true })
-      util._keymap("[N", "[TreeWalker] Move to parent", tree_walker.move_out, { "n", "v" }, nil, { silent = true })
-
-      util._keymap("gsh", "[TreeWalker] Swap left", tree_walker.swap_left, "n", nil, { silent = true })
-      util._keymap("gsj", "[TreeWalker] Swap down", tree_walker.swap_down, "n", nil, { silent = true })
-      util._keymap("gsk", "[TreeWalker] Swap up", tree_walker.swap_up, "n", nil, { silent = true })
-      util._keymap("gsl", "[TreeWalker] Swap right", tree_walker.swap_right, "n", nil, { silent = true })
-    end,
+    keys = {
+      { "]n",  desc = "[TreeWalker] Move to next sibling", mode = { "n", "v" },  function() require("treewalker").move_down() end  },
+      { "[n",  desc = "[TreeWalker] Move to prev sibling", mode = { "n", "v" },  function() require("treewalker").move_up() end    },
+      { "]c",  desc = "[TreeWalker] Move to child",        mode = { "n", "v" },  function() require("treewalker").move_in() end    },
+      { "[c",  desc = "[TreeWalker] Move to parent",       mode = { "n", "v" },  function() require("treewalker").move_out() end   },
+      { "gsh", desc = "[TreeWalker] Swap left",                                  function() require("treewalker").swap_left() end  },
+      { "gsj", desc = "[TreeWalker] Swap down",                                  function() require("treewalker").swap_down() end  },
+      { "gsk", desc = "[TreeWalker] Swap up",                                    function() require("treewalker").swap_up() end    },
+      { "gsl", desc = "[TreeWalker] Swap right",                                 function() require("treewalker").swap_right() end },
+    },
+    config = true,
   },
   {
     "nvim-treesitter/nvim-treesitter-textobjects",
@@ -48,23 +45,15 @@ return {
       treesitter_textobjects.setup(opts)
 
       -- Set up swap keymaps (select/move keymaps are handled by mini.ai).
-      vim.iter({
-        ["@statement.outer"]  = { n = "s", p = "S" },
-        ["@block.inner"]      = { n = "b", p = "B" },
-        ["@assignment.inner"] = { n = "=", p = "?" },
-        ["@parameter.inner"]  = { n = "a", p = "A" },
-      }):each(function (query, query_opts)
-        util._keymap(
-          "gs" .. query_opts.n,
-          "[TreeSitter] Swap " .. query .. " forward",
-          function () ts_to_swap.swap_next(query, query_opts.group) end
-        )
-        util._keymap(
-          "gs" .. query_opts.p,
-          "[TreeSitter] Swap " .. query .. " backward",
-          function () ts_to_swap.swap_previous(query, query_opts.group) end
-        )
-      end)
+      util.keymap(vim.iter({
+        { "@statement.outer",  n = "s", p = "S" },
+        { "@block.inner",      n = "b", p = "B" },
+        { "@assignment.inner", n = "=", p = "?" },
+        { "@parameter.inner",  n = "a", p = "A" },
+      }):map(function (o) return {
+        { "gs" .. o.n, desc = "[TreeSitter] Swap " .. o[1] .. " forward",  function () ts_to_swap.swap_next    (o[1], o.group) end },
+        { "gs" .. o.p, desc = "[TreeSitter] Swap " .. o[1] .. " backward", function () ts_to_swap.swap_previous(o[1], o.group) end },
+      } end):flatten():totable())
     end,
   },
   {
@@ -77,14 +66,13 @@ return {
       max_lines = 5,
       separator = "─"
     },
+    init = function ()
+      vim.api.nvim_set_hl(0, "TreesitterContextBottom", { underline = true, sp = "Grey" })
+    end,
     config = function (_, opts)
       local context = require("treesitter-context")
       context.setup(opts)
-      local function go_to_context() context.go_to_context(vim.v.count1) end
-      util._keymap("['", "[TreeSitter] Jump to context start", go_to_context, nil, nil, { silent = true })
-    end,
-    init = function ()
-      vim.api.nvim_set_hl(0, "TreesitterContextBottom", { underline = true, sp = "Grey" })
+      util.keymap({ { "['", desc = "[TreeSitter] Context start", silent = true, function () context.go_to_context(vim.v.count1) end } })
     end,
   },
   {

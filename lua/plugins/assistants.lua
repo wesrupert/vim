@@ -25,17 +25,19 @@ return {
       end
 
       util.on_buf_is_ai_allowed("[Sidekick] Create user mappings", function (bufnr)
-        util.keymap("[Sidekick]", {
-          { "glk",   "Toggle",         opts = { modes = { "n", "x" } }, sidekick_cli_toggle()            },
-          { "<a-l>", "Toggle",         opts = { modes = "i" },          sidekick_cli_toggle()            },
-          { "glK",   "Select CLI",                                      sidekick_cli_toggle(true),       },
-          { "glx",   "Detach CLI",                                      sidekick_cli.close,              },
-          { "glg",   "Send This",      opts = { modes = { "x", "n" } }, sidekick_cli_send("{this}")      },
-          { "glf",   "Send File",                                       sidekick_cli_send("{file}")      },
-          { "glg",   "Send Selection", opts = { modes = "x",   },       sidekick_cli_send("{selection}") },
-          { "glp",   "Select Prompt",  opts = { modes = { "n", "x" } }, sidekick_cli.prompt              },
-          { "<tab>", "Goto/Apply NES", opts = { expr = true },          function ()
-            if not sidekick.nes_jump_or_apply() then return "<tab>" end
+        util.keymap({
+          { "<a-l>", desc = "[Sidekick] Toggle",         mode = { "t", "i", "n", "x" }, sidekick_cli_toggle()  },
+          { "gll",   desc = "[Sidekick] Toggle",         mode = { "n", "x" }, sidekick_cli_toggle()            },
+          { "glL",   desc = "[Sidekick] Select prompt",  mode = { "n", "x" }, sidekick_cli.prompt              },
+          { "glc",   desc = "[Sidekick] Select CLI",                          sidekick_cli_toggle(true),       },
+          { "glx",   desc = "[Sidekick] Detach CLI",                          sidekick_cli.close,              },
+          { "glg",   desc = "[Sidekick] Send this",                           sidekick_cli_send("{this}")      },
+          { "glg",   desc = "[Sidekick] Send selection", mode = "x",          sidekick_cli_send("{selection}") },
+          { "glf",   desc = "[Sidekick] Send file",                           sidekick_cli_send("{file}")      },
+          { "<tab>", desc = "[Sidekick] Goto/Apply NES", expr = true,         function ()
+            if sidekick.nes_jump_or_apply() then return end
+            if vim.lsp.inline_completion.get() then return end
+            return "<tab>"
           end },
         }, bufnr)
       end)
@@ -48,11 +50,10 @@ return {
         ---@type blink.cmp.Config
         opts = {
           keymap = {
-            ["<Tab>"] = {
+            ["<tab>"] = {
               "snippet_forward",
               function () return require("sidekick").nes_jump_or_apply() end,
-              -- TODO @0.12.x: Move to native inline completions.
-              -- function () return vim.lsp.inline_completion.get() end,
+              function () return vim.lsp.inline_completion.get() end,
               "fallback",
             },
           },
@@ -131,44 +132,6 @@ return {
       }
     end,
     specs = {
-      {
-        -- NOTE: Not optional, as it's only included here when copilot.lua is.
-        "copilotc-nvim/copilotchat.nvim",
-        dependencies = { "nvim-lua/plenary.nvim" },
-        ---@module "CopilotChat"
-        ---@type CopilotChat.config.Config
-        opts = {
-          model = "gpt-4o",
-          auto_fold = true,
-        },
-        config = function (opts)
-          local copilot_chat = require("CopilotChat")
-          copilot_chat.setup(opts)
-          util.on_buf_is_ai_allowed("[CopilotChat] Create user mappings", function (bufnr)
-            util.keymap("[Copilot]", {
-              {
-                "gll", "Toggle popup",
-                function ()
-                  copilot_chat.toggle({ window = { layout = "float", relative = "cursor", height = 30, width = 120, row = 1, col = 1 } })
-                end,
-              },
-              {
-                "glL", "Toggle sidebar",
-                function ()
-                  copilot_chat.toggle({ window = { layout = "vertical" } })
-                end,
-              },
-              {
-                "glq", "Quick chat",
-                function ()
-                  local input = vim.fn.input("Quick Chat: ")
-                  if input ~= "" then copilot_chat.ask("#buffer " .. input) end
-                end,
-              },
-            }, bufnr)
-          end)
-        end,
-      },
       {
         "saghen/blink.cmp",
         optional = true,

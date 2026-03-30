@@ -10,13 +10,18 @@ return {
       vim.api.nvim_create_autocmd({ "WinNew", "BufNew", "BufWinEnter" }, {
         pattern = "*",
         group = vim.api.nvim_create_augroup("UserFillerBegoneConfig", { clear = true }),
-        desc = "[FillerBegone] Enable in floating windows",
+        desc = "[FillerBegone] Only enable for some window types",
         callback = function ()
+          -- Enable in floating windows
           local winnr = vim.api.nvim_get_current_win()
           local win_config = vim.api.nvim_win_get_config(winnr)
-          if win_config.relative == "" and not win_config.external then
-            vim.w[winnr].filler_begone = false
-          end
+          if win_config.relative ~= "" or win_config.external then return end
+
+          -- Enable in terminal buffers
+          local bufnr = vim.api.nvim_win_get_buf(winnr)
+          if vim.bo[bufnr].buftype == "terminal" then return end
+
+          vim.w[winnr].filler_begone = false
         end,
       })
     end,
@@ -27,9 +32,9 @@ return {
     config = function(_, opts)
       local visits = require("mini.visits")
       visits.setup(opts)
-      util.keymap("[Mini:visits]", {
-        { "gov", "[MiniVisits] Add label",    visits.add_label    },
-        { "goV", "[MiniVisits] Remove label", visits.remove_label },
+      util.keymap({
+        { "gov", desc = "[Mini:visits] Add label",    visits.add_label    },
+        { "goV", desc = "[Mini:visits] Remove label", visits.remove_label },
       })
     end,
   },
@@ -38,9 +43,9 @@ return {
     config = function(_, opts)
       local bufremove = require("mini.bufremove")
       bufremove.setup(opts)
-      util.keymap("[Mini:bufremove]", {
-        { "<leader>zq", "[MiniBufremove] Close buffer",          bufremove.delete                                     },
-        { "<leader>zz", "[MiniBufremove] Save and close buffer", function () vim.cmd("write") bufremove.delete() end, }
+      util.keymap({
+        { "<leader>zq", desc = "[Mini:bufremove] Close buffer",          bufremove.delete                                     },
+        { "<leader>zz", desc = "[Mini:bufremove] Save and close buffer", function () vim.cmd("write") bufremove.delete() end, }
       })
     end,
   },
@@ -49,6 +54,15 @@ return {
     opts = {
       view = {
         signs = { add = "┃", change = "┃", delete = "┃" },
+      },
+      mappings = {
+        apply = "ghs",
+        reset = "ghr",
+        goto_first = "ghg",
+        goto_last = "ghG",
+      },
+      options = {
+        wrap_goto = true,
       },
     },
     config = function(_, opts)
@@ -126,7 +140,7 @@ return {
         }
       }))
 
-      util.keymap("[Mini:diff]", { { "]g", "Toggle overlay", diff.toggle_overlay } })
+      util.keymap({ { "]g", desc = "[Mini:diff] Toggle overlay", diff.toggle_overlay } })
     end,
   },
   {

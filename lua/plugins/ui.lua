@@ -2,6 +2,15 @@ local util = require("util")
 
 return {
   {
+    "rachartier/tiny-cmdline.nvim",
+    opts = function ()
+      return {
+        position = { y = "10%" },
+        on_reposition = require("tiny-cmdline").adapters.blink,
+      }
+    end,
+  },
+  {
     "nvim-lualine/lualine.nvim",
     dependencies = {
       "nvim-tree/nvim-web-devicons",
@@ -102,9 +111,11 @@ return {
       local dropbar_api = require("dropbar.api")
       dropbar.setup(opts)
 
-      util._keymap("g;", "[Dropbar] Pick symbols in winbar", dropbar_api.pick)
-      util._keymap("[;", "[Dropbar] Go to start of current context", dropbar_api.goto_context_start)
-      util._keymap("];", "[Dropbar] Select next context", dropbar_api.select_next_context)
+      util.keymap({
+        { "g;", desc = "[TreeWalker] Pick symbol",   dropbar_api.pick                },
+        { "[;", desc = "[TreeWalker] Context start", dropbar_api.goto_context_start  },
+        { "];", desc = "[TreeWalker] Next context",  dropbar_api.select_next_context },
+      })
     end,
   },
   {
@@ -119,12 +130,16 @@ return {
       local which_key_extras = require("which-key.extras")
       which_key.setup(opts)
 
-      util._keymap("<leader>w", "[Which-Key] Show keymaps", which_key.show)
-      util._keymap("<leader>W", "[Which-Key] Show keymaps for buffer", function () which_key.show({ global = false }) end)
+      util.keymap({
+        { "<leader>w", desc = "[WhichKey] Show keymaps",          which_key.show                                     },
+        { "<leader>W", desc = "[WhichKey] Show keymaps (buffer)", function () which_key.show({ global = false }) end },
+      })
 
       which_key.add({
         { "gb", group = "Buffers", expand = which_key_extras.expand.buf },
         { "gs", group = "Swap" },
+        { "gh", group = "History" },
+        { "gr", group = "LSP" },
       })
 
       which_key.add({
@@ -140,24 +155,14 @@ return {
       always_highlight_number = true,
     },
   },
-  {
-    "axkirillov/hbac.nvim",
-    config = function (_, opts)
-      local hbac = require("hbac")
-      hbac.setup(opts)
-      util._keymap("<leader>bp", "[Bufclose] Pin/Unpin", hbac.toggle_pin)
-      util._keymap("<leader>bo", "[Bufclose] Close unpinned", hbac.close_unpinned)
-      util._keymap("<leader>ba", "[Bufclose] Toggle autoclose", hbac.toggle_autoclose)
-    end
-  },
+  { "axkirillov/hbac.nvim", config = true },
   {
     "folke/zen-mode.nvim",
+    cmd = "ZenMode",
+    keys = {
+      { "gz", desc = "[Zen] Toggle", [[<cmd>ZenMode<cr>]] },
+    },
     opts = { window = { width = 0.8, height = 0.9 } },
-    config = function (_, opts)
-      local zen_mode = require("zen-mode")
-      zen_mode.setup(opts)
-      util._keymap("gz", "[Zen mode] Toggle", zen_mode.toggle)
-    end,
   },
   {
     "airblade/vim-rooter",

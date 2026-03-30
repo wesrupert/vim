@@ -1,4 +1,18 @@
 local user_default_config = vim.api.nvim_create_augroup("UserConfig", { clear = true })
+
+-- Ensure lazy is loaded so we can use its keys utils.
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+vim.opt.rtp:prepend(lazypath)
+if not vim.uv.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable",
+    lazypath,
+  })
+end
 local util = require("util")
 
 -- Basic settings
@@ -78,16 +92,16 @@ function _G.comment_and_yank(_, paste)
 end
 function _G.comment_and_paste(kind) _G.comment_and_yank(kind, true) end
 
-util.keymap("[VLine block insert]", {
-  { "I", "Insert", opts = { modes = "x", expr = true }, function () return vim.fn.mode() == "V" and "^<C-v>I" or "I" end },
-  { "A", "Append", opts = { modes = "x", expr = true }, function () return vim.fn.mode() == "V" and "$<C-v>A" or "A" end },
+util.keymap({
+  { "I", desc = "Insert VLine", mode = "x", expr = true, function () return vim.fn.mode() == "V" and "^<C-v>I" or "I" end },
+  { "A", desc = "Append VLine", mode = "x", expr = true, function () return vim.fn.mode() == "V" and "$<C-v>A" or "A" end },
 })
 
-util.keymap("[Term scroll]", {
-  { "<ScrollWheelUp>",    "Up",    opts = { modes = "t" }, "<up><up><up>",          },
-  { "<ScrollWheelDown>",  "Down",  opts = { modes = "t" }, "<down><down><down>",    },
-  { "<ScrollWheelLeft>",  "Left",  opts = { modes = "t" }, "<left><left><left>",    },
-  { "<ScrollWheelRight>", "Right", opts = { modes = "t" }, "<right><right><right>", },
+util.keymap({
+  { "<ScrollWheelUp>",    desc = "[Term scroll] Up",    mode = "t", "<up><up><up>",          },
+  { "<ScrollWheelDown>",  desc = "[Term scroll] Down",  mode = "t", "<down><down><down>",    },
+  { "<ScrollWheelLeft>",  desc = "[Term scroll] Left",  mode = "t", "<left><left><left>",    },
+  { "<ScrollWheelRight>", desc = "[Term scroll] Right", mode = "t", "<right><right><right>", },
 })
 
 ---Generate comment-and-paste keybinding opfunc.
@@ -99,13 +113,13 @@ local function gen_comment_and_yank(paste, op)
   return function () vim.opt.operatorfunc = func return operator end
 end
 
-util.keymap("[Yank-and-comment]", {
-  { "yc",  "Yank",        opts = { expr = true },              gen_comment_and_yank(false)      },
-  { "yC",  "Paste",       opts = { expr = true },              gen_comment_and_yank(true)       },
-  { "ycc", "Yank line",   opts = { expr = true },              gen_comment_and_yank(false, "_") },
-  { "ycC", "Paste line",  opts = { expr = true },              gen_comment_and_yank(true,  "_") },
-  { "gc",  "Yank lines",  opts = { modes = "x", expr = true }, gen_comment_and_yank(false, "_") },
-  { "gC",  "Paste lines", opts = { modes = "x", expr = true }, gen_comment_and_yank(true,  "_") },
+util.keymap({
+  { "yc",  desc = "[Yank-and-comment] Yank",        expr = true,             gen_comment_and_yank(false)      },
+  { "yC",  desc = "[Yank-and-comment] Paste",       expr = true,             gen_comment_and_yank(true)       },
+  { "ycc", desc = "[Yank-and-comment] Yank line",   expr = true,             gen_comment_and_yank(false, "_") },
+  { "ycC", desc = "[Yank-and-comment] Paste line",  expr = true,             gen_comment_and_yank(true,  "_") },
+  { "gc",  desc = "[Yank-and-comment] Yank lines",  expr = true, mode = "x", gen_comment_and_yank(false, "_") },
+  { "gC",  desc = "[Yank-and-comment] Paste lines", expr = true, mode = "x", gen_comment_and_yank(true,  "_") },
 })
 
 vim.api.nvim_create_autocmd("TextYankPost", {
@@ -113,6 +127,26 @@ vim.api.nvim_create_autocmd("TextYankPost", {
   callback = function () vim.hl.on_yank({ higroup="Visual", timeout=300 }) end,
   desc = "Highlight on yank",
 })
+
+-- }}}
+
+-- Wrap ui_send when inside tmux.
+-- {{{
+
+if os.getenv("TMUX") then
+  --- wraps message with tmux prefix so that the underlying terminal can interpret it correctly
+  --- needs 'set-option -g allow-passthrough on' in tmux config
+  ---@param content string
+  ---@return string
+  local function wrap_tmux(content) return string.format("\27Ptmux;\27%s\27\\", content) end
+
+  local original_ui_send = vim.api.nvim_ui_send
+
+  ---@diagnostic disable-next-line: duplicate-set-field
+  vim.api.nvim_ui_send =
+    ---@param content string
+    function (content) original_ui_send(wrap_tmux(content)) end
+end
 
 -- }}}
 
@@ -152,21 +186,9 @@ vim.api.nvim_create_autocmd("User", {
 -- Install plugins.
 -- {{{
 
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-vim.opt.rtp:prepend(lazypath)
-if not vim.uv.fs_stat(lazypath) then
-  vim.fn.system({
-    "git",
-    "clone",
-    "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable",
-    lazypath,
-  })
-end
-
 -- Load mise dependencies first, so they can be used by plugins like copilot.
 util.load_mise_deps()
+
 require("lazy").setup("plugins", {
   dev = { path = "~/Code/nvim" },
   ui = { border = vim.o.winborder },

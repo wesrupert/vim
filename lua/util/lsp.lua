@@ -120,6 +120,7 @@ function M.setup_lsp_servers()
     table.insert(lsp_servers, vim.fn.fnamemodify(file, ":t:r"))
   end
   vim.lsp.enable(lsp_servers)
+  vim.lsp.inline_completion.enable(true)
 end
 
 _G._util_lsp = m

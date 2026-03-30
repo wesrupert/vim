@@ -1,4 +1,5 @@
 local user_ai_config = nil
+local lazy_keys = require("lazy.core.handler.keys")
 
 local M = {}
 
@@ -406,56 +407,19 @@ function M.command_parse_fargs(fargs)
   return name, lua_load()
 end
 
----@class Util.keymap.set.Opts : vim.keymap.set.Opts
----@field modes? string|string[]
+---@class KeysSpec : LazyKeysSpec
+---@field desc string
 
----@class Util.keymap.set.Spec
----@field [1] string lhs
----@field [2] string desc
----@field [3] string|function rhs
----@field opts? Util.keymap.set.Opts opts
-
----Alias for vim.api.nvim_set_keymap with some better args and defaults.
+---Set keymaps.
 ---@see vim.keymap.set
----@param scope string
----@param specs Util.keymap.set.Spec[]
+---@param spec KeysSpec[]
 ---@param buf? integer
-function M.keymap(scope, specs, buf)
-  for _, spec in ipairs(specs) do
-    if spec then
-      local modes = spec.opts and spec.opts.modes or "n"
-      local merged_opts = M.merge(
-        ---@type vim.keymap.set.Opts
-        {
-          noremap = true,
-          buf = buf,
-          desc = scope .. " " .. spec[2],
-        },
-        spec.opts or {}
-      )
-      merged_opts.modes = nil
-      vim.keymap.set(modes, spec[1], spec[3], merged_opts)
+function M.keymap(spec, buf)
+  for _, key in pairs(lazy_keys.resolve(spec)) do
+    if key and key.lhs and key.rhs then
+      vim.keymap.set(key.mode, key.lhs, key.rhs, M.merge({ buf = buf }, lazy_keys.opts(key)))
     end
   end
-end
-
----Alias for vim.api.nvim_set_keymap with some better args and defaults.
----@deprecated Use the new syntax instead
----@param lhs string Left-hand side of the mapping
----@param desc string human-readable description
----@param rhs string|function Right-hand side of the mapping, can be a Lua function
----@param mode? string|string[] Mode "short-name", or a list thereof
----@param buffer? number Buffer number, otherwise mapping is global
----@param opts? table Table of :map-arguments
----@see vim.keymap.set
-function M._keymap(lhs, desc, rhs, mode, buffer, opts)
-  vim.keymap.set(mode or 'n', lhs, rhs, vim.tbl_extend(
-    'force',
-    { noremap = true },
-    desc and { desc = desc } or {},
-    buffer ~= nil and { buffer = buffer } or {},
-    opts or {}
-  ))
 end
 
 ---Check if the given buffer is empty.
