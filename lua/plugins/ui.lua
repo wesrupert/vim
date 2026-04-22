@@ -137,9 +137,10 @@ return {
 
       which_key.add({
         { "gb", group = "Buffers", expand = which_key_extras.expand.buf },
-        { "gs", group = "Swap" },
         { "gh", group = "History" },
+        { "go", group = "Operate" },
         { "gr", group = "LSP" },
+        { "gs", group = "Swap" },
       })
 
       which_key.add({

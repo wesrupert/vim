@@ -52,4 +52,35 @@ return {
       },
     },
   },
+  {
+    "ruicsh/tailwind-hover.nvim",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    cmd = { "TailwindHover" },
+    keys = {
+      { "<leader>K", desc = "[Tailwind] Hover", "<cmd>TailwindHover<cr>" },
+    },
+    opts = { title = "Tailwind Styles" },
+    specs = {
+      {
+        "lewis6991/hover.nvim",
+        optional = true,
+        opts = function (_, opts)
+          return util.merge(opts or {}, {
+            providers = util.tbl_join({ "tailwind-hover.providers.hover" }, opts and opts.providers or {})
+          })
+        end,
+      },
+    },
+  },
+  {
+    "nemanjamalesija/ts-expand-hover.nvim",
+    ft = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
+    opts = {
+      keymaps = {
+        hover = "goe",
+        expand = "=",
+      },
+      float = { border = vim.o.winborder },
+    },
+  },
 }

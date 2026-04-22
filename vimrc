@@ -211,6 +211,9 @@ call s:GenerateCAbbrev('lgrep', 2, 'LGrep')
 call s:GenerateCAbbrev('olgrep', 3, 'OLGrep')
 call s:GenerateCAbbrev('rg', 2, 'Grep' )
 
+" Lua CAbbrevs
+call s:GenerateCAbbrev('restart', 4, 'Restart' )
+
 " }}}
 
 " Auto Commands {{{

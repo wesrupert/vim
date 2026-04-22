@@ -215,6 +215,10 @@ vim.diagnostic.config({
 
 return {
   {
+    "neovim/nvim-lspconfig",
+    init = function () lsp_util.setup_lsp_servers() end,
+  },
+  {
     "rachartier/tiny-inline-diagnostic.nvim",
     event = "LspAttach",
     priority = 1001, -- Must run before other lsp plugins!
@@ -297,10 +301,6 @@ return {
       lsp_util.register_code_action_fun(tiny_code_action.code_action)
     end,
   },
-  {
-    "neovim/nvim-lspconfig",
-    init = function () lsp_util.setup_lsp_servers() end,
-  },
   { "mason-org/mason.nvim", build = ":MasonUpdate", config = true },
   { "folke/lsp-colors.nvim" },
   {
@@ -309,12 +309,4 @@ return {
     config = true,
   },
   { "yioneko/nvim-vtsls" },
-  {
-    "nemanjamalesija/ts-expand-hover.nvim",
-    ft = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
-    opts = {
-      keymaps = { expand = "=" },
-      float = { border = vim.o.winborder },
-    },
-  },
 }

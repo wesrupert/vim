@@ -39,7 +39,7 @@ return {
       end
 
       util.keymap({
-        { "<c-t>", desc = "[Trouble] Close", trouble.close },
+        { "<c-t>", desc = "[Trouble] Close", trouble.toggle },
         { "gro", desc = "[Trouble] Symbols",              function () trouble_toggle_sidebar("symbols", { flatten = true, format = "{kind_icon} {symbol.name} {pos}" }) end                },
         { "grO", desc = "[Trouble] Symbols List",         function () trouble.open({ mode = "symbols", focus = true, win = { position = "bottom" } }) end                                  },
         { "grq", desc = "[Trouble] Quickfix List",        function () trouble.toggle("qflist") end                                                                                         },
