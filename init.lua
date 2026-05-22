@@ -56,6 +56,8 @@ end
 -- Load custom settings.
 -- {{{
 
+require('lsp').setup()
+
 local custom_init = vim.fn.stdpath("config") .. "/init.custom.vim"
 ---@diagnostic disable-next-line: undefined-field
 if vim.uv.fs_stat(custom_init) then

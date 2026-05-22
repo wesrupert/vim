@@ -1,18 +1,9 @@
 return {
   {
     "chrishrb/gx.nvim",
-    keys = {
-      { "gx", desc = "[GX] Open external", mode = { "n", "x" }, "<cmd>Browse<cr>" },
-    },
+    keys = { { "gx", desc = "[GX] Open external", mode = { "n", "x" }, "<cmd>Browse<cr>" } },
     cmd = { "Browse" },
-    init = function ()
-      vim.g.netrw_nogx = 1 -- disable netrw gx
-    end,
-    opts = {
-      plugin = true,
-      github = true,
-      package_json = true,
-    },
+    opts = { select_prompt = false },
   },
   {
     "chrisgrieser/nvim-spider",
@@ -106,11 +97,7 @@ return {
       { "g/",    desc = "[GrugFAR] Open", "<cmd>GrugFar<cr>" },
     },
     opts = {
-      engines = {
-        ripgrep = {
-          extraArgs = "--smart-case",
-        },
-      },
+      engines = { ripgrep = { extraArgs = "--smart-case" } },
       keymaps = {
         help = { n = "g?" },
         close = { n = "q" },

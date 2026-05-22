@@ -26,7 +26,7 @@ return {
 
       util.on_buf_is_ai_allowed("[Sidekick] Create user mappings", function (bufnr)
         util.keymap({
-          { "<a-l>", desc = "[Sidekick] Toggle",         mode = { "t", "i", "n", "x" }, sidekick_cli_toggle()  },
+          { "<a-l>", desc = "[Sidekick] Toggle",         mode = { "t", "i" }, sidekick_cli_toggle()            },
           { "gll",   desc = "[Sidekick] Toggle",         mode = { "n", "x" }, sidekick_cli_toggle()            },
           { "glL",   desc = "[Sidekick] Select prompt",  mode = { "n", "x" }, sidekick_cli.prompt              },
           { "glc",   desc = "[Sidekick] Select CLI",                          sidekick_cli_toggle(true),       },
@@ -54,6 +54,7 @@ return {
               "snippet_forward",
               function () return require("sidekick").nes_jump_or_apply() end,
               function () return vim.lsp.inline_completion.get() end,
+              "accept",
               "fallback",
             },
           },
@@ -68,11 +69,7 @@ return {
               sidekick_send = function (...) return require("sidekick.cli.picker.snacks").send(...) end,
             },
             win = {
-              input = {
-                keys = {
-                  ["<a-a>"] = { "sidekick_send", mode = { "n", "i" } },
-                },
-              },
+              input = { keys = { ["<a-a>"] = { "sidekick_send", mode = { "n", "i" } } } },
             },
           },
         },

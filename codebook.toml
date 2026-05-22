@@ -2,6 +2,7 @@ words = [
     "afile",
     "augroup",
     "autocmd",
+    "autocommand",
     "autocommands",
     "autoread",
     "autotrigger",

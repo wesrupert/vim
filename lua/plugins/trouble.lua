@@ -1,5 +1,5 @@
 local util = require("util")
-local lsp_util = require("util.lsp")
+local lsp_util = require("lsp")
 
 return {
   {

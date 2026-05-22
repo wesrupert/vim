@@ -85,8 +85,11 @@ return {
       { "goa", desc = "[Overseer] Modify Task", [[<cmd>OverseerTaskAction<cr>]] },
     },
     opts = {
-      keymaps = {
-        ["<c-r>"] = { "keymap.run_action", opts = { action = "restart" }, desc = "Restart task" },
+      task_list = {
+        keymaps = {
+          ["<c-r>"] = { "keymap.run_action", opts = { action = "restart" }, desc = "Restart task" },
+          ["<c-x>"] = { "keymap.run_action", opts = { action = "stop" }, desc = "Stop task" },
+        },
       },
     },
   },

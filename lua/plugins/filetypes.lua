@@ -76,11 +76,7 @@ return {
     "nemanjamalesija/ts-expand-hover.nvim",
     ft = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
     opts = {
-      keymaps = {
-        hover = "goe",
-        expand = "=",
-      },
-      float = { border = vim.o.winborder },
+      keymaps = { hover = "goe", expand = "=" },
     },
   },
 }

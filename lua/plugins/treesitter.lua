@@ -57,12 +57,14 @@ return {
   {
     "nvim-treesitter/nvim-treesitter-context",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
+    ---@module "treesitter-context"
+    ---@type TSContext.Config
+    ---@diagnostic disable-next-line: missing-fields
     opts = {
       multiwindow = true,
       mode = "topline",
       min_window_height = 20,
-      max_lines = 5,
-      separator = "─"
+      max_lines = 2,
     },
     init = function ()
       vim.api.nvim_set_hl(0, "TreesitterContextBottom", { underline = true, sp = "Grey" })
@@ -71,6 +73,10 @@ return {
       local context = require("treesitter-context")
       context.setup(opts)
       util.keymap({ { "['", desc = "[TreeSitter] Context start", silent = true, function () context.go_to_context(vim.v.count1) end } })
+      vim.schedule(function ()
+        vim.api.nvim_set_hl(0, "TreesitterContextLineNumber", { link = "TreesitterContext" })
+        vim.api.nvim_set_hl(0, "TreesitterContextBottom", { underdotted = true })
+      end)
     end,
   },
   {

@@ -69,7 +69,7 @@ return {
       },
     })
 
-    require("util.lsp").on_attach(function (bufnr)
+    require("lsp").on_attach(function (bufnr)
       util.keymap({
         { "gd",  desc = "[LSP:snacks] Definition",        snacks.picker.lsp_definitions       },
         { "grr", desc = "[LSP:snacks] References",        snacks.picker.lsp_references        },
