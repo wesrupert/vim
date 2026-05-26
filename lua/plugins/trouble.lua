@@ -49,8 +49,8 @@ return {
         { "grD", desc = "[Trouble] Diagnostics",          function () trouble.open({ mode = "diagnostics", filter = { ['not'] = { severity = vim.diagnostic.severity.INFO } } }) end       },
         { "grd", desc = "[Trouble] Diagnostics (buffer)", function () trouble.open({ mode = "diagnostics", filter = { buf = 0 } }) end                                                     },
         ---@diagnostic disable-next-line: missing-fields
-        { "<leader>t", desc = "[Trouble] Toggle (buffer)", function () trouble.toggle({ mode = "todo", filter = { buf = 0 } }) end                                                         },
-        { "<leader>T", desc = "[Trouble] Toggle",          function () trouble.toggle("todo") end                                                                                          },
+        { "<leader>t", desc = "[Trouble] Todos (buffer)", function () trouble.toggle({ mode = "todo", filter = { buf = 0 } }) end                                                         },
+        { "<leader>T", desc = "[Trouble] Todos",          function () trouble.toggle("todo") end                                                                                          },
       })
 
       lsp_util.on_attach(function (bufnr)

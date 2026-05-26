@@ -1,3 +1,5 @@
+local util = require("util")
+
 return {
   {
     "chrishrb/gx.nvim",
@@ -32,7 +34,7 @@ return {
           goto_right = "<leader>l",
         },
         custom_textobjects = {
-          ["_"] = { "%b__", '^.().*().$' }, -- The 'abc' in 'xyz_abc_123'.
+          ["_"] = { "%b__", "^.().*().$" }, -- The "abc" in "xyz_abc_123".
           ["l"] = gen_ai_spec.line(),
           ["n"] = gen_ai_spec.number(),
           ["d"] = gen_ai_spec.diagnostic(),
@@ -93,10 +95,27 @@ return {
     "magicduck/grug-far.nvim",
     lazy = false,
     keys = {
-      { "<c-f>", desc = "[GrugFAR] Open", "<cmd>GrugFar<cr>" },
-      { "g/",    desc = "[GrugFAR] Open", "<cmd>GrugFar<cr>" },
+      { "<c-f>", desc = "[Grug] Open",                       function () require("grug-far").open() end },
+      { "<c-f>", desc = "[Grug] Open",       mode = { "x" }, function () require("grug-far").with_visual_selection() end },
+      { "g/",    desc = "[Grug] Quick Open", mode = { "x" }, function () require("grug-far").with_visual_selection({ transient = true, startInInsertMode = false, }) end },
+      { "g/", desc = "[Grug] Quick Open", function ()
+        -- Prefill with last search, reformatted with rg control characters.
+        local search = vim.fn.getreg("/")
+        -- surround with \b if "word" search (such as when pressing `*`)
+        if search and vim.startswith(search, "\\<") and vim.endswith(search, "\\>") then
+          search = "\\b" .. search:sub(3, -3) .. "\\b"
+        elseif search and vim.startswith(search, "\\V") then
+          search = search:sub(3)
+        end
+        require("grug-far").open({
+          transient = true,
+          startInInsertMode = false,
+          prefills = { search = search },
+        })
+      end },
     },
     opts = {
+      windowCreationCommand = "botright 80 vsplit",
       engines = { ripgrep = { extraArgs = "--smart-case" } },
       keymaps = {
         help = { n = "g?" },
@@ -127,5 +146,23 @@ return {
         prevInput = { n = "<up>" },
       },
     },
+    init = function ()
+      vim.api.nvim_create_autocmd("FileType", {
+        group = vim.api.nvim_create_augroup("grug-far-keybindings", { clear = true }),
+        pattern = { "grug-far" },
+        callback = function (ev)
+          util.keymap({
+            {
+              "<c-enter>",
+              desc = "[Grug] Close and navigate",
+              function ()
+                require("grug-far").get_instance(0):open_location()
+                require("grug-far").get_instance(0):close()
+              end,
+            },
+          }, ev.buf)
+        end,
+      })
+    end,
   },
 }

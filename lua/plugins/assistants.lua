@@ -5,10 +5,7 @@ return {
     "folke/sidekick.nvim",
     opts = {
       cli = {
-        mux = {
-          backend = "zellij",
-          enabled = true,
-        },
+        mux = { enabled = true },
       },
     },
     config = function (opts)
@@ -51,9 +48,9 @@ return {
         opts = {
           keymap = {
             ["<tab>"] = {
-              "snippet_forward",
               function () return require("sidekick").nes_jump_or_apply() end,
               function () return vim.lsp.inline_completion.get() end,
+              "snippet_forward",
               "accept",
               "fallback",
             },

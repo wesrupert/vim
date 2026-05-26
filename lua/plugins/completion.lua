@@ -33,7 +33,7 @@ return {
             treesitter = { "lsp" },
           },
         },
-        ghost_text = { enabled = true, show_without_selection = true },
+        ghost_text = { enabled = true, show_without_selection = false, show_with_menu = false },
         documentation = { auto_show = true, auto_show_delay_ms = 50 },
       },
       appearance = {

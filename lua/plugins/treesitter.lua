@@ -32,37 +32,13 @@ return {
     config = true,
   },
   {
-    "nvim-treesitter/nvim-treesitter-textobjects",
-    branch = "main",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
-    ---@module "nvim-treesitter-textobjects"
-    ---@param opts TSTextObjects.UserConfig
-    config = function (_, opts)
-      local treesitter_textobjects = require("nvim-treesitter-textobjects")
-      local ts_to_swap = require("nvim-treesitter-textobjects.swap")
-      treesitter_textobjects.setup(opts)
-
-      -- Set up swap keymaps (select/move keymaps are handled by mini.ai).
-      util.keymap(vim.iter({
-        { "@statement.outer",  n = "s", p = "S" },
-        { "@block.inner",      n = "b", p = "B" },
-        { "@assignment.inner", n = "=", p = "?" },
-        { "@parameter.inner",  n = "a", p = "A" },
-      }):map(function (o) return {
-        { "gs" .. o.n, desc = "[TreeSitter] Swap " .. o[1] .. " forward",  function () ts_to_swap.swap_next    (o[1], o.group) end },
-        { "gs" .. o.p, desc = "[TreeSitter] Swap " .. o[1] .. " backward", function () ts_to_swap.swap_previous(o[1], o.group) end },
-      } end):flatten():totable())
-    end,
-  },
-  {
     "nvim-treesitter/nvim-treesitter-context",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
     ---@module "treesitter-context"
     ---@type TSContext.Config
     ---@diagnostic disable-next-line: missing-fields
     opts = {
       multiwindow = true,
-      mode = "topline",
+      mode = "cursor",
       min_window_height = 20,
       max_lines = 2,
     },
@@ -79,16 +55,8 @@ return {
       end)
     end,
   },
-  {
-    "andymass/vim-matchup",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
-    opts = { enable = true },
-  },
-  {
-    "windwp/nvim-ts-autotag",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
-    config = true,
-  },
+  { "andymass/vim-matchup", config = true },
+  { "windwp/nvim-ts-autotag", config = true },
   {
     "joosepalviste/nvim-ts-context-commentstring",
     opts = {

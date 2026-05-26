@@ -54,7 +54,6 @@ return {
   },
   {
     "ruicsh/tailwind-hover.nvim",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
     cmd = { "TailwindHover" },
     keys = {
       { "<leader>K", desc = "[Tailwind] Hover", "<cmd>TailwindHover<cr>" },

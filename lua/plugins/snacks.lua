@@ -106,76 +106,59 @@ return {
       }
     )
 
-    -- Helper for at-a-glance diff of current work
-    vim.api.nvim_create_user_command(
-      "DiffWorkspace",
-      function (args)
-        snacks.terminal.toggle("zsh -i -c 'jj diff "..args.args.."'", {
-          interactive = true,
-          start_insert = true,
-          cwd = vim.fn.getcwd(),
-          win = {
-            style = "terminal",
-            position = "right",
-            height = 0.4,
-            width = 0.4,
-            enter = true,
-            fixbuf = true,
-            keys = {
-              gf = function (self)
-                local r = vim.fn.expand("<cfile>")
-                local p = vim.fn.substitute(r, "^[ab]/", "", "")
-                local f = vim.fn.findfile(p, "**")
-                if f == "" then
-                  Snacks.notify.warn("No file under cursor")
-                else
-                  self:hide()
-                  vim.schedule(function()
-                    vim.cmd("e " .. f)
-                  end)
-                end
-              end,
-            },
+    ---Get quick-term opts.
+    ---@param qt_opts? snacks.terminal.Opts
+    local function get_term_opts(qt_opts)
+      local base_opts = { ---@type snacks.terminal.Opts
+        interactive = true,
+        start_insert = true,
+        cwd = vim.fn.getcwd(),
+        win = {
+          style = "terminal",
+          position = "right",
+          height = 0.4,
+          width = 0.4,
+          enter = true,
+          fixbuf = true,
+          keys = {
+            gf = function (self)
+              local r = vim.fn.expand("<cfile>")
+              local p = vim.fn.substitute(r, "^[ab]/", "", "")
+              local f = vim.fn.findfile(p, "**")
+              if f == "" then
+                Snacks.notify.warn("No file under cursor")
+              else
+                self:hide()
+                vim.schedule(function () vim.cmd("e " .. f) end)
+              end
+            end,
           },
-        })
-      end,
-      { nargs = "*", desc = "Open a diff-pr session" }
-    )
+        },
+      }
+      return util.merge(base_opts, qt_opts or {})
+    end
 
-    -- Helper for 'diff-pr' util
-    vim.api.nvim_create_user_command(
-      "DiffPr",
-      function (args)
-        snacks.terminal.toggle("zsh -i -c 'diff-pr "..args.args.."'", {
-          interactive = true,
-          start_insert = true,
-          cwd = vim.fn.getcwd(),
-          win = {
-            style = "terminal",
-            position = "right",
-            height = 0.4,
-            width = 0.4,
-            enter = true,
-            fixbuf = true,
-            keys = {
-              gf = function (self)
-                local r = vim.fn.expand("<cfile>")
-                local p = vim.fn.substitute(r, "^[ab]/", "", "")
-                local f = vim.fn.findfile(p, "**")
-                if f == "" then
-                  Snacks.notify.warn("No file under cursor")
-                else
-                  self:hide()
-                  vim.schedule(function()
-                    vim.cmd("e " .. f)
-                  end)
-                end
-              end,
-            },
-          },
-        })
-      end,
-      { nargs = "*", desc = "Open a diff-pr session" }
-    )
+    vim.api.nvim_create_user_command("TermFloat", function (args)
+      snacks.terminal.toggle(
+        args.args == "" and "zsh -i" or "zsh -i -c '"..args.args.."'",
+        get_term_opts({ win = { position = "float", height = 0.8, width = 0.8, border = vim.o.winborder } })
+      )
+    end, { nargs = "*", desc = "Open floating terminal" })
+    util.keymap({{ "<m-x>", desc = "[Snacks] Toggle floating terminal", mode = { "n", "x", "t" }, [[<cmd>TermFloat<cr>]] }})
+
+    vim.api.nvim_create_user_command("JJui", function (args)
+      snacks.terminal.toggle(
+        "zsh -i -c 'jjui "..args.args.."'",
+        get_term_opts({ win = { position = "float", height = 0.8, width = 0.8, border = vim.o.winborder } })
+      )
+    end, { nargs = "*", desc = "Open jjui" })
+
+    vim.api.nvim_create_user_command("DiffWorkspace", function (args)
+      snacks.terminal.toggle("zsh -i -c 'jj diff "..args.args.."'", get_term_opts())
+    end, { nargs = "*", desc = "Open jj diff" })
+
+    vim.api.nvim_create_user_command("DiffPr", function (args)
+      snacks.terminal.toggle("zsh -i -c 'diff-pr "..args.args.."'", get_term_opts())
+    end, { nargs = "*", desc = "Open a diff-pr session" })
   end,
 }

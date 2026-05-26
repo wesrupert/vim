@@ -1,6 +1,8 @@
 local user_default_config = vim.api.nvim_create_augroup("UserConfig", { clear = true })
 
--- Ensure lazy is loaded so we can use its keys utils.
+-- Ensure lazy is loaded before requiring util so we can use its keys utils.
+-- {{{
+
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 vim.opt.rtp:prepend(lazypath)
 if not vim.uv.fs_stat(lazypath) then
@@ -15,6 +17,8 @@ if not vim.uv.fs_stat(lazypath) then
 end
 local util = require("util")
 
+-- }}}
+
 -- Basic settings
 -- {{{
 
@@ -24,15 +28,19 @@ vim.g.health = { style = "float" }
 vim.o.winborder = "rounded"
 vim.o.foldmethod = "expr"
 vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.o.foldlevel = 999
 
 vim.o.cmdheight = 0
 require('vim._core.ui2').enable({
   enable = true,
-  msg = { timeout = 2500 },
+  msg = {
+    msg = { height = 2, timeout = 2000 },
+  },
 })
 
 if util.is_gui() then
-  vim.o.pumblend = 20
+  -- vim.opt.winblend = 100
+  vim.opt.pumblend = 100
 
   if vim.g.neovide then
     vim.g.neovide_theme = "auto"
@@ -40,14 +48,16 @@ if util.is_gui() then
     vim.g.neovide_hide_mouse_when_typing = true
     vim.g.neovide_input_macos_option_key_is_meta = "both"
     vim.g.neovide_text_gamma = 1.2
-    vim.g.neovide_floating_shadow = false
+
+    vim.o.winborder = "solid"
+    vim.g.neovide_floating_blur_amount_x = 30
+    vim.g.neovide_floating_blur_amount_y = 30
     vim.g.neovide_floating_corner_radius = 0.4
+    vim.g.neovide_floating_shadow = false
     vim.g.experimental_layer_grouping = true
 
-  -- HACK neovide/neovide#3125: Needed to remove buggy extra window when ui2 is enabled.
-    vim.api.nvim_create_autocmd('FocusGained', { group = user_default_config, pattern = '*', once = true, callback = function ()
-      vim.cmd([[new | close]])
-    end })
+    -- TODO: Remove when neovide/neovide#3125 is fixed.
+    vim.api.nvim_create_autocmd('FocusGained', { group = user_default_config, once = true, callback = function () vim.cmd([[new | close]]) end })
   end
 end
 
@@ -74,8 +84,7 @@ end
 ---@param paste? boolean Iff true, paste yanked text immediately
 function _G.comment_and_yank(_, paste)
   -- NOTE: `nvim_buf_get_mark()` is 1-indexed, but `nvim_buf_get_lines()` is 0-indexed.
-  -- TODO: If neovim/neovim #22297 is implemented, respect charwise selections.
-  -- https://github.com/neovim/neovim/issues/22297
+  -- TODO: If neovim/neovim#22297 is implemented, respect charwise selections.
   local start_line, end_line = vim.api.nvim_buf_get_mark(0, "[")[1], vim.api.nvim_buf_get_mark(0, "]")[1]
   local delta_line = end_line - start_line
   local lines = vim.api.nvim_buf_get_lines(0, start_line - 1, end_line, false)
@@ -149,6 +158,30 @@ if os.getenv("TMUX") then
     ---@param content string
     function (content) original_ui_send(wrap_tmux(content)) end
 end
+
+-- }}}
+
+-- Improved TermClose handling.
+-- {{{
+
+-- Remove the built-in autocommand to delete the buffer on shell exit, which
+-- deletes the scrollback history and alters window layout.
+pcall(function() vim.cmd [[au! nvim.terminal TermClose]] end)
+
+-- Instead, scrape the scrollback and copy it to a scratch buffer, then swap
+-- the scratch buffer in for the terminal buffer in all windows.
+vim.api.nvim_create_autocmd("TermClose", {
+  group = user_default_config,
+  callback = function (ev)
+    local scrollback_buf = vim.api.nvim_create_buf(true, true)
+    vim.api.nvim_buf_set_lines(scrollback_buf, 0, -1, false, vim.api.nvim_buf_get_lines(ev.buf, 0, -1, false))
+    vim.api.nvim_buf_set_name(scrollback_buf, "term:: log (" .. ev.buf .. ")")
+    vim.bo[scrollback_buf].buftype = "nowrite"
+
+    for _, win in ipairs(vim.fn.win_findbuf(ev.buf)) do vim.api.nvim_win_set_buf(win, scrollback_buf) end
+    vim.api.nvim_buf_delete(ev.buf, { force = true })
+  end,
+})
 
 -- }}}
 

@@ -51,100 +51,67 @@ return {
   },
   {
     "nvim-mini/mini.diff",
-    opts = {
-      view = {
-        signs = { add = "┃", change = "┃", delete = "┃" },
-      },
-      mappings = {
-        apply = "ghs",
-        reset = "ghr",
-        goto_first = "ghg",
-        goto_last = "ghG",
-      },
-      options = {
-        wrap_goto = true,
-      },
+    dependencies = { "https://tangled.org/ronshavit.com/mini.diff.jj" },
+    lazy = false,
+    keys = {
+      { "]g", desc = "[Mini:diff] Toggle overlay", function () require("mini.diff").toggle_overlay(0) end },
     },
-    config = function(_, opts)
-      local diff = require("mini.diff")
-
-      -- Jujutsu support
-      -- See https://github.com/nvim-mini/mini.nvim/discussions/1783
-      local jj_buffer_cache = {}
-
-      local function get_jj_root(path)
-        local result = vim.system(
-          { "jj", "--ignore-working-copy", "root" },
-          { cwd = vim.fs.dirname(path) }
-        ):wait()
-        if result.code ~= 0 then return nil end
-        return vim.trim(result.stdout)
-      end
-
-      local function invalidate_cache(buf_id)
-        local cache = jj_buffer_cache[buf_id]
-        if cache == nil then return false end
-        pcall(function ()
-          cache.fs_event:stop()
-          cache.timer:stop()
-        end)
-        jj_buffer_cache[buf_id] = nil
-      end
-
-      local function watch_jj_file(buf_id, path)
-        local repo = get_jj_root(path)
-        if repo == nil then return false end
-
-        local function set_ref_text()
-          vim.system(
-            { "jj", "--ignore-working-copy", "file", "show", "-r", "@-", "\"" .. path .. "\"" },
-            { cwd = vim.fs.dirname(path), text = true },
-            vim.schedule_wrap(function (res) diff.set_ref_text(buf_id, res.stdout) end)
-          )
-        end
-
-        ---@diagnostic disable-next-line: undefined-field
-        local buf_fs_event, timer = vim.uv.new_fs_event(), vim.uv.new_timer()
-        if not buf_fs_event or not timer then return false end
-        buf_fs_event:start(
-          repo .. vim.g.slash .. ".jj" .. vim.g.slash .. "working_copy",
-          { recursive = true },
-          function (_, filename, _)
-            if filename ~= "checkout" then return end
-            timer:stop()
-            timer:start(50, 0, set_ref_text)
+    opts = function ()
+      return {
+        view = {
+          signs = { add = "┃", change = "┃", delete = "┃" },
+        },
+        mappings = {
+          textobject = "ah",
+          apply = "gha",
+          reset = "ghr",
+          goto_first = "ghg",
+          goto_last = "ghG",
+        },
+        options = {
+          wrap_goto = true,
+        },
+        sources = { require("mini.diff.jj") }
+      }
+    end,
+    init = function ()
+      vim.api.nvim_create_autocmd({ "BufReadPre", "BufWrite" }, {
+        group = vim.api.nvim_create_augroup("UserMiniDiffConfig", { clear = true }),
+        callback = function (ev)
+          local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(ev.buf), ":p")
+          if vim.fs.find(".jj", { upward = true, type = "directory", path = path }) then
+            -- Let jujutsu.nvim handle diff, it's better at it
+            vim.b[ev.buf].minidiff_disable = true
           end
-        )
-
-        invalidate_cache(buf_id)
-        jj_buffer_cache[buf_id] = { fs_event = buf_fs_event, timer = timer }
-
-        set_ref_text()
-      end
-
-      diff.setup(util.merge(opts or {}, {
-        source = {
-          name = "jj",
-          attach = function (buf_id)
-            if jj_buffer_cache[buf_id] ~= nil then return false end
-
-            ---@diagnostic disable-next-line: undefined-field
-            local path = vim.uv.fs_realpath(vim.api.nvim_buf_get_name(buf_id)) or ""
-            if path == "" then return false end
-
-            return watch_jj_file(buf_id, path)
-          end,
-          detach = function (buf_id)
-            invalidate_cache(buf_id)
-          end,
-        }
-      }))
-
-      util.keymap({ { "]g", desc = "[Mini:diff] Toggle overlay", diff.toggle_overlay } })
+        end,
+      })
     end,
   },
   {
     "sindrets/diffview.nvim",
+    opts = {
+      keymaps = {
+        view = {
+          { "n", "<tab>",   false },
+          { "n", "<s-tab>", false },
+          { "n", "]f",      function () require("diffview.actions").select_next_entry() end, { desc = "Open the diff for the next file" } },
+          { "n", "[f",      function () require("diffview.actions").select_prev_entry() end, { desc = "Open the diff for the previous file" } },
+          { "n", "ZQ",      function () vim.cmd([[DiffviewClose]]) end, { desc = "Close DiffView" } },
+        },
+      },
+      hooks = {
+        ---@module "diffview"
+        ---@type ListenerCallback
+        view_opened = function (view)
+          if(view.class:name() == "DiffView") then
+            vim.schedule(function ()
+              vim.cmd("wincmd l")
+              vim.cmd("wincmd L")
+            end)
+          end
+        end,
+      },
+    },
     specs = {
       {
         "yannvanhalewyn/jujutsu.nvim",

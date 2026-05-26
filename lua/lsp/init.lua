@@ -1,6 +1,11 @@
 local util = require("util")
 
----@alias LspClientEventHandler fun(bufnr: integer, client: vim.lsp.Client): boolean|nil
+---@alias user.lsp.ClientEventHandler fun(bufnr: integer, client: vim.lsp.Client): boolean|nil
+
+---@class user.lsp.ClientConfig
+---@field should_attach? user.lsp.ClientEventHandler
+
+---@class vim.lsp.ClientConfig : user.lsp.ClientConfig
 
 local M = {}
 M.quick_actions = { "source", "refactor", "quickfix" }
@@ -30,7 +35,7 @@ function M.get_clients(client_opts, filter)
 end
 
 ---Set up LSP keymaps and autocommands for when an LSP attaches or updates capabilities for the current buffer.
----@param callback LspClientEventHandler The callback to invoke
+---@param callback user.lsp.ClientEventHandler The callback to invoke
 ---@return number handle Handle to unregister on_attach listeners
 function M.on_attach(callback)
   return vim.api.nvim_create_autocmd("LspAttach", {
@@ -45,7 +50,7 @@ end
 
 ---Set up LSP keymaps and autocommands for when the named LSP attaches or updates capabilities for the current buffer.
 ---@param name string The client name
----@param callback LspClientEventHandler The callback to invoke
+---@param callback user.lsp.ClientEventHandler The callback to invoke
 ---@return number handle Handle to unregister on_attach listeners
 function M.on_attach_client(name, callback)
   return vim.api.nvim_create_autocmd("LspAttach", {
@@ -60,7 +65,7 @@ end
 
 ---@type boolean
 m.setup_dynamic_capability_complete = false
----@type table<string, LspClientEventHandler>
+---@type table<string, user.lsp.ClientEventHandler>
 m.on_dynamic_capability = {}
 ---@type table<string, table<vim.lsp.Client, table<number, boolean>>>
 m.on_supports_method = {}
@@ -76,7 +81,7 @@ function m.setup_dynamic_capability()
     if client then
       local bufnr = vim.api.nvim_get_current_buf()
       m.on_dynamic_capability = vim.tbl_filter(
-        ---@param handler LspClientEventHandler
+        ---@param handler user.lsp.ClientEventHandler
         function (handler) return handler(bufnr, client) ~= false end,
         m.on_dynamic_capability
       )
@@ -85,23 +90,21 @@ function m.setup_dynamic_capability()
   end
 end
 
----@param callback LspClientEventHandler The callback to invoke
+---@param callback user.lsp.ClientEventHandler The callback to invoke
 function M.on_dynamic_capability(callback)
   table.insert(m.on_dynamic_capability, callback)
 end
 
 ---@param method vim.lsp.protocol.Method
----@param callback LspClientEventHandler The callback to invoke
+---@param callback user.lsp.ClientEventHandler The callback to invoke
 function M.on_supports_method(method, callback)
   m.on_supports_method[method] = m.on_supports_method[method] or setmetatable({}, { __mode = "k" })
 
   ---Wrapper fn to deduplicate dynamic capabilities from the server.
-  ---@type LspClientEventHandler
+  ---@type user.lsp.ClientEventHandler
   local function callback_once_per_method_client_buffer(bufnr, client)
     m.on_supports_method[method][client] = m.on_supports_method[method][client] or {}
-    if m.on_supports_method[method][client][bufnr] then
-      return
-    end
+    if m.on_supports_method[method][client][bufnr] then return end
     ---@diagnostic disable-next-line: param-type-mismatch
     if client:supports_method(method, bufnr) then
       m.on_supports_method[method][client][bufnr] = true
@@ -111,7 +114,6 @@ function M.on_supports_method(method, callback)
   M.on_attach(callback_once_per_method_client_buffer)
   M.on_dynamic_capability(callback_once_per_method_client_buffer)
 end
-
 
 -- Set up LSP servers.
 function M.setup_lsp_servers()
@@ -123,7 +125,6 @@ function M.setup_lsp_servers()
     table.insert(lsp_servers, vim.fn.fnamemodify(file, ":t:r"))
   end
   vim.lsp.enable(lsp_servers)
-  vim.lsp.inline_completion.enable(true)
 end
 
 ---Set up LSP config, attaching capability handlers and keymaps.
@@ -142,8 +143,6 @@ function M.setup()
       { "grn",   desc = "[LSP] Rename",            vim.lsp.buf.rename      },
       { "gra",   desc = "[LSP] Show code actions", M.do_code_action },
       { "<c-,>", desc = "[LSP] Show code actions", M.do_code_action },
-
-      ---@diagnostic disable-next-line: missing-fields
       { "gre", desc = "[LSP] Show quick edits", function () return M.do_code_action({ context = { only = M.quick_actions } }) end },
 
       { "[e",  desc = "[LSP] Previous error", gen_jump(false, vim.diagnostic.severity.ERROR) },
@@ -160,6 +159,7 @@ function M.setup()
   -- Loading progress notifications
   vim.api.nvim_create_autocmd("LspProgress", {
     group = M.user_lsp_config_group,
+    desc = "[LSP] Show progress notifications",
     callback = function (ev)
       local value = ev.data.params.value
       vim.api.nvim_echo({ { value.message or "done" } }, false, {
@@ -170,6 +170,20 @@ function M.setup()
         status = value.kind ~= "end" and "running" or "success",
         percent = value.percentage,
       })
+    end,
+  })
+
+  -- Client auto-cleanup
+  vim.api.nvim_create_autocmd({ "LspDetach" }, {
+    group = M.user_lsp_config_group,
+    desc = "[LSP] Stop clients when no related buffers are attached",
+    callback = function (ev)
+      local client = vim.lsp.get_client_by_id(ev.data.client_id)
+      if not client or not client.attached_buffers then return end
+      for bufnr in pairs(client.attached_buffers) do
+        if bufnr ~= ev.buf then return end
+      end
+      client:stop()
     end,
   })
 
@@ -193,6 +207,61 @@ function M.setup()
     })
   end)
 
+  -- CodeLens additional support
+  M.on_supports_method("textDocument/codeLens", function (bufnr)
+    vim.lsp.commands["editor.action.showReferences"] = function (command, ctx)
+      local locations = command.arguments[3]
+      local client = vim.lsp.get_client_by_id(ctx.client_id)
+      if client and locations and type(locations) =="table" and #locations > 0 then
+        local items = vim.lsp.util.locations_to_items(locations, client.offset_encoding)
+        vim.fn.setloclist(0, {}, "", { title = "References", items = items, context = ctx })
+        vim.api.nvim_command("lopen")
+      end
+    end
+
+    local codelens_enabled = util.use_setting("CODELENS_ENABLED", false)
+
+    -- Automatically enable CodeLens.
+    if codelens_enabled.get(bufnr) then
+      vim.defer_fn(function ()
+        vim.lsp.codelens.enable(true, { bufnr = bufnr })
+      end, 500)
+    end
+
+    util.keymap({
+      {
+        "grc", desc = "[LSP] Toggle CodeLens (buffer)", function ()
+          local enabled = codelens_enabled.set(not vim.lsp.codelens.is_enabled({ bufnr = bufnr }), "b", bufnr)
+          vim.lsp.codelens.enable(enabled, { bufnr = 0 })
+          print("[LSP] CodeLens " .. (enabled and "enabled" or "disabled"))
+        end,
+      },
+      {
+        "grC", desc = "[LSP] Toggle CodeLens", function ()
+          local enabled = codelens_enabled.set(not vim.lsp.codelens.is_enabled({ bufnr = bufnr }), "g")
+          vim.lsp.codelens.enable(enabled)
+          print("[LSP] CodeLens " .. (enabled and "enabled" or "disabled"))
+        end,
+      },
+    }, bufnr)
+
+  end)
+
+  -- Inline completions
+  M.on_supports_method("textDocument/inlineCompletion", function (bufnr)
+    vim.lsp.inline_completion.enable(true, { bufnr = bufnr })
+    util.keymap({
+      { "<tab>", desc = "[LSP] Accept inline completion", mode = "i", expr = true, function ()
+        if not vim.lsp.inline_completion.get() then return "<tab>" end
+      end },
+      { "<c-x>l", desc = "[LSP] Accept inline completion", mode = { "n", "x" }, vim.lsp.inline_completion.get },
+      { "<c-x><tab>", desc = "[LSP] Next inline completion", mode = { "n", "x", "i" }, vim.lsp.inline_completion.select },
+      { "<c-x><s-tab>", desc = "[LSP] Prev inline completion", mode = { "n", "x", "i" }, function ()
+        vim.lsp.inline_completion.select({ count = -1 })
+      end },
+    }, bufnr)
+  end)
+
   -- Automatic inlay hints / InsertEnter inlay hint toggle.
   M.on_supports_method("textDocument/inlayHint", function (bufnr)
     local user_lsp_inlay_hints_group = vim.api.nvim_create_augroup("UserLspInlayHintsConfig", { clear = true })
@@ -209,20 +278,20 @@ function M.setup()
 
     util.keymap({
       {
-        "grh", desc = "[LSP] Toggle inlay hints (buffer)", buf = bufnr, function ()
-          local enabled = lsp_inlay_hints_enabled.set(not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 }), "b", bufnr)
+        "grh", desc = "[LSP] Toggle inlay hints (buffer)", function ()
+          local enabled = lsp_inlay_hints_enabled.set(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }), "b", bufnr)
           vim.lsp.inlay_hint.enable(enabled, { bufnr = 0 })
           print("[LSP] Inlay hints " .. (enabled and "enabled" or "disabled"))
         end,
       },
       {
-        "grH", desc = "[LSP] Toggle inlay hints", buf = bufnr, function ()
-          local enabled = lsp_inlay_hints_enabled.set(not vim.lsp.inlay_hint.is_enabled({ bufnr = 0 }), "g")
+        "grH", desc = "[LSP] Toggle inlay hints", function ()
+          local enabled = lsp_inlay_hints_enabled.set(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }), "g")
           vim.lsp.inlay_hint.enable(enabled)
           print("[LSP] Inlay hints " .. (enabled and "enabled" or "disabled"))
         end,
       },
-    })
+    }, bufnr)
 
     vim.api.nvim_create_autocmd("InsertEnter", {
       group = user_lsp_inlay_hints_group,
@@ -278,9 +347,6 @@ function M.setup()
       end
     end,
   })
-
-  ---@class vim.lsp.ClientConfig
-  ---@field should_attach? LspClientEventHandler
 
   -- LSP should_attach support.
   M.on_attach(function (bufnr, client)
