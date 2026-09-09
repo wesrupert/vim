@@ -82,6 +82,12 @@ return {
     vim.api.nvim_create_user_command("BD", function () snacks.bufdelete() end, {})
     vim.api.nvim_create_user_command("BOnly", snacks.bufdelete.other, {})
 
+    vim.api.nvim_create_user_command("OOOnly", function ()
+      vim.cmd.tabonly()
+      vim.cmd.only()
+      snacks.bufdelete.other()
+    end, {})
+
     vim.api.nvim_create_user_command(
       "Pick",
       function (input)

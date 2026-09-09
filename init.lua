@@ -33,9 +33,7 @@ vim.o.foldlevel = 999
 vim.o.cmdheight = 0
 require('vim._core.ui2').enable({
   enable = true,
-  msg = {
-    msg = { height = 2, timeout = 2000 },
-  },
+  msg = { msg = { height = 2, timeout = 2000 } },
 })
 
 if util.is_gui() then

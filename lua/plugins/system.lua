@@ -53,7 +53,7 @@ return {
     "nvim-mini/mini.diff",
     dependencies = { "https://tangled.org/ronshavit.com/mini.diff.jj" },
     lazy = false,
-    keys = {
+    keys = { ---@type KeysSpec[]
       { "]g", desc = "[Mini:diff] Toggle overlay", function () require("mini.diff").toggle_overlay(0) end },
     },
     opts = function ()
@@ -89,14 +89,20 @@ return {
   },
   {
     "sindrets/diffview.nvim",
+    cmd = "DiffviewOpen",
+    keys = { ---@type KeysSpec[]
+      { "<leader>do", desc = "[DiffView] Open", [[<cmd>DiffviewOpen<cr>]] },
+      { "<leader>dh", desc = "[DiffView] History", [[<cmd>DiffviewFileHistory<cr>]] },
+    },
     opts = {
       keymaps = {
         view = {
           { "n", "<tab>",   false },
           { "n", "<s-tab>", false },
-          { "n", "]f",      function () require("diffview.actions").select_next_entry() end, { desc = "Open the diff for the next file" } },
-          { "n", "[f",      function () require("diffview.actions").select_prev_entry() end, { desc = "Open the diff for the previous file" } },
-          { "n", "ZQ",      function () vim.cmd([[DiffviewClose]]) end, { desc = "Close DiffView" } },
+          { "n", "]f",    function () require("diffview.actions").select_next_entry() end, { desc = "[DiffView] Next file"     } },
+          { "n", "[f",    function () require("diffview.actions").select_prev_entry() end, { desc = "[DiffView] Previous file" } },
+          { "n", "<a-e>", function () vim.cmd([[DiffviewToggleFiles]]) end,                { desc = "[DiffView] Toggle files"  } },
+          { "n", "<c-e>", function () vim.cmd([[DiffviewFocusFiles]]) end,                 { desc = "[DiffView] Focus files"   } },
         },
       },
       hooks = {
@@ -112,6 +118,14 @@ return {
         end,
       },
     },
+    config = function (_, opts)
+      require("diffview").setup(opts)
+      util.keymap({
+        { "<leader>dr", desc = "[DiffView] Refresh", [[<cmd>DiffviewRefresh<cr>]] },
+        { "<leader>dx", desc = "[DiffView] Close",   [[<cmd>DiffviewClose<cr>]] },
+        { "ZD",         desc = "[DiffView] Close",   [[<cmd>DiffviewClose<cr>]] },
+      })
+    end,
     specs = {
       {
         "yannvanhalewyn/jujutsu.nvim",

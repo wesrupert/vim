@@ -228,22 +228,13 @@ function M.setup()
       end, 500)
     end
 
-    util.keymap({
-      {
-        "grc", desc = "[LSP] Toggle CodeLens (buffer)", function ()
-          local enabled = codelens_enabled.set(not vim.lsp.codelens.is_enabled({ bufnr = bufnr }), "b", bufnr)
-          vim.lsp.codelens.enable(enabled, { bufnr = 0 })
-          print("[LSP] CodeLens " .. (enabled and "enabled" or "disabled"))
-        end,
-      },
-      {
-        "grC", desc = "[LSP] Toggle CodeLens", function ()
-          local enabled = codelens_enabled.set(not vim.lsp.codelens.is_enabled({ bufnr = bufnr }), "g")
-          vim.lsp.codelens.enable(enabled)
-          print("[LSP] CodeLens " .. (enabled and "enabled" or "disabled"))
-        end,
-      },
-    }, bufnr)
+    util.keymap({{
+      "grX", desc = "[LSP] Toggle CodeLens", function ()
+        local enabled = codelens_enabled.set(not vim.lsp.codelens.is_enabled(), "g")
+        vim.lsp.codelens.enable(enabled)
+        print("[LSP] CodeLens " .. (enabled and "enabled" or "disabled"))
+      end,
+    }}, bufnr)
 
   end)
 
