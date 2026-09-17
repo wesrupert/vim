@@ -335,8 +335,9 @@ local queried_settings = {}
 ---@param buf? number If provided, use the given buffer number instead of checking current
 ---@param tab? number If provided, use the given tab number instead of checking current
 ---@param win? number If provided, use the given window number instead of checking current
+---@param shada_persisted? boolean If true, persist to ShaDa
 ---@return T
-function M.get_setting(key, default, buf, tab, win)
+function M.get_setting(key, default, buf, tab, win, shada_persisted)
   queried_settings[key] = true -- Set key for reporting
 
   local win_value = vim.tbl_get(vim.w, win or 0, key)
@@ -348,7 +349,7 @@ function M.get_setting(key, default, buf, tab, win)
   local buf_value = vim.tbl_get(vim.b, buf or 0, key)
   if buf_value ~= nil then return buf_value end
 
-  local global_value = vim.tbl_get(vim.g, key)
+  local global_value = vim.tbl_get(vim.g, shada_persisted and vim.fn.toupper(key) or key)
   if global_value ~= nil then return global_value end
 
   return default
@@ -364,18 +365,26 @@ function M.get_settings()
   return settings
 end
 
----Composable to keep track of a setting.
+---Composable to keep track of a setting. If shada_persisted is true, uses uppercase
+---in global scope to store the value to ShaDa.
 ---@see M.get_setting
+---@generic T : any
+---@param key string The setting to check
+---@param default T The default value, if the setting is undefined in all contexts
+---@param shada_persisted? boolean If true, persist to ShaDa
 ---@return {
----  get: fun(buf?: number, tab?: number, win?: number),
----  set: fun(value, ctx?: string, ctx_id?: number),
+---  get: fun(buf?: number, tab?: number, win?: number): T;
+---  set: fun(value: T, ctx?: string, ctx_id?: number);
 ---}
-function M.use_setting(key, default)
+function M.use_setting(key, default, shada_persisted)
   return {
-    get = function (buf, tab, win) return M.get_setting(key, default, buf, tab, win) end,
+    get = function (buf, tab, win)
+      return M.get_setting(key, default, buf, tab, win, shada_persisted)
+    end,
     set = function (value, ctx, ctx_id)
       if not ctx or ctx == 'g' then
-        vim.g[key] = value
+        local k = shada_persisted and vim.fn.toupper(key) or key
+        vim.g[k] = value
       else
         vim[ctx][ctx_id or 0][key] = value
       end

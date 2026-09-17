@@ -219,7 +219,7 @@ function M.setup()
       end
     end
 
-    local codelens_enabled = util.use_setting("CODELENS_ENABLED", false)
+    local codelens_enabled = util.use_setting("codelens_enabled", false, true)
 
     -- Automatically enable CodeLens.
     if codelens_enabled.get(bufnr) then
@@ -256,7 +256,7 @@ function M.setup()
   -- Automatic inlay hints / InsertEnter inlay hint toggle.
   M.on_supports_method("textDocument/inlayHint", function (bufnr)
     local user_lsp_inlay_hints_group = vim.api.nvim_create_augroup("UserLspInlayHintsConfig", { clear = true })
-    local lsp_inlay_hints_enabled = util.use_setting("LSP_INLAY_HINTS_ENABLED", true)
+    local lsp_inlay_hints_enabled = util.use_setting("lsp_inlay_hints_enabled", true, true)
 
     -- Automatically enable inlay hints.
     if lsp_inlay_hints_enabled.get(bufnr) then
@@ -315,11 +315,12 @@ function M.setup()
     end
     util.keymap({ { "gre", desc = "[LSP:eslint] Fix all", buf = bufnr, eslint_fix_all } })
 
+    local eslint_run_on_save = util.use_setting("eslint_run_on_save", true, true)
     vim.api.nvim_create_autocmd("BufWritePre", {
       group = M.user_lsp_config_group,
       desc = "[LSP:eslint] Fix on save",
       buffer = bufnr,
-      callback = function () if util.get_setting("ESLINT_RUN_ON_SAVE", true, bufnr) then eslint_fix_all() end end,
+      callback = function () if eslint_run_on_save.get(bufnr) then eslint_fix_all() end end,
     })
   end)
 
