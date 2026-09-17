@@ -239,8 +239,9 @@ function M.setup()
   end)
 
   -- Inline completions
-  M.on_supports_method("textDocument/inlineCompletion", function (bufnr)
-    vim.lsp.inline_completion.enable(true, { bufnr = bufnr })
+  M.on_supports_method("textDocument/inlineCompletion", function (bufnr, client)
+    if client.name == 'copilot' and not util.buf_is_ai_allowed(bufnr) then return end
+    vim.lsp.inline_completion.enable(true, { bufnr = bufnr, client_id = client.id })
     util.keymap({
       { "<tab>", desc = "[LSP] Accept inline completion", mode = "i", expr = true, function ()
         if not vim.lsp.inline_completion.get() then return "<tab>" end

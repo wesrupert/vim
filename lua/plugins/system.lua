@@ -2,6 +2,7 @@ local util = require("util")
 
 return {
   { "tpope/vim-repeat", lazy = false, priority = 999 },
+  { "Zeioth/garbage-day.nvim", event = "VeryLazy" },
   {
     "wesrupert/filler-begone.nvim",
     dev = true,

@@ -1,5 +1,7 @@
 local util = require("util")
 
+---@module "lazy"
+---@type LazySpec[]
 return {
   {
     "folke/sidekick.nvim",
@@ -145,6 +147,19 @@ return {
           })
         end,
       },
+    },
+  },
+  {
+    "l3aro/omp.nvim",
+    version = "*",
+    init = function ()
+      vim.g.omp_nvim_no_keymaps = true
+    end,
+    cmd = "OmpAsk",
+    keys = {
+      { "glo",   desc = "[OMP] Ask",               mode = { "n", "x" }, function () require("omp_nvim").ask() end },
+      { "gli",   desc = "[OMP] Ask (interactive)", mode = { "n", "x" }, function () require("omp_nvim").ask({ hold = true }) end },
+      { "<c-o>", desc = "[OMP] Send selection",    mode = "x",          function () require("omp_nvim").send_selection("x") end },
     },
   },
 }
