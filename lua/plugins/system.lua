@@ -1,5 +1,14 @@
 local util = require("util")
 
+---@type string[]
+local close_diff_editor_cmds = {}
+
+local function close_diff_editors()
+  for _, cmd in ipairs(close_diff_editor_cmds) do
+    vim.cmd(cmd)
+  end
+end
+
 return {
   { "tpope/vim-repeat", lazy = false, priority = 999 },
   { "Zeioth/garbage-day.nvim", event = "VeryLazy" },
@@ -50,41 +59,65 @@ return {
       })
     end,
   },
+  { "rafikdraoui/jj-diffconflicts" },
   {
-    "nvim-mini/mini.diff",
-    dependencies = { "https://tangled.org/ronshavit.com/mini.diff.jj" },
-    lazy = false,
-    keys = { ---@type KeysSpec[]
-      { "]g", desc = "[Mini:diff] Toggle overlay", function () require("mini.diff").toggle_overlay(0) end },
+    "janbuchar/difftsigns.nvim",
+    dependencies = {
+      {
+        "lewis6991/gitsigns.nvim",
+        opts = {
+          on_attach = function (bufnr)
+            local gitsigns = require("gitsigns")
+            util.keymap({
+              { "]]", desc = "[GitSigns] Next hunk", function () gitsigns.nav_hunk("next") end },
+              { "[[", desc = "[GitSigns] Prev hunk", function () gitsigns.nav_hunk("prev") end },
+              { "ghr", desc = "[GitSigns] Reset hunk", mode = "x", function () gitsigns.reset_hunk({ vim.fn.line("."), vim.fn.line("v") }) end },
+              { '<leader>db', desc = "[GitSigns] Toggle blame", gitsigns.toggle_current_line_blame },
+              { '<leader>dw', desc = "[GitSigns] Toggle word diff",gitsigns.toggle_word_diff },
+              { 'ah', desc = "[GitSigns] Hunk Textobject", mode = {'o', 'x'}, gitsigns.select_hunk },
+            }, bufnr)
+          end,
+        },
+      },
     },
-    opts = function ()
-      return {
-        view = {
-          signs = { add = "┃", change = "┃", delete = "┃" },
-        },
-        mappings = {
-          textobject = "ah",
-          apply = "gha",
-          reset = "ghr",
-          goto_first = "ghg",
-          goto_last = "ghG",
-        },
-        options = {
-          wrap_goto = true,
-        },
-        sources = { require("mini.diff.jj") }
-      }
-    end,
-    init = function ()
-      vim.api.nvim_create_autocmd({ "BufReadPre", "BufWrite" }, {
-        group = vim.api.nvim_create_augroup("UserMiniDiffConfig", { clear = true }),
-        callback = function (ev)
-          local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(ev.buf), ":p")
-          if vim.fs.find(".jj", { upward = true, type = "directory", path = path }) then
-            -- Let jujutsu.nvim handle diff, it's better at it
-            vim.b[ev.buf].minidiff_disable = true
-          end
-        end,
+    event = "VeryLazy",
+    keys = { ---@type KeysSpec[]
+      { "<leader>dk", desc = "[Difft] Preview Hunk", function () require("difftsigns").preview() end },
+      { "]g", desc = "[Difft] Preview Hunk", function () require("difftsigns").preview() end },
+      { "<leader>dK", desc = "[Difft] Hunk Status", function () require("difftsigns").status() end },
+    },
+  },
+  {
+    "plomp4/draven.nvim",
+    cmd = { "Draven", "DravenToggle", "DravenStatus" },
+    keys = { ---@type KeysSpec[]
+      { "<leader>dr", desc = "[Draven] Open review", [[<cmd>Draven<cr>]] },
+    },
+    opts = {
+      keymaps = {
+        next_hunk       = "]]",
+        prev_hunk       = "[[",
+        mark_hunk       = "ghg",
+        unmark_hunk     = "ghu",
+        comment         = "ghc",
+        toggle_resolved = "ght",
+        toggle_finding  = "ghv",
+        delete_finding  = "ghx",
+        list_findings   = "ghq",
+        toggle_panel    = "<a-e>",
+        export          = "<leader>dy",
+        delta           = "<leader>dd",
+        refresh         = "<leader>dR",
+      },
+    },
+    config = function (_, opts)
+      require("draven").setup(opts)
+      table.insert(close_diff_editor_cmds, "DravenClose")
+
+      util.keymap({
+        { "<leader>dX", desc = "[Draven] Reset", [[<cmd>DravenReset<cr>]] },
+        { "<leader>dx", desc = "[Diff] Close", close_diff_editors },
+        { "ZD",         desc = "[Diff] Close", close_diff_editors },
       })
     end,
   },
@@ -121,21 +154,15 @@ return {
     },
     config = function (_, opts)
       require("diffview").setup(opts)
+      table.insert(close_diff_editor_cmds, "DiffviewClose")
+
       util.keymap({
-        { "<leader>dr", desc = "[DiffView] Refresh", [[<cmd>DiffviewRefresh<cr>]] },
-        { "<leader>dx", desc = "[DiffView] Close",   [[<cmd>DiffviewClose<cr>]] },
-        { "ZD",         desc = "[DiffView] Close",   [[<cmd>DiffviewClose<cr>]] },
+        { "<leader>dR", desc = "[DiffView] Refresh", [[<cmd>DiffviewRefresh<cr>]] },
+        { "<leader>dx", desc = "[Diff] Close", close_diff_editors },
+        { "ZD",         desc = "[Diff] Close", close_diff_editors },
       })
     end,
-    specs = {
-      {
-        "yannvanhalewyn/jujutsu.nvim",
-        optional = true,
-        opts = function (_, opts) return util.merge(opts or {}, { diff_preset = "diffview" }) end,
-      },
-    },
   },
-  { "rafikdraoui/jj-diffconflicts" },
   {
     "nvim-mini/mini.indentscope",
     opts = {

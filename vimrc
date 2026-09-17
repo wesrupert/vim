@@ -147,7 +147,7 @@ noremap <silent> <c-h>         <c-w>h
 noremap <silent> <c-j>         <c-w>j
 noremap <silent> <c-k>         <c-w>k
 noremap <silent> <c-l>         <c-w>l
-noremap <silent> <leader>/     <cmd>nohlsearch<cr>
+noremap <silent> <leader>/     <cmd>nohlsearch\|diffupdate\|normal! <c-l><cr>
 noremap <silent> <leader>c,    <cmd>cd ..<cr><cmd>echo ':cd '.getcwd()<cr>
 noremap <silent> <leader>cd    <cmd>execute 'cd '.expand('%:p:h')<cr><cmd>echo ':cd '.getcwd()<cr>
 noremap <silent> <leader>rg    <cmd>Grep <cword><cr>

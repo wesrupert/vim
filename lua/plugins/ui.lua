@@ -19,7 +19,6 @@ return {
       "wesrupert/altfile-lualine",
       "wesrupert/visual-lualine",
       "andrem222/copilot-lualine",
-      "mistweaverco/jujutsu.nvim",
     },
     opts = function (_, opts)
       local function mini_sessions_name()
@@ -68,7 +67,6 @@ return {
       return util.merge({
         sections = {
           lualine_a = { "mode", "macro_recording" },
-          lualine_b = require("jujutsu.lualine").prepend({ "diagnostics" }),
           lualine_c = { "%n", "filename" },
           lualine_x = { "filetype" },
           lualine_z = { "location", "visual" },

@@ -29,12 +29,16 @@ vim.o.winborder = "rounded"
 vim.o.foldmethod = "expr"
 vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 vim.o.foldlevel = 999
-
 vim.o.cmdheight = 0
-require('vim._core.ui2').enable({
-  enable = true,
-  msg = { msg = { height = 2, timeout = 2000 } },
-})
+
+-- TODO: Remove when neovim v0.13.0 reaches stable.
+if vim.version().minor >= 13 then
+  ---@diagnostic disable-next-line: param-type-mismatch
+  vim.opt.messagesopt:append({ timeout = 2000 })
+  require('vim._core.ui2').enable({ enable = true, msg = { msg = { height = 2 } } })
+else
+  require('vim._core.ui2').enable({ enable = true, msg = { msg = { height = 2, timeout = 2000 } } })
+end
 
 if util.is_gui() then
   -- vim.opt.winblend = 100
@@ -222,6 +226,24 @@ vim.api.nvim_create_autocmd("User", {
 -- Load mise dependencies first, so they can be used by plugins like copilot.
 util.load_mise_deps()
 
+-- Undotree
+vim.api.nvim_create_user_command("UndotreeToggle", function ()
+  vim.cmd.packadd("nvim.undotree")
+  vim.cmd([[Undotree]])
+end, { })
+util.keymap({{ "<leader>u", desc = "[Undotree] Toggle", [[<cmd>UndotreeToggle<cr>]] }})
+vim.api.nvim_create_autocmd("FileType", {
+  group = user_default_config,
+  desc = "[Undotree] Set up keybinds",
+  pattern = "nvim-undotree",
+  callback = function (ev)
+    util.keymap({
+      { "q", desc = "[Undotree] Close", [[<cmd>UndotreeToggle<cr>]] },
+    }, ev.buf)
+  end,
+})
+
+-- Lazy
 require("lazy").setup("plugins", {
   dev = { path = "~/Code/nvim" },
   ui = { border = vim.o.winborder },

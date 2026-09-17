@@ -93,34 +93,4 @@ return {
       },
     },
   },
-  {
-    "mistweaverco/jujutsu.nvim",
-    opts = {
-      kind = "vsplit",
-    },
-    config = function (_, opts)
-      local jj = require("jujutsu")
-      jj.setup(opts or {})
-
-      local function patch_hl()
-        vim.api.nvim_set_hl(0, "JujutsuSignsAdd", { link = "GreenSign" })
-        vim.api.nvim_set_hl(0, "JujutsuSignsChange", { link = "BlueSign" })
-        vim.api.nvim_set_hl(0, "JujutsuSignsDelete", { link = "RedSign" })
-        vim.api.nvim_set_hl(0, "JujutsuLualineAdd", { link = "Green" })
-        vim.api.nvim_set_hl(0, "JujutsuLualineChange", { link = "Yellow" })
-        vim.api.nvim_set_hl(0, "JujutsuLualineDelete", { link = "Red" })
-        vim.api.nvim_set_hl(0, "JujutsuLualineRev", { link = "Red" })
-        vim.api.nvim_set_hl(0, "JujutsuLualineBookmark", { link = "Blue" })
-      end
-
-      patch_hl()
-      vim.api.nvim_create_autocmd("ColorScheme", { callback = patch_hl })
-
-      util.keymap({
-        { "ghs", desc = "[JJ] Open status", function () jj.open() end },
-        { "ghd", desc = "[JJ] Open status", function () jj.open({ "diff" }) end },
-        { "ghx", desc = "[JJ] Close", function () jj.close() end },
-      })
-    end,
-  },
 }
