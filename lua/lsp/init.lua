@@ -9,7 +9,7 @@ local util = require("util")
 
 local M = {}
 M.quick_actions = { "source", "refactor", "quickfix" }
-M.user_lsp_config_group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true })
+M.augroup = vim.api.nvim_create_augroup("UserLspConfig", { clear = true })
 M.augroup_lsp_event_handler = vim.api.nvim_create_augroup("LspEventHandlerConfig", { clear = true })
 
 local m = {}
@@ -156,26 +156,35 @@ function M.setup()
     util.keymap({ { "gd", desc = "[LSP] Go to definition", buf = bufnr, vim.lsp.buf.definition } })
   end)
 
-  -- Loading progress notifications
-  vim.api.nvim_create_autocmd("LspProgress", {
-    group = M.user_lsp_config_group,
-    desc = "[LSP] Show progress notifications",
-    callback = function (ev)
-      local value = ev.data.params.value
-      vim.api.nvim_echo({ { value.message or "done" } }, false, {
-        id = "lsp." .. ev.data.client_id,
-        kind = "progress",
-        source = "vim.lsp",
-        title = value.title,
-        status = value.kind ~= "end" and "running" or "success",
-        percent = value.percentage,
-      })
-    end,
-  })
+  M.on_supports_method("$/progress", function (bufnr)
+    local progress_enabled = util.use_toggle(
+      "LSP", "Progress", bufnr, nil, "grP",
+      "lsp_progress_enabled", true
+    )
+
+    -- Loading progress notifications
+    vim.api.nvim_create_autocmd("LspProgress", {
+      group = M.augroup,
+      desc = "[LSP] Show progress notifications",
+      buf = bufnr,
+      callback = function (ev)
+        if not progress_enabled.get(bufnr) then return end
+        local value = ev.data.params.value
+        vim.api.nvim_echo({ { value.message or "done" } }, false, {
+          id = "lsp." .. ev.data.client_id,
+          kind = "progress",
+          source = "vim.lsp",
+          title = value.title,
+          status = value.kind ~= "end" and "running" or "success",
+          percent = value.percentage,
+        })
+      end,
+    })
+  end)
 
   -- Client auto-cleanup
   vim.api.nvim_create_autocmd({ "LspDetach" }, {
-    group = M.user_lsp_config_group,
+    group = M.augroup,
     desc = "[LSP] Stop clients when no related buffers are attached",
     callback = function (ev)
       local client = vim.lsp.get_client_by_id(ev.data.client_id)
@@ -189,20 +198,25 @@ function M.setup()
 
   -- Document highlight
   M.on_supports_method("textDocument/documentHighlight", function (bufnr)
-    local lsp_document_highlight_enabled = util.use_setting("lsp_document_highlight_enabled", true)
-    local user_lsp_cursor_highlights_group = vim.api.nvim_create_augroup("UserLspCursorHighlightsConfig", { clear = true })
+    local highlight_enabled = util.use_toggle(
+      "LSP", "Document Highlight", bufnr, "grc", "grC",
+      "lsp_document_highlight_enabled", true,
+      vim.lsp.buf.clear_references
+    )
+
     vim.api.nvim_create_autocmd({ "CursorHold", "InsertLeave" }, {
-      group = user_lsp_cursor_highlights_group,
+      group = M.augroup,
       desc = "[LSP] Highlight references under the cursor",
-      buffer = bufnr,
-      callback = function (ev)
-        if lsp_document_highlight_enabled.get(ev.buf) then vim.lsp.buf.document_highlight() end
+      buf = bufnr,
+      callback = function ()
+        if highlight_enabled.get(bufnr) then vim.lsp.buf.document_highlight() end
       end,
     })
+
     vim.api.nvim_create_autocmd({ "CursorMoved", "InsertEnter", "BufLeave" }, {
-      group = user_lsp_cursor_highlights_group,
+      group = M.augroup,
       desc = "[LSP] Clear highlight references",
-      buffer = bufnr,
+      buf = bufnr,
       callback = vim.lsp.buf.clear_references,
     })
   end)
@@ -219,7 +233,11 @@ function M.setup()
       end
     end
 
-    local codelens_enabled = util.use_setting("codelens_enabled", false, true)
+    local codelens_enabled = util.use_toggle(
+      "LSP", "CodeLens", bufnr, nil, "grX",
+      "lsp_codelens_enabled", true,
+      vim.lsp.codelens.enable
+    )
 
     -- Automatically enable CodeLens.
     if codelens_enabled.get(bufnr) then
@@ -227,15 +245,6 @@ function M.setup()
         vim.lsp.codelens.enable(true, { bufnr = bufnr })
       end, 500)
     end
-
-    util.keymap({{
-      "grX", desc = "[LSP] Toggle CodeLens", function ()
-        local enabled = codelens_enabled.set(not vim.lsp.codelens.is_enabled(), "g")
-        vim.lsp.codelens.enable(enabled)
-        print("[LSP] CodeLens " .. (enabled and "enabled" or "disabled"))
-      end,
-    }}, bufnr)
-
   end)
 
   -- Inline completions
@@ -256,49 +265,34 @@ function M.setup()
 
   -- Automatic inlay hints / InsertEnter inlay hint toggle.
   M.on_supports_method("textDocument/inlayHint", function (bufnr)
-    local user_lsp_inlay_hints_group = vim.api.nvim_create_augroup("UserLspInlayHintsConfig", { clear = true })
-    local lsp_inlay_hints_enabled = util.use_setting("lsp_inlay_hints_enabled", true, true)
+    local hints_enabled = util.use_toggle(
+      "LSP", "Inlay hints", bufnr, "grh", "grH",
+      "lsp_inlay_hints_enabled", true
+    )
 
     -- Automatically enable inlay hints.
-    if lsp_inlay_hints_enabled.get(bufnr) then
+    if hints_enabled.get(bufnr) then
       vim.defer_fn(function ()
-        local mode = vim.api.nvim_get_mode().mode
-        local enabled = lsp_inlay_hints_enabled.set(mode == "n" or mode == "v", "b", bufnr)
-        vim.lsp.inlay_hint.enable(enabled, { bufnr = bufnr })
+        -- local mode = vim.api.nvim_get_mode().mode
+        -- local enabled = hints_enabled.set(mode == "n" or mode == "v", "b", bufnr)
+        vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
       end, 500)
     end
 
-    util.keymap({
-      {
-        "grh", desc = "[LSP] Toggle inlay hints (buffer)", function ()
-          local enabled = lsp_inlay_hints_enabled.set(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }), "b", bufnr)
-          vim.lsp.inlay_hint.enable(enabled, { bufnr = 0 })
-          print("[LSP] Inlay hints " .. (enabled and "enabled" or "disabled"))
-        end,
-      },
-      {
-        "grH", desc = "[LSP] Toggle inlay hints", function ()
-          local enabled = lsp_inlay_hints_enabled.set(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }), "g")
-          vim.lsp.inlay_hint.enable(enabled)
-          print("[LSP] Inlay hints " .. (enabled and "enabled" or "disabled"))
-        end,
-      },
-    }, bufnr)
-
     vim.api.nvim_create_autocmd("InsertEnter", {
-      group = user_lsp_inlay_hints_group,
+      group = M.augroup,
       desc = "[LSP] Insert-only inlay hints",
-      buffer = bufnr,
+      buf = bufnr,
       callback = function ()
         vim.lsp.inlay_hint.enable(false, { bufnr = bufnr })
       end,
     })
     vim.api.nvim_create_autocmd("InsertLeave", {
-      group = user_lsp_inlay_hints_group,
+      group = M.augroup,
       desc = "[LSP] Insert-only inlay hints",
-      buffer = bufnr,
+      buf = bufnr,
       callback = function ()
-        if lsp_inlay_hints_enabled.get(bufnr) then
+        if hints_enabled.get(bufnr) then
           vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
         end
       end,
@@ -314,20 +308,23 @@ function M.setup()
         arguments = { { uri = vim.uri_from_bufnr(bufnr), version = vim.lsp.util.buf_versions[bufnr] } },
       }, nil, bufnr)
     end
-    util.keymap({ { "gre", desc = "[LSP:eslint] Fix all", buf = bufnr, eslint_fix_all } })
 
-    local eslint_run_on_save = util.use_setting("eslint_run_on_save", true, true)
+    local autorun_enabled = util.use_toggle(
+      "LSP:eslint", "Fix on save", bufnr, nil, "grE",
+      "lsp_eslint_run_on_save", true
+    )
+
     vim.api.nvim_create_autocmd("BufWritePre", {
-      group = M.user_lsp_config_group,
+      group = M.augroup,
       desc = "[LSP:eslint] Fix on save",
-      buffer = bufnr,
-      callback = function () if eslint_run_on_save.get(bufnr) then eslint_fix_all() end end,
+      buf = bufnr,
+      callback = function () if autorun_enabled.get(bufnr) then eslint_fix_all() end end,
     })
   end)
 
   -- LSP foldexpr support.
   vim.api.nvim_create_autocmd("BufWinEnter", {
-    group = M.user_lsp_config_group,
+    group = M.augroup,
     desc = "[LSP] Enable foldexpr",
     callback = function (ev)
       if not util.get_setting("use_lsp_foldexpr", true) then return end

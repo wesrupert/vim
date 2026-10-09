@@ -367,7 +367,7 @@ end
 
 ---Composable to keep track of a setting. If shada_persisted is true, uses uppercase
 ---in global scope to store the value to ShaDa.
----@see M.get_setting
+---@see get_setting
 ---@generic T : any
 ---@param key string The setting to check
 ---@param default T The default value, if the setting is undefined in all contexts
@@ -391,6 +391,38 @@ function M.use_setting(key, default, shada_persisted)
       return value
     end,
   }
+end
+
+---Composable to handle a setting the user can toggle.
+---@see use_setting
+---@param scope string
+---@param name string
+---@param bufnr number
+---@param global_lhs string | nil
+---@param buflocal_lhs string | nil
+---@param var string
+---@param default boolean
+---@param on_change? fun(enabled: boolean)
+function M.use_toggle(scope, name, bufnr, buflocal_lhs, global_lhs, var, default, on_change)
+    local setting_enabled = M.use_setting(var, default, true)
+
+    if buflocal_lhs then
+      M.keymap({ { buflocal_lhs, desc = "[" .. scope .. "] Toggle " .. name .. " (buffer)", function ()
+        local enabled = setting_enabled.set(not setting_enabled, "b", bufnr)
+        if on_change then on_change(enabled) end
+        print("[" .. scope .. "] " .. name .. " " .. (enabled and "enabled" or "disabled"))
+      end } })
+    end
+
+    if global_lhs then
+      M.keymap({ { global_lhs, desc = "[" .. scope .. "] Toggle " .. name, function ()
+        local enabled = setting_enabled.set(not setting_enabled, "g")
+        if on_change then on_change(enabled) end
+        print("[" .. scope .. "] " .. name .. " " .. (enabled and "enabled" or "disabled"))
+      end } }, bufnr)
+    end
+
+    return setting_enabled
 end
 
 ---Check if table has a value for the given key.
