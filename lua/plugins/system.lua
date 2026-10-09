@@ -97,16 +97,26 @@ return {
       keymaps = {
         next_hunk       = "]]",
         prev_hunk       = "[[",
-        mark_hunk       = "ghg",
-        unmark_hunk     = "ghu",
-        comment         = "ghc",
+        next_file       = "]f",
+        prev_file       = "[f",
+        mark_hunk       = "<c-g>",
+        unmark_hunk     = "<c-b>",
+        comment         = "<c-c>",
+        delta           = "ghd",
         toggle_resolved = "ght",
         toggle_finding  = "ghv",
         delete_finding  = "ghx",
         list_findings   = "ghq",
+        mark_file       = "ghm",
+        mark_all        = "ghM",
+        toggle_fold     = "za",
         toggle_panel    = "<a-e>",
+        focus_panel     = false,
+        collapse_dir    = "h",
+        expand_dir      = "l",
+        collapse_all    = "H",
+        expand_all      = "L",
         export          = "<leader>dy",
-        delta           = "<leader>dd",
         refresh         = "<leader>dR",
       },
     },
@@ -122,13 +132,30 @@ return {
     end,
   },
   {
-    "sindrets/diffview.nvim",
+    "dlyongemallo/diffview-plus.nvim",
     cmd = "DiffviewOpen",
     keys = { ---@type KeysSpec[]
       { "<leader>do", desc = "[DiffView] Open", [[<cmd>DiffviewOpen<cr>]] },
       { "<leader>dh", desc = "[DiffView] History", [[<cmd>DiffviewFileHistory<cr>]] },
     },
+    ---@module "diffview.events"
+    ---@type DiffviewConfig
     opts = {
+      preferred_adapter = "jj",
+      clean_up_buffers = true,
+      restore_sessions = false,
+      view = {
+        default = {
+          layout = "diff1_inline",
+        },
+        cycle_layouts = {
+          default = { "diff1_inline", "diff2_horizontal", "diff2_vertical" },
+        },
+        inline = {
+          fold_unchanged = true,
+          style = "overleaf",
+        },
+      },
       keymaps = {
         view = {
           { "n", "<tab>",   false },
@@ -140,14 +167,20 @@ return {
         },
       },
       hooks = {
-        ---@module "diffview"
-        ---@type ListenerCallback
         view_opened = function (view)
-          if(view.class:name() == "DiffView") then
-            vim.schedule(function ()
-              vim.cmd("wincmd l")
-              vim.cmd("wincmd L")
-            end)
+          if view.class:name() == "DiffView" then
+            if view.default_layout ~= "diff1_inline" then
+              vim.schedule(function ()
+                vim.cmd([[wincmd h]])
+                vim.cmd([[35 wincmd |]])
+                vim.cmd([[wincmd l]])
+              end)
+            else
+              vim.schedule(function ()
+                vim.cmd([[wincmd l]])
+                vim.cmd([[wincmd L]])
+              end)
+            end
           end
         end,
       },

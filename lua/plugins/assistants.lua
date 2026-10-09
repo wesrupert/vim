@@ -158,6 +158,7 @@ return {
     cmd = "OmpAsk",
     keys = {
       { "glo",   desc = "[OMP] Ask",               mode = { "n", "x" }, function () require("omp_nvim").ask() end },
+      { "glO",   desc = "[OMP] Ask this",          function () vim.cmd([[normal! V]]) require("omp_nvim").ask() end },
       { "gli",   desc = "[OMP] Ask (interactive)", mode = { "n", "x" }, function () require("omp_nvim").ask({ hold = true }) end },
       { "<c-o>", desc = "[OMP] Send selection",    mode = "x",          function () require("omp_nvim").send_selection("x") end },
     },

@@ -70,6 +70,10 @@ end
 
 require('lsp').setup()
 
+if vim.version().minor >= 13 then
+  require('multicursor').setup()
+end
+
 local custom_init = vim.fn.stdpath("config") .. "/init.custom.vim"
 ---@diagnostic disable-next-line: undefined-field
 if vim.uv.fs_stat(custom_init) then
@@ -106,8 +110,8 @@ end
 function _G.comment_and_paste(kind) _G.comment_and_yank(kind, true) end
 
 util.keymap({
-  { "I", desc = "Insert VLine", mode = "x", expr = true, function () return vim.fn.mode() == "V" and "^<C-v>I" or "I" end },
-  { "A", desc = "Append VLine", mode = "x", expr = true, function () return vim.fn.mode() == "V" and "$<C-v>A" or "A" end },
+  { "I",  desc = "Insert VLine", mode = "x", expr = true, function () return vim.fn.mode() == "V" and "^<C-v>I" or "I" end },
+  { "A",  desc = "Append VLine", mode = "x", expr = true, function () return vim.fn.mode() == "V" and "$<C-v>A" or "A" end },
 })
 
 util.keymap({
@@ -137,7 +141,7 @@ util.keymap({
 
 vim.api.nvim_create_autocmd("TextYankPost", {
   group = user_default_config,
-  callback = function () vim.hl.on_yank({ higroup="Visual", timeout=300 }) end,
+  callback = function () vim.hl.hl_op({ higroup="Visual", timeout=300 }) end,
   desc = "Highlight on yank",
 })
 
