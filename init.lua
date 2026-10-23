@@ -139,6 +139,45 @@ util.keymap({
   { "gC",  desc = "[Yank-and-comment] Paste lines", expr = true, mode = "x", gen_comment_and_yank(true,  "_") },
 })
 
+---Yank the current file's path (relative to cwd) as an `@path` reference.
+---In visual mode, also yank the selected line range and its contents as a fenced code block.
+---Yanks to the given register; `"` also goes to the system clipboard, like `unnamedplus`.
+---@param visual boolean Iff true, include the selected lines
+---@param register? string Target register, defaults to `vim.v.register`
+---@param with_line? boolean Iff true (and not visual), append the current line number as `:L<n>`
+function _G.yank_paste(visual, register, with_line)
+  register = register or vim.v.register
+  local path = vim.fn.fnamemodify(vim.fn.expand("%"), ":.")
+  if path == "" then
+    vim.notify("ENOENT: buffer has no file name", vim.log.levels.ERROR)
+    return
+  end
+
+  local first, last = vim.fn.line("."), vim.fn.line(".")
+  local text = "@" .. path
+  if with_line and not visual then text = text .. ":L" .. first end
+  if visual then
+    first, last = vim.fn.line("v"), vim.fn.line(".")
+    if first > last then first, last = last, first end
+    local range = first == last and ("L" .. first) or ("L" .. first .. "-" .. last)
+    local lines = vim.api.nvim_buf_get_lines(0, first - 1, last, false)
+    text = string.format("%s:%s\n```%s\n%s\n```", text, range, vim.bo.filetype, table.concat(lines, "\n"))
+    vim.cmd.normal({ "\27", bang = true })
+  end
+
+  local ns = vim.api.nvim_create_namespace("YankPath")
+  vim.hl.range(0, ns, "Visual", { first - 1, 0 }, { last - 1, 0 }, { regtype = "V", timeout = 300 })
+  vim.fn.setreg(register, text)
+  if register == '"' and vim.fn.has("clipboard") == 1 then vim.fn.setreg("+", text) end
+end
+
+util.keymap({
+  { "yp", desc = "[Yank-path] Yank path",          function () _G.yank_paste(false) end },
+  { "yP", desc = "[Yank-path] Yank path and line", function () _G.yank_paste(false, nil, true) end },
+  { "yp", desc = "[Yank-path] Yank snippet", mode = "x", function () _G.yank_paste(true) end },
+  { "yy", desc = "Yank selection",           mode = "x", [[y]] },
+})
+
 vim.api.nvim_create_autocmd("TextYankPost", {
   group = user_default_config,
   callback = function () vim.hl.hl_op({ higroup="Visual", timeout=300 }) end,
